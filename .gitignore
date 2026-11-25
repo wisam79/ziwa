@@ -1,0 +1,46 @@
+# Visual Studio / Rider / VS Code / .NET
+.vs/
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+bin/
+obj/
+out/
+publish/
+artifacts/
+TestResults/
+*.received.*
+coverage/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.nupkg
+*.snupkg
+*.msix
+*.appinstaller
+*.exe
+*.dll
+*.pdb
+
+# Native / ONNX / Large Binary Models (download/fetch via setup script)
+models/*.onnx
+models/*.tflite
+*.bin
+
+# Local SQLite & User Secrets
+*.db
+*.db-shm
+*.db-wal
+*.tmp
+.env
+.env.*
+appsettings.Local.json
+
+# OS & Logs
+.DS_Store
+Thumbs.db
+desktop.ini
+logs/
+*.log

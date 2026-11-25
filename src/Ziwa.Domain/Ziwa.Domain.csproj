@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <Using Remove="System.Net.Http" />
+    <Using Remove="System.IO" />
+  </ItemGroup>
+</Project>

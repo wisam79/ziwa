@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Ziwa.Domain\Ziwa.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Ziwa.Rendering\Ziwa.Rendering.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" />
+  </ItemGroup>
+</Project>

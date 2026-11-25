@@ -1,0 +1,11 @@
+﻿{
+  PageWidthMm: 90.0,
+  PageHeightMm: 55.0,
+  ExportDpi: 300.0,
+  PixelWidth: 1063,
+  PixelHeight: 650,
+  PngPhysDpiX: 300.0,
+  PngPhysDpiY: 300.0,
+  HasRenderedContent: true,
+  HeaderSampleColor: #ff0b5cab
+}

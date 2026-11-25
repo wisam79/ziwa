@@ -1,0 +1,7 @@
+﻿{
+  StickerTemplateCount: 4,
+  CollageSlotCount: 4,
+  ExportWidthPx: 1200,
+  ExportHeightPx: 1800,
+  SvgPicturesCached: 4
+}

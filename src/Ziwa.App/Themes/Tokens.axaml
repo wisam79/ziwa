@@ -1,0 +1,127 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Typography Tokens (Offline Embedded Arabic Fonts) -->
+  <FontFamily x:Key="ZiwaCairoFont">avares://Ziwa.App/Assets/Fonts#Cairo</FontFamily>
+  <FontFamily x:Key="ZiwaTajawalFont">avares://Ziwa.App/Assets/Fonts#Tajawal</FontFamily>
+  <FontFamily x:Key="ZiwaIbmPlexArabicFont">avares://Ziwa.App/Assets/Fonts#IBM Plex Sans Arabic</FontFamily>
+
+  <!-- Corner Radius Scale -->
+  <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+  <CornerRadius x:Key="OverlayCornerRadius">6</CornerRadius>
+  <CornerRadius x:Key="DialogCornerRadius">10</CornerRadius>
+
+  <!-- Layout & Density Tokens -->
+  <x:Double x:Key="ToolbarButtonHeight">32</x:Double>
+  <x:Double x:Key="CompactButtonSize">28</x:Double>
+  <x:Double x:Key="RailWidth">56</x:Double>
+  <x:Double x:Key="InspectorWidth">280</x:Double>
+  <x:Double x:Key="RulerThickness">20</x:Double>
+
+  <GridLength x:Key="RailGridLength">56</GridLength>
+  <GridLength x:Key="InspectorGridLength">280</GridLength>
+  <GridLength x:Key="RulerGridLength">20</GridLength>
+
+  <Thickness x:Key="HairlineBorderThickness">1</Thickness>
+  <Thickness x:Key="ToolbarPadding">10,6</Thickness>
+  <Thickness x:Key="InspectorPadding">12</Thickness>
+  <Thickness x:Key="CardPadding">10</Thickness>
+  <Thickness x:Key="ControlPadding">10,4</Thickness>
+
+  <SolidColorBrush x:Key="ZiwaTransparentBrush" Color="Transparent" />
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <!-- Surfaces -->
+      <Color x:Key="ZiwaCanvasBackgroundColor">#EEF0F4</Color>
+      <Color x:Key="ZiwaSurfaceColor">#F8F9FB</Color>
+      <Color x:Key="ZiwaCardColor">#FFFFFF</Color>
+      <Color x:Key="ZiwaSubtleFillColor">#E5E8EF</Color>
+      <Color x:Key="ZiwaRulerBackgroundColor">#F1F3F7</Color>
+
+      <!-- Typography -->
+      <Color x:Key="ZiwaPrimaryTextColor">#14181F</Color>
+      <Color x:Key="ZiwaSecondaryTextColor">#475263</Color>
+      <Color x:Key="ZiwaOnPrimaryActionColor">#FFFFFF</Color>
+
+      <!-- Strokes -->
+      <Color x:Key="ZiwaHairlineBorderColor">#D0D7E2</Color>
+      <Color x:Key="ZiwaControlBorderColor">#B8C2D1</Color>
+      <Color x:Key="ZiwaFocusStrokeColor">#0B5CAB</Color>
+
+      <!-- Actions & Semantic States -->
+      <Color x:Key="ZiwaPrimaryActionColor">#0B5CAB</Color>
+      <Color x:Key="ZiwaDestructiveActionColor">#B42318</Color>
+      <Color x:Key="ZiwaSuccessColor">#116B36</Color>
+      <Color x:Key="ZiwaWarningColor">#8A4B00</Color>
+      <Color x:Key="ZiwaInfoColor">#0B57D0</Color>
+
+      <!-- Brushes -->
+      <SolidColorBrush x:Key="ZiwaCanvasBackgroundBrush" Color="{StaticResource ZiwaCanvasBackgroundColor}" />
+      <SolidColorBrush x:Key="ZiwaSurfaceBrush" Color="{StaticResource ZiwaSurfaceColor}" />
+      <SolidColorBrush x:Key="ZiwaCardBrush" Color="{StaticResource ZiwaCardColor}" />
+      <SolidColorBrush x:Key="ZiwaSubtleFillBrush" Color="{StaticResource ZiwaSubtleFillColor}" />
+      <SolidColorBrush x:Key="ZiwaRulerBackgroundBrush" Color="{StaticResource ZiwaRulerBackgroundColor}" />
+
+      <SolidColorBrush x:Key="ZiwaPrimaryTextBrush" Color="{StaticResource ZiwaPrimaryTextColor}" />
+      <SolidColorBrush x:Key="ZiwaSecondaryTextBrush" Color="{StaticResource ZiwaSecondaryTextColor}" />
+      <SolidColorBrush x:Key="ZiwaOnPrimaryActionBrush" Color="{StaticResource ZiwaOnPrimaryActionColor}" />
+
+      <SolidColorBrush x:Key="ZiwaHairlineBorderBrush" Color="{StaticResource ZiwaHairlineBorderColor}" />
+      <SolidColorBrush x:Key="ZiwaControlBorderBrush" Color="{StaticResource ZiwaControlBorderColor}" />
+      <SolidColorBrush x:Key="ZiwaFocusStrokeBrush" Color="{StaticResource ZiwaFocusStrokeColor}" />
+
+      <SolidColorBrush x:Key="ZiwaPrimaryActionBrush" Color="{StaticResource ZiwaPrimaryActionColor}" />
+      <SolidColorBrush x:Key="ZiwaDestructiveActionBrush" Color="{StaticResource ZiwaDestructiveActionColor}" />
+      <SolidColorBrush x:Key="ZiwaSuccessBrush" Color="{StaticResource ZiwaSuccessColor}" />
+      <SolidColorBrush x:Key="ZiwaWarningBrush" Color="{StaticResource ZiwaWarningColor}" />
+      <SolidColorBrush x:Key="ZiwaInfoBrush" Color="{StaticResource ZiwaInfoColor}" />
+    </ResourceDictionary>
+
+    <ResourceDictionary x:Key="Dark">
+      <!-- Surfaces -->
+      <Color x:Key="ZiwaCanvasBackgroundColor">#121418</Color>
+      <Color x:Key="ZiwaSurfaceColor">#1A1D24</Color>
+      <Color x:Key="ZiwaCardColor">#222630</Color>
+      <Color x:Key="ZiwaSubtleFillColor">#2A303C</Color>
+      <Color x:Key="ZiwaRulerBackgroundColor">#1E222B</Color>
+
+      <!-- Typography -->
+      <Color x:Key="ZiwaPrimaryTextColor">#F2F5F9</Color>
+      <Color x:Key="ZiwaSecondaryTextColor">#B0BAC9</Color>
+      <Color x:Key="ZiwaOnPrimaryActionColor">#0B0F17</Color>
+
+      <!-- Strokes -->
+      <Color x:Key="ZiwaHairlineBorderColor">#2E3545</Color>
+      <Color x:Key="ZiwaControlBorderColor">#3D465A</Color>
+      <Color x:Key="ZiwaFocusStrokeColor">#58A6FF</Color>
+
+      <!-- Actions & Semantic States -->
+      <Color x:Key="ZiwaPrimaryActionColor">#58A6FF</Color>
+      <Color x:Key="ZiwaDestructiveActionColor">#FF7B72</Color>
+      <Color x:Key="ZiwaSuccessColor">#56D364</Color>
+      <Color x:Key="ZiwaWarningColor">#F2CC60</Color>
+      <Color x:Key="ZiwaInfoColor">#79C0FF</Color>
+
+      <!-- Brushes -->
+      <SolidColorBrush x:Key="ZiwaCanvasBackgroundBrush" Color="{StaticResource ZiwaCanvasBackgroundColor}" />
+      <SolidColorBrush x:Key="ZiwaSurfaceBrush" Color="{StaticResource ZiwaSurfaceColor}" />
+      <SolidColorBrush x:Key="ZiwaCardBrush" Color="{StaticResource ZiwaCardColor}" />
+      <SolidColorBrush x:Key="ZiwaSubtleFillBrush" Color="{StaticResource ZiwaSubtleFillColor}" />
+      <SolidColorBrush x:Key="ZiwaRulerBackgroundBrush" Color="{StaticResource ZiwaRulerBackgroundColor}" />
+
+      <SolidColorBrush x:Key="ZiwaPrimaryTextBrush" Color="{StaticResource ZiwaPrimaryTextColor}" />
+      <SolidColorBrush x:Key="ZiwaSecondaryTextBrush" Color="{StaticResource ZiwaSecondaryTextColor}" />
+      <SolidColorBrush x:Key="ZiwaOnPrimaryActionBrush" Color="{StaticResource ZiwaOnPrimaryActionColor}" />
+
+      <SolidColorBrush x:Key="ZiwaHairlineBorderBrush" Color="{StaticResource ZiwaHairlineBorderColor}" />
+      <SolidColorBrush x:Key="ZiwaControlBorderBrush" Color="{StaticResource ZiwaControlBorderColor}" />
+      <SolidColorBrush x:Key="ZiwaFocusStrokeBrush" Color="{StaticResource ZiwaFocusStrokeColor}" />
+
+      <SolidColorBrush x:Key="ZiwaPrimaryActionBrush" Color="{StaticResource ZiwaPrimaryActionColor}" />
+      <SolidColorBrush x:Key="ZiwaDestructiveActionBrush" Color="{StaticResource ZiwaDestructiveActionColor}" />
+      <SolidColorBrush x:Key="ZiwaSuccessBrush" Color="{StaticResource ZiwaSuccessColor}" />
+      <SolidColorBrush x:Key="ZiwaWarningBrush" Color="{StaticResource ZiwaWarningColor}" />
+      <SolidColorBrush x:Key="ZiwaInfoBrush" Color="{StaticResource ZiwaInfoColor}" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

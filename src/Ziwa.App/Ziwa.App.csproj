@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework Condition="$([MSBuild]::IsOSPlatform('Windows'))">net10.0-windows</TargetFramework>
+    <TargetFramework Condition="!$([MSBuild]::IsOSPlatform('Windows'))">net10.0</TargetFramework>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ziwa.Domain\Ziwa.Domain.csproj" />
+    <ProjectReference Include="..\Ziwa.Rendering\Ziwa.Rendering.csproj" />
+    <ProjectReference Include="..\Ziwa.Application\Ziwa.Application.csproj" />
+    <ProjectReference Include="..\Ziwa.Infrastructure\Ziwa.Infrastructure.csproj" />
+    <ProjectReference Include="..\Ziwa.Platform.Windows\Ziwa.Platform.Windows.csproj"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="..\Ziwa.Rendering\Resources\Fonts\*.ttf"
+                      Link="Assets\Fonts\%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

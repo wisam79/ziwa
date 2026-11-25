@@ -1,0 +1,8 @@
+﻿{
+  PhraseGlyphCount: 25,
+  ArcUpHasInk: true,
+  ArcDownHasInk: true,
+  FullCircleHasInk: true,
+  BitmapWidth: 1417,
+  BitmapHeight: 1181
+}

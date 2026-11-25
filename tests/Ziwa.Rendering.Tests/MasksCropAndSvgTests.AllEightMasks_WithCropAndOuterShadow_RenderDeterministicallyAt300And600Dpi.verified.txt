@@ -1,0 +1,8 @@
+﻿{
+  MaskCount: 8,
+  Width300: 1417,
+  Height300: 756,
+  Width600: 2835,
+  Height600: 1512,
+  HasUnclippedOuterShadowOutsideCircle: true
+}

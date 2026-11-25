@@ -1,0 +1,1165 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Ziwa.App.ViewModels"
+        xmlns:cmd="using:Ziwa.Application.Commands"
+        xmlns:prt="using:Ziwa.Application.Printing"
+        xmlns:prep="using:Ziwa.Domain.PrePress"
+        xmlns:stk="using:Ziwa.Domain.Stickers"
+        xmlns:controls="using:Ziwa.App.Controls"
+        x:Class="Ziwa.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding DocumentTitle}"
+        Width="1360"
+        Height="860"
+        MinWidth="960"
+        MinHeight="640"
+        FlowDirection="RightToLeft"
+        FontFamily="{StaticResource ZiwaCairoFont}"
+        Background="{DynamicResource ZiwaSurfaceBrush}"
+        Foreground="{DynamicResource ZiwaPrimaryTextBrush}">
+  <Grid RowDefinitions="Auto,*,Auto,Auto">
+    <!-- 1. الشريط العلوي للأوامر (CommandBar) -->
+    <Border x:Name="CommandBarRegion"
+            Grid.Row="0"
+            IsVisible="{Binding IsChromeVisible}"
+            Background="{DynamicResource ZiwaCardBrush}"
+            BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="{StaticResource ToolbarPadding}">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Border Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Padding="{StaticResource ControlPadding}">
+            <TextBlock Text="زِيوا استوديو"
+                       Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                       FontWeight="Bold" />
+          </Border>
+          <TextBlock Text="{Binding DocumentTitle}"
+                     Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                     VerticalAlignment="Center"
+                     FontWeight="SemiBold" />
+
+          <Button x:Name="UndoButton"
+                  Command="{Binding UndoCommand}"
+                  IsEnabled="{Binding CanUndo}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="تراجع (Ctrl+Z)"
+                  AutomationProperties.Name="تراجع"
+                  Content="تراجع" />
+
+          <Button x:Name="RedoButton"
+                  Command="{Binding RedoCommand}"
+                  IsEnabled="{Binding CanRedo}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="إعادة (Ctrl+Y)"
+                  AutomationProperties.Name="إعادة"
+                  Content="إعادة" />
+
+          <Button x:Name="QuickStartIdButton"
+                  Command="{Binding StartIdPhotoSheetCommand}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="بدء سريع: شيت صور هوية 4×6 (Alt+1)"
+                  AutomationProperties.Name="شيت صور هوية"
+                  Content="شيت هوية" />
+
+          <Button x:Name="QuickStartCardButton"
+                  Command="{Binding StartBusinessCardCommand}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="بدء سريع: بطاقة عمل (Alt+2)"
+                  AutomationProperties.Name="بطاقة عمل"
+                  Content="بطاقة عمل" />
+
+          <Button x:Name="TransferToCollageButton"
+                  Command="{Binding TransferFreeformToCollageCommand}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="نقل التصميم الحر إلى شيت الكولاج"
+                  AutomationProperties.Name="نقل إلى الكولاج"
+                  Content="نقل للكولاج" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Button x:Name="CommandPaletteButton"
+                  Command="{Binding ToggleCommandPaletteCommand}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="البحث الفوري عن الأوامر (Ctrl+K)"
+                  AutomationProperties.Name="لوحة الأوامر"
+                  Content="أوامر Ctrl+K" />
+
+          <Button x:Name="ZoomOutButton"
+                  Command="{Binding ZoomOutCommand}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="تصغير المعاينة"
+                  AutomationProperties.Name="تصغير المعاينة"
+                  Content="−" />
+
+          <Button x:Name="ResetZoomButton"
+                  Command="{Binding ResetZoomCommand}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="إعادة التكبير إلى 100%"
+                  AutomationProperties.Name="إعادة التكبير إلى 100%"
+                  Content="{Binding ZoomPercentText}" />
+
+          <Button x:Name="ZoomInButton"
+                  Command="{Binding ZoomInCommand}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="تكبير المعاينة"
+                  AutomationProperties.Name="تكبير المعاينة"
+                  Content="+" />
+
+          <Button x:Name="ZenModeButton"
+                  Command="{Binding ToggleZenModeCommand}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="وضع التركيز الكامل (Ctrl+.)"
+                  AutomationProperties.Name="وضع التركيز"
+                  Content="تركيز" />
+
+          <Button x:Name="ThemeToggleButton"
+                  Command="{Binding ToggleThemeCommand}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="تبديل المظهر الفاتح والداكن"
+                  AutomationProperties.Name="تبديل المظهر الفاتح والداكن"
+                  Content="{Binding ThemeToggleText}" />
+
+          <Button x:Name="PrintDialogButton"
+                  Command="{Binding OpenPrintDialogCommand}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="الطباعة المباشرة وتصدير PDF وCMYK (Ctrl+P)"
+                  AutomationProperties.Name="طباعة وتصدير احترافي"
+                  Content="طباعة وPDF" />
+
+          <Button x:Name="Export300DpiButton"
+                  Command="{Binding ExportSample300DpiCommand}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                  Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                  BorderBrush="{DynamicResource ZiwaFocusStrokeBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="تصدير الورقة النشطة بدقة 300 DPI"
+                  AutomationProperties.Name="تصدير الورقة النشطة بدقة 300 DPI"
+                  Content="تصدير 300 DPI" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- منطقة الوسط -->
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <!-- 2. سكة الأدوات (Workspace Rail) -->
+      <Border x:Name="WorkspaceRailRegion"
+              Grid.Column="0"
+              Width="{StaticResource RailWidth}"
+              IsVisible="{Binding IsChromeVisible}"
+              Background="{DynamicResource ZiwaCardBrush}"
+              BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+              BorderThickness="0,0,1,0"
+              Padding="6,10">
+        <StackPanel Spacing="8" HorizontalAlignment="Center">
+          <Button x:Name="SelectToolButton"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  Width="42"
+                  Height="34"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                  Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                  ToolTip.Tip="أداة التحديد والتحريك"
+                  AutomationProperties.Name="أداة التحديد والتحريك"
+                  Content="تحديد" />
+          <Button x:Name="TextToolButton"
+                  Command="{Binding AddHeadingTextCommand}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  Width="42"
+                  Height="34"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  ToolTip.Tip="إدراج نص عربي"
+                  AutomationProperties.Name="إدراج نص عربي"
+                  Content="نص" />
+          <Button x:Name="CurvedSealToolButton"
+                  Command="{Binding AddCurvedSealCommand}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  Width="42"
+                  Height="34"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  ToolTip.Tip="إدراج ختم عربي منحنٍ"
+                  AutomationProperties.Name="إدراج ختم عربي منحنٍ"
+                  Content="ختم" />
+          <Button x:Name="ShapeToolButton"
+                  Command="{Binding AddStarShapeCommand}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  Width="42"
+                  Height="34"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  ToolTip.Tip="إدراج نجمة هندسية"
+                  AutomationProperties.Name="إدراج نجمة هندسية"
+                  Content="شكل" />
+          <Button x:Name="StickerStudioToolButton"
+                  Command="{Binding OpenStickerStudioCommand}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  Width="42"
+                  Height="34"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  ToolTip.Tip="استوديو الملصقات والبطاقات البارامتري"
+                  AutomationProperties.Name="استوديو الملصقات"
+                  Content="ملصق" />
+          <Button x:Name="BrandLogoToolButton"
+                  Command="{Binding InsertBrandLogoCommand}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  Width="42"
+                  Height="34"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  ToolTip.Tip="أصولي: إدراج شعار الاستوديو"
+                  AutomationProperties.Name="شعار الاستوديو"
+                  Content="هويتي" />
+        </StackPanel>
+      </Border>
+
+      <!-- 3. منطقة الكانفاس والمساطر المثبتة + QuickBar + Overlays -->
+      <Grid x:Name="CanvasWorkspaceRegion" Grid.Column="1">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="{StaticResource RulerGridLength}" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="{StaticResource RulerGridLength}" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Row="0"
+                Grid.Column="0"
+                Background="{DynamicResource ZiwaRulerBackgroundBrush}"
+                BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                BorderThickness="0,0,1,1">
+          <TextBlock Text="مم"
+                     FontSize="10"
+                     Foreground="{DynamicResource ZiwaSecondaryTextBrush}"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center" />
+        </Border>
+
+        <Border Grid.Row="0"
+                Grid.Column="1"
+                BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                BorderThickness="0,0,0,1">
+          <controls:CanvasRulerControl x:Name="HorizontalRuler"
+                                       Orientation="Horizontal"
+                                       Viewport="{Binding Viewport}"
+                                       PageLengthMm="{Binding PageWidthMm}"
+                                       BackgroundBrush="{DynamicResource ZiwaRulerBackgroundBrush}"
+                                       TickBrush="{DynamicResource ZiwaSecondaryTextBrush}"
+                                       PaperHighlightBrush="{DynamicResource ZiwaSubtleFillBrush}"
+                                       OriginBrush="{DynamicResource ZiwaPrimaryActionBrush}" />
+        </Border>
+
+        <Border Grid.Row="1"
+                Grid.Column="0"
+                BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                BorderThickness="0,0,1,0">
+          <controls:CanvasRulerControl x:Name="VerticalRuler"
+                                       Orientation="Vertical"
+                                       Viewport="{Binding Viewport}"
+                                       PageLengthMm="{Binding PageHeightMm}"
+                                       BackgroundBrush="{DynamicResource ZiwaRulerBackgroundBrush}"
+                                       TickBrush="{DynamicResource ZiwaSecondaryTextBrush}"
+                                       PaperHighlightBrush="{DynamicResource ZiwaSubtleFillBrush}"
+                                       OriginBrush="{DynamicResource ZiwaPrimaryActionBrush}" />
+        </Border>
+
+        <controls:SkiaViewportHost x:Name="ViewportHost"
+                                   Grid.Row="1"
+                                   Grid.Column="1"
+                                   Session="{Binding Session}"
+                                   CommandRegistry="{Binding CommandRegistry}"
+                                   Page="{Binding ActivePage}"
+                                   SceneRenderer="{Binding SceneRenderer}"
+                                   Viewport="{Binding Viewport}"
+                                   PasteboardBrush="{DynamicResource ZiwaCanvasBackgroundBrush}"
+                                   SelectionAccentBrush="{DynamicResource ZiwaPrimaryActionBrush}" />
+
+        <!-- الشريط السريع السياقي العائم (QuickBar) -->
+        <Border x:Name="ContextualQuickBar"
+                Grid.Row="1"
+                Grid.Column="1"
+                IsVisible="{Binding IsQuickBarVisible}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Margin="12"
+                Padding="8,5"
+                Background="{DynamicResource ZiwaCardBrush}"
+                BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                BorderThickness="{StaticResource HairlineBorderThickness}"
+                CornerRadius="{StaticResource OverlayCornerRadius}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Button x:Name="QuickEditStickerButton"
+                    Command="{Binding EditSelectedStickerCommand}"
+                    IsVisible="{Binding IsStickerSelected}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                    Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                    ToolTip.Tip="تعديل الملصق في مكانه"
+                    AutomationProperties.Name="تعديل الملصق"
+                    Content="تعديل الملصق" />
+            <Button x:Name="QuickRandomPaletteButton"
+                    Command="{Binding RandomizeSelectedStickerPaletteCommand}"
+                    IsVisible="{Binding IsStickerSelected}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaSubtleFillBrush}"
+                    Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                    ToolTip.Tip="توليفة لونية عشوائية ذكية OKLCH"
+                    AutomationProperties.Name="توليفة ألوان ذكية"
+                    Content="توليفة ذكية" />
+            <Button x:Name="QuickRotateSlotButton"
+                    Command="{Binding RotateSelectedSlotCommand}"
+                    IsVisible="{Binding IsCollageSlotSelected}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaSubtleFillBrush}"
+                    Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                    ToolTip.Tip="تدوير محتوى الخانة 90 درجة"
+                    AutomationProperties.Name="تدوير الخانة"
+                    Content="تدوير 90°" />
+            <Button x:Name="QuickFlipSlotButton"
+                    Command="{Binding FlipSelectedSlotCommand}"
+                    IsVisible="{Binding IsCollageSlotSelected}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaSubtleFillBrush}"
+                    Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                    ToolTip.Tip="قلب محتوى الخانة أفقياً"
+                    AutomationProperties.Name="قلب الخانة"
+                    Content="قلب أفقي" />
+            <Button x:Name="QuickDeleteButton"
+                    Command="{Binding DeleteSelectionCommand}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaSubtleFillBrush}"
+                    Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
+                    ToolTip.Tip="حذف أو تفريغ العنصر المحدد"
+                    AutomationProperties.Name="حذف المحدد"
+                    Content="حذف" />
+          </StackPanel>
+        </Border>
+
+        <!-- لوحة الأوامر السريعة Ctrl+K -->
+        <Border x:Name="CommandPaletteOverlay"
+                Grid.Row="1"
+                Grid.Column="1"
+                IsVisible="{Binding IsCommandPaletteOpen}"
+                Width="440"
+                MaxHeight="380"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Margin="0,36,0,0"
+                Padding="{StaticResource InspectorPadding}"
+                Background="{DynamicResource ZiwaCardBrush}"
+                BorderBrush="{DynamicResource ZiwaFocusStrokeBrush}"
+                BorderThickness="{StaticResource HairlineBorderThickness}"
+                CornerRadius="{StaticResource DialogCornerRadius}">
+          <StackPanel Spacing="8">
+            <TextBox x:Name="CommandSearchTextBox"
+                     Text="{Binding CommandSearchQuery}"
+                     Watermark="ابحث عن أمر أو اختصار..." />
+            <ScrollViewer MaxHeight="280">
+              <ItemsControl ItemsSource="{Binding FilteredCommands}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="cmd:CommandDefinition">
+                    <Button Margin="0,0,0,4"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ExecutePaletteCommandCommand}"
+                            CommandParameter="{Binding}"
+                            MinHeight="{StaticResource CompactButtonSize}"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
+                            Background="{DynamicResource ZiwaSurfaceBrush}"
+                            Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                            ToolTip.Tip="{Binding TitleAr}"
+                            AutomationProperties.Name="{Binding TitleAr}">
+                      <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="{Binding TitleAr}" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding ShortcutGesture}"
+                                   FlowDirection="LeftToRight"
+                                   Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                      </Grid>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </StackPanel>
+        </Border>
+
+        <!-- نافذة استوديو الملصقات البارامتري -->
+        <Border x:Name="StickerStudioOverlay"
+                Grid.Row="1"
+                Grid.Column="1"
+                IsVisible="{Binding IsStickerStudioOpen}"
+                Width="380"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Margin="16"
+                Padding="{StaticResource InspectorPadding}"
+                Background="{DynamicResource ZiwaCardBrush}"
+                BorderBrush="{DynamicResource ZiwaFocusStrokeBrush}"
+                BorderThickness="{StaticResource HairlineBorderThickness}"
+                CornerRadius="{StaticResource DialogCornerRadius}">
+          <StackPanel Spacing="10">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Grid.Column="0"
+                         Text="استوديو الملصقات البارامتري"
+                         FontSize="14"
+                         FontWeight="Bold"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+              <Button x:Name="CloseStickerStudioButton"
+                      Grid.Column="1"
+                      Command="{Binding CloseStickerStudioCommand}"
+                      MinWidth="{StaticResource CompactButtonSize}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                      ToolTip.Tip="إغلاق استوديو الملصقات"
+                      AutomationProperties.Name="إغلاق استوديو الملصقات"
+                      Content="✕" />
+            </Grid>
+
+            <ComboBox ItemsSource="{Binding StickerTemplates}"
+                      SelectedItem="{Binding SelectedStickerTemplate}"
+                      HorizontalAlignment="Stretch">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="stk:StickerTemplateDefinition">
+                  <TextBlock Text="{Binding TitleAr}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <ItemsControl ItemsSource="{Binding StickerFieldItems}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:StickerFieldViewModel">
+                  <StackPanel Margin="0,0,0,6" Spacing="2">
+                    <TextBlock Text="{Binding LabelAr}"
+                               FontSize="12"
+                               Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                    <TextBox Text="{Binding Value}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Button x:Name="StudioRandomPaletteButton"
+                      Command="{Binding RandomizeStickerPaletteCommand}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                      ToolTip.Tip="توليفة ألوان OKLCH عشوائية ذكية"
+                      AutomationProperties.Name="توليفة عشوائية"
+                      Content="توليفة عشوائية ذكية" />
+              <Button x:Name="StudioApplyStickerButton"
+                      Command="{Binding ApplyStickerStudioCommand}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                      ToolTip.Tip="اعتماد وإدراج الملصق"
+                      AutomationProperties.Name="اعتماد الملصق"
+                      Content="اعتماد الملصق" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- نافذة الطباعة المباشرة والتجهيز الطباعي (P3-03 / P3-04 / P3-05) -->
+        <Border x:Name="PrintDialogOverlay"
+                Grid.Row="1"
+                Grid.Column="1"
+                IsVisible="{Binding IsPrintDialogOpen}"
+                Width="440"
+                MaxHeight="600"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Margin="16"
+                Padding="{StaticResource InspectorPadding}"
+                Background="{DynamicResource ZiwaCardBrush}"
+                BorderBrush="{DynamicResource ZiwaFocusStrokeBrush}"
+                BorderThickness="{StaticResource HairlineBorderThickness}"
+                CornerRadius="{StaticResource DialogCornerRadius}">
+          <ScrollViewer>
+            <StackPanel Spacing="10">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="الطباعة والتجهيز المطبعي (1:1 مم)"
+                           FontSize="15"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+                <Button x:Name="ClosePrintDialogButton"
+                        Grid.Column="1"
+                        Command="{Binding ClosePrintDialogCommand}"
+                        MinWidth="{StaticResource CompactButtonSize}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="إغلاق نافذة الطباعة (Esc)"
+                        AutomationProperties.Name="إغلاق نافذة الطباعة"
+                        Content="✕" />
+              </Grid>
+
+              <StackPanel Spacing="4">
+                <TextBlock Text="الطابعة المستهدفة"
+                           FontSize="12"
+                           Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <Grid ColumnDefinitions="*,Auto">
+                  <ComboBox Grid.Column="0"
+                            ItemsSource="{Binding AvailablePrinters}"
+                            SelectedItem="{Binding SelectedPrinter}"
+                            HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="prt:PrinterDeviceInfo">
+                        <TextBlock Text="{Binding PrinterName}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                  <Button x:Name="SelectVirtualPrinterButton"
+                          Grid.Column="1"
+                          Margin="6,0,0,0"
+                          Command="{Binding SelectVirtualPreviewPrinterCommand}"
+                          MinHeight="{StaticResource CompactButtonSize}"
+                          CornerRadius="{StaticResource ControlCornerRadius}"
+                          Background="{DynamicResource ZiwaSubtleFillBrush}"
+                          Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                          ToolTip.Tip="اختيار طابعة المعاينة الافتراضية 300 DPI"
+                          AutomationProperties.Name="اختيار طابعة المعاينة"
+                          Content="افتراضية" />
+                </Grid>
+              </StackPanel>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="4">
+                  <TextBlock Text="اتجاه الطباعة"
+                             FontSize="12"
+                             Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                  <ComboBox ItemsSource="{Binding AvailableOrientations}"
+                            SelectedItem="{Binding SelectedPrintOrientation}"
+                            HorizontalAlignment="Stretch" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Width="90" Margin="8,0,0,0" Spacing="4">
+                  <TextBlock Text="النسخ"
+                             FontSize="12"
+                             Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                  <TextBox Text="{Binding PrintCopies}" FlowDirection="LeftToRight" />
+                </StackPanel>
+              </Grid>
+
+              <WrapPanel Orientation="Horizontal">
+                <CheckBox Margin="0,0,12,4"
+                          IsChecked="{Binding PrintAllPages}"
+                          Content="كل الصفحات" />
+                <CheckBox Margin="0,0,12,4"
+                          IsChecked="{Binding PrintBorderless}"
+                          Content="بلا حواف" />
+                <CheckBox Margin="0,0,12,4"
+                          IsChecked="{Binding PrintIncludeBleed}"
+                          Content="تضمين النزيف" />
+                <CheckBox Margin="0,0,12,4"
+                          IsChecked="{Binding PrintIncludeCropMarks}"
+                          Content="علامات القص" />
+                <CheckBox Margin="0,0,12,4"
+                          IsChecked="{Binding PrintIncludeRegistrationMarks}"
+                          Content="علامات التسجيل" />
+                <CheckBox Margin="0,0,12,4"
+                          IsChecked="{Binding PrintIncludeCutContour}"
+                          Content="مسار القطع CutContour" />
+              </WrapPanel>
+
+              <StackPanel Spacing="4">
+                <TextBlock Text="ملف تعريف CMYK TIFF"
+                           FontSize="12"
+                           Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <ComboBox ItemsSource="{Binding AvailableCmykProfiles}"
+                          SelectedItem="{Binding SelectedCmykProfile}"
+                          HorizontalAlignment="Stretch" />
+              </StackPanel>
+
+              <Border Background="{DynamicResource ZiwaSurfaceBrush}"
+                      BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                      BorderThickness="{StaticResource HairlineBorderThickness}"
+                      CornerRadius="{StaticResource OverlayCornerRadius}"
+                      Padding="{StaticResource CardPadding}">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="معايرة المليمتر الفيزيائية"
+                             FontSize="12"
+                             FontWeight="SemiBold"
+                             Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+                  <TextBlock Text="{Binding PrintCalibrationSummaryText}"
+                             FontSize="11"
+                             TextWrapping="Wrap"
+                             Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                  <TextBlock IsVisible="{Binding HasHardwareMarginClipWarning}"
+                             Text="تنبيه: أبعاد التصميم تتجاوز المنطقة القابلة للطباعة لهذه الطابعة."
+                             FontSize="11"
+                             TextWrapping="Wrap"
+                             Foreground="{DynamicResource ZiwaWarningBrush}" />
+                </StackPanel>
+              </Border>
+
+              <WrapPanel Orientation="Horizontal">
+                <Button x:Name="ExecuteDirectPrintButton"
+                        Margin="0,0,6,6"
+                        Command="{Binding ExecuteDirectPrintCommand}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                        Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                        ToolTip.Tip="تنفيذ الطباعة المباشرة عبر طابور النظام أو المعاينة"
+                        AutomationProperties.Name="طباعة مباشرة"
+                        Content="طباعة مباشرة" />
+                <Button x:Name="CancelLastPrintJobButton"
+                        Margin="0,0,6,6"
+                        Command="{Binding CancelLastPrintJobCommand}"
+                        IsEnabled="{Binding CanCancelLastPrintJob}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
+                        ToolTip.Tip="إلغاء آخر مهمة طباعة مرسلة"
+                        AutomationProperties.Name="إلغاء مهمة الطباعة"
+                        Content="إلغاء المهمة" />
+                <Button x:Name="ExportVectorPdfButton"
+                        Margin="0,0,6,6"
+                        Command="{Binding ExportVectorPdfCommand}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="تصدير ملف Vector PDF متجه متعدد الصفحات"
+                        AutomationProperties.Name="تصدير Vector PDF"
+                        Content="تصدير PDF" />
+                <Button x:Name="ExportCmykTiffButton"
+                        Margin="0,0,0,6"
+                        Command="{Binding ExportCmykTiffCommand}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="تصدير CMYK TIFF مضغوط LZW بملف ICC"
+                        AutomationProperties.Name="تصدير CMYK TIFF"
+                        Content="تصدير CMYK TIFF" />
+              </WrapPanel>
+            </StackPanel>
+          </ScrollViewer>
+        </Border>
+      </Grid>
+
+      <!-- 4. لوح الخصائص المفتش السياقي (Inspector) -->
+      <Border x:Name="InspectorRegion"
+              Grid.Column="2"
+              Width="{StaticResource InspectorWidth}"
+              IsVisible="{Binding EffectiveInspectorVisible}"
+              Background="{DynamicResource ZiwaCardBrush}"
+              BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+              BorderThickness="1,0,0,0"
+              Padding="{StaticResource InspectorPadding}">
+        <ScrollViewer>
+          <StackPanel Spacing="10">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Grid.Column="0"
+                         Text="مفتش الورقة والمشهد"
+                         FontSize="15"
+                         FontWeight="Bold"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+              <Button x:Name="CloseInspectorButton"
+                      Grid.Column="1"
+                      Command="{Binding CloseInspectorCommand}"
+                      MinWidth="{StaticResource CompactButtonSize}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                      ToolTip.Tip="طي لوح المفتش"
+                      AutomationProperties.Name="طي المفتش"
+                      Content="✕" />
+            </Grid>
+
+            <Border Background="{DynamicResource ZiwaSurfaceBrush}"
+                    BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                    BorderThickness="{StaticResource HairlineBorderThickness}"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                    Padding="{StaticResource CardPadding}">
+              <StackPanel Spacing="4">
+                <TextBlock Text="{Binding SelectionSummary}"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+                <TextBlock Text="{Binding PageSizeMmText}"
+                           FlowDirection="LeftToRight"
+                           HorizontalAlignment="Right"
+                           FontSize="12"
+                           Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <TextBlock Text="{Binding EffectiveDpiText}"
+                           FlowDirection="LeftToRight"
+                           HorizontalAlignment="Right"
+                           FontSize="12"
+                           Foreground="{DynamicResource ZiwaInfoBrush}" />
+              </StackPanel>
+            </Border>
+
+            <!-- فاحص ما قبل الطباعة الهادئ (P3-02 Preflight) -->
+            <Border x:Name="PreflightCard"
+                    IsVisible="{Binding HasPreflightWarnings}"
+                    Background="{DynamicResource ZiwaSurfaceBrush}"
+                    BorderBrush="{DynamicResource ZiwaWarningBrush}"
+                    BorderThickness="{StaticResource HairlineBorderThickness}"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                    Padding="{StaticResource CardPadding}">
+              <StackPanel Spacing="6">
+                <TextBlock Text="{Binding PreflightSummaryText}"
+                           FontWeight="SemiBold"
+                           FontSize="12"
+                           Foreground="{DynamicResource ZiwaWarningBrush}" />
+                <ItemsControl ItemsSource="{Binding PreflightIssues}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="prep:PreflightIssue">
+                      <Button Margin="0,0,0,4"
+                              HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Stretch"
+                              Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).SelectPreflightIssueCommand}"
+                              CommandParameter="{Binding}"
+                              MinHeight="{StaticResource CompactButtonSize}"
+                              CornerRadius="{StaticResource ControlCornerRadius}"
+                              Background="{DynamicResource ZiwaCardBrush}"
+                              Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                              BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                              BorderThickness="{StaticResource HairlineBorderThickness}"
+                              ToolTip.Tip="{Binding MessageAr}"
+                              AutomationProperties.Name="{Binding MessageAr}">
+                        <TextBlock Text="{Binding MessageAr}"
+                                   FontSize="11"
+                                   TextWrapping="Wrap" />
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+
+            <!-- سياقية الملصق أولاً (FF-05) -->
+            <Border x:Name="StickerInspectorCard"
+                    IsVisible="{Binding IsStickerSelected}"
+                    Background="{DynamicResource ZiwaSurfaceBrush}"
+                    BorderBrush="{DynamicResource ZiwaFocusStrokeBrush}"
+                    BorderThickness="{StaticResource HairlineBorderThickness}"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                    Padding="{StaticResource CardPadding}">
+              <StackPanel Spacing="6">
+                <TextBlock Text="إجراءات الملصق البارامتري"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+                <Button x:Name="InspectorEditStickerButton"
+                        Command="{Binding EditSelectedStickerCommand}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                        Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                        ToolTip.Tip="فتح استوديو الملصق لتعديله في مكانه"
+                        AutomationProperties.Name="تعديل الملصق في مكانه"
+                        Content="تعديل الملصق" />
+                <Button x:Name="InspectorRandomStickerPaletteButton"
+                        Command="{Binding RandomizeSelectedStickerPaletteCommand}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="اشتقاق ألوان جديدة في فضاء OKLCH"
+                        AutomationProperties.Name="توليفة ألوان OKLCH"
+                        Content="توليفة ألوان ذكية" />
+              </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding HasSelection}">
+              <Button x:Name="GroupButton"
+                      Command="{Binding GroupCommand}"
+                      IsVisible="{Binding CanGroup}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                      ToolTip.Tip="تجميع العناصر المحددة (Ctrl+G)"
+                      AutomationProperties.Name="تجميع العناصر المحددة"
+                      Content="تجميع" />
+              <Button x:Name="UngroupButton"
+                      Command="{Binding UngroupCommand}"
+                      IsVisible="{Binding CanUngroup}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                      ToolTip.Tip="فك التجميع (Ctrl+Shift+G)"
+                      AutomationProperties.Name="فك التجميع"
+                      Content="فك التجميع" />
+              <Button x:Name="MaskWithShapeButton"
+                      Command="{Binding MaskWithShapeCommand}"
+                      IsVisible="{Binding CanMaskImageWithShape}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                      ToolTip.Tip="قنّع الصورة بهذا الشكل"
+                      AutomationProperties.Name="قنّع الصورة بهذا الشكل"
+                      Content="قنّع بالشكل" />
+            </StackPanel>
+
+            <!-- أدوات الصورة والمرشحات (تُطوى تلقائياً عند تحديد ملصق) -->
+            <StackPanel x:Name="PhotoAndFilterToolsPanel" Spacing="6" IsVisible="{Binding IsPhotoToolsVisible}">
+              <TextBlock Text="مرشحات الصورة الموحدة" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+              <ComboBox ItemsSource="{Binding AvailableFilterPresets}"
+                        SelectedItem="{Binding SelectedFilterPreset}"
+                        HorizontalAlignment="Stretch" />
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Button x:Name="ApplyFilterButton"
+                        Command="{Binding ApplyImageFiltersCommand}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                        Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                        ToolTip.Tip="تطبيق المرشح على الصورة أو الخانة"
+                        AutomationProperties.Name="تطبيق المرشح"
+                        Content="تطبيق" />
+                <Button x:Name="ApplyFilterAllSlotsButton"
+                        Command="{Binding ApplyFiltersToAllSlotsCommand}"
+                        IsVisible="{Binding IsCollageMode}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="تطبيق على كل الخانات"
+                        AutomationProperties.Name="تطبيق على كل الخانات"
+                        Content="على كل الخانات" />
+                <Button x:Name="ResetFilterButton"
+                        Command="{Binding ResetImageOrSlotFiltersCommand}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="إعادة تعيين المرشحات"
+                        AutomationProperties.Name="إعادة تعيين المرشح"
+                        Content="إعادة تعيين" />
+              </StackPanel>
+            </StackPanel>
+
+            <StackPanel Spacing="6" IsVisible="{Binding IsImageSelected}">
+              <TextBlock Text="قناع الصورة" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <ComboBox ItemsSource="{Binding AvailableMasks}"
+                        SelectedItem="{Binding SelectedImageMask}"
+                        HorizontalAlignment="Stretch" />
+              <Button x:Name="RestoreOriginalImageButton"
+                      Command="{Binding RestoreOriginalImageCommand}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                      ToolTip.Tip="استعادة الصورة الأصلية وإلغاء القص"
+                      AutomationProperties.Name="استعادة الأصل"
+                      Content="استعادة الأصل" />
+            </StackPanel>
+
+            <StackPanel Spacing="6" IsVisible="{Binding IsSvgSelected}">
+              <Button x:Name="ToggleSvgTintButton"
+                      Command="{Binding ToggleSvgTintCommand}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                      ToolTip.Tip="تلوين الشعار المتجه بضغطة واحدة"
+                      AutomationProperties.Name="تلوين الشعار"
+                      Content="تلوين الشعار بضغطة واحدة" />
+            </StackPanel>
+
+            <StackPanel Spacing="6" IsVisible="{Binding IsTextSelected}">
+              <TextBlock Text="تحرير النص" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <TextBox Text="{Binding SelectedTextContent}"
+                       AcceptsReturn="True"
+                       MinHeight="56" />
+              <Button x:Name="CommitTextButton"
+                      Command="{Binding CommitSelectedTextCommand}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                      ToolTip.Tip="اعتماد تعديل النص"
+                      AutomationProperties.Name="اعتماد النص"
+                      Content="تطبيق النص" />
+            </StackPanel>
+
+            <Button x:Name="ToggleAutoRepeatButton"
+                    Command="{Binding ToggleAutoRepeatCommand}"
+                    IsVisible="{Binding IsCollageMode}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaSubtleFillBrush}"
+                    Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                    ToolTip.Tip="تفعيل تكرار صورة الهوية على كامل الشيت"
+                    AutomationProperties.Name="تكرار صورة الهوية"
+                    Content="تكرار تلقائي على الشيت" />
+
+            <TextBlock Text="عناصر الصفحة النشطة"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+
+            <ItemsControl ItemsSource="{Binding NodeSummaries}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <Border Margin="0,0,0,6"
+                          Padding="{StaticResource ControlPadding}"
+                          Background="{DynamicResource ZiwaSurfaceBrush}"
+                          BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                          BorderThickness="{StaticResource HairlineBorderThickness}"
+                          CornerRadius="{StaticResource ControlCornerRadius}">
+                    <TextBlock Text="{Binding}"
+                               FontSize="12"
+                               Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                               TextWrapping="Wrap" />
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+
+    <!-- 4.5 شريط الصفحات السفلي الخفيف (PageStrip) -->
+    <Border x:Name="PageStripRegion"
+            Grid.Row="2"
+            IsVisible="{Binding IsChromeVisible}"
+            Background="{DynamicResource ZiwaSurfaceBrush}"
+            BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="{StaticResource ToolbarPadding}">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <ItemsControl ItemsSource="{Binding PageTabs}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="4" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:PageTabItemViewModel">
+                <Button Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).SelectPageByIndexCommand}"
+                        CommandParameter="{Binding Index}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                        BorderThickness="{StaticResource HairlineBorderThickness}"
+                        ToolTip.Tip="{Binding Name}"
+                        AutomationProperties.Name="{Binding Name}"
+                        Content="{Binding DisplayLabel}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Button x:Name="AddPageButton"
+                  Command="{Binding AddPageCommand}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="إضافة صفحة جديدة (Ctrl+Shift+N)"
+                  AutomationProperties.Name="إضافة صفحة"
+                  Content="+ صفحة" />
+
+          <Button x:Name="DuplicatePageButton"
+                  Command="{Binding DuplicateActivePageCommand}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="تكرار الصفحة النشطة"
+                  AutomationProperties.Name="تكرار الصفحة"
+                  Content="تكرار" />
+
+          <Button x:Name="FrontBackToggleButton"
+                  Command="{Binding EnsureOrToggleFrontBackCommand}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                  Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                  ToolTip.Tip="إنشاء أو تبديل الوجه والظهر"
+                  AutomationProperties.Name="وجه وظهر"
+                  Content="وجه / ظهر" />
+
+          <Button x:Name="MovePageEarlierButton"
+                  Command="{Binding MovePageEarlierCommand}"
+                  IsEnabled="{Binding CanMovePageEarlier}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  ToolTip.Tip="تقديم الصفحة"
+                  AutomationProperties.Name="تقديم الصفحة"
+                  Content="◀" />
+
+          <Button x:Name="MovePageLaterButton"
+                  Command="{Binding MovePageLaterCommand}"
+                  IsEnabled="{Binding CanMovePageLater}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  ToolTip.Tip="تأخير الصفحة"
+                  AutomationProperties.Name="تأخير الصفحة"
+                  Content="▶" />
+
+          <Button x:Name="DeletePageButton"
+                  Command="{Binding DeleteActivePageCommand}"
+                  IsEnabled="{Binding CanDeleteActivePage}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
+                  ToolTip.Tip="حذف الصفحة النشطة (محمي للصفحة الوحيدة)"
+                  AutomationProperties.Name="حذف الصفحة"
+                  Content="حذف الصفحة" />
+        </StackPanel>
+
+        <TextBlock Grid.Column="1"
+                   Text="{Binding ActivePageDisplayText}"
+                   Foreground="{DynamicResource ZiwaSecondaryTextBrush}"
+                   VerticalAlignment="Center"
+                   FontSize="12" />
+      </Grid>
+    </Border>
+
+    <!-- 5. شريط الحالة السفلي (StatusBar) -->
+    <Border x:Name="StatusBarRegion"
+            Grid.Row="3"
+            IsVisible="{Binding IsChromeVisible}"
+            Background="{DynamicResource ZiwaCardBrush}"
+            BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="{StaticResource ToolbarPadding}">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+        <TextBlock Grid.Column="0"
+                   Text="{Binding StatusMessage}"
+                   Foreground="{DynamicResource ZiwaSecondaryTextBrush}"
+                   VerticalAlignment="Center" />
+        <TextBlock Grid.Column="1"
+                   Margin="16,0,0,0"
+                   Text="{Binding PageSizeMmText}"
+                   FlowDirection="LeftToRight"
+                   Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                   VerticalAlignment="Center" />
+        <TextBlock Grid.Column="2"
+                   Margin="16,0,0,0"
+                   Text="{Binding ZoomPercentText}"
+                   FlowDirection="LeftToRight"
+                   Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                   VerticalAlignment="Center" />
+        <TextBlock Grid.Column="3"
+                   Margin="16,0,0,0"
+                   Text="{Binding PlatformStatusText}"
+                   Foreground="{DynamicResource ZiwaSuccessBrush}"
+                   VerticalAlignment="Center" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>
