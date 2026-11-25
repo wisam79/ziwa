@@ -1,6 +1,6 @@
-# نظام التصميم وتجربة المستخدم — Ziwa Design System (Fluent 2 RTL)
+# نظام التصميم وتجربة المستخدم — Ziwa Design System (Apple HIG RTL)
 
-> يجمع هذا المرجع لغة **Microsoft Fluent 2** المصقولة مع قدرات **Avalonia UI 11** الأصلية وتجربة المحررات العربية المتخصصة.
+> يجمع هذا المرجع معايير **Apple Human Interface Guidelines (HIG)** للوضوح والعمق وتدرج الأسطح مع قدرات **Avalonia UI 11** الأصلية وتجربة المحررات العربية المتخصصة.
 
 ---
 
@@ -16,11 +16,11 @@
 
 | الفئة | أمثلة التوكنز في `Tokens.axaml` | الغرض |
 |---|---|---|
-| **الأسطح (`Surfaces`)** | `ZiwaCanvasBackgroundBrush`, `ZiwaSurfaceBrush`, `ZiwaCardBrush`, `ZiwaSubtleFillBrush` | تدرج اللوحات الداكنة والفاتحة بتباين Fluent 2 هادئ |
+| **الأسطح (`Surfaces`)** | `ZiwaCanvasBackgroundBrush`, `ZiwaSurfaceBrush`, `ZiwaCardBrush`, `ZiwaSubtleFillBrush` | تدرج اللوحات الداكنة والفاتحة بتباين Apple HIG هادئ (`systemBackground` / `systemGray`) |
 | **الحدود والفواصل (`Strokes`)** | `ZiwaHairlineBorderBrush`, `ZiwaFocusStrokeBrush`, `ZiwaControlBorderBrush` | حدود شعرية نظيفة لفصل صفوف المفتش والبطاقات |
-| **الإجراءات والحالات** | `ZiwaPrimaryActionBrush`, `ZiwaDestructiveActionBrush`, `ZiwaSuccessBrush`, `ZiwaWarningBrush`, `ZiwaInfoBrush` | ضمان تباين نصي `>= 4.5:1` في الثيمين الفاتح والداكن |
-| **الاستدارة (`CornerRadius`)** | `ControlCornerRadius` (`4px`), `OverlayCornerRadius` (`6px`), `DialogCornerRadius` (`10px`) | توحيد الاستدارة (يُمنع `16px+` للبطاقات والحوارات) |
-| **الأبعاد والكثافة** | `ToolbarButtonHeight` (`32`), `CompactButtonSize` (`28`), `RailWidth` (`56`), `InspectorWidth` (`280`), `RulerThickness` (`20`) | ثبات محاور المحاذاة عبر كل الألواح |
+| **الإجراءات والحالات** | `ZiwaPrimaryActionBrush`, `ZiwaDestructiveActionBrush`, `ZiwaSuccessBrush`, `ZiwaWarningBrush`, `ZiwaInfoBrush` | ألوان نظام Apple HIG متوافقة مع تباين نصي `>= 4.5:1` في الثيمين الفاتح والداكن |
+| **الاستدارة (`CornerRadius`)** | `ControlCornerRadius` (`6px`), `OverlayCornerRadius` (`10px`), `DialogCornerRadius` (`12px`), `PillCornerRadius` (`999px`) | توحيد الاستدارة وفق سلم Apple HIG للحاويات والألواح العائمة |
+| **الأبعاد والكثافة** | `ToolbarButtonHeight` (`30`), `CompactButtonSize` (`28`), `RailWidth` (`60`), `InspectorWidth` (`292`), `RulerThickness` (`20`) | ثبات محاور المحاذاة عبر كل الألواح وتنفس بصري مريح |
 
 ---
 

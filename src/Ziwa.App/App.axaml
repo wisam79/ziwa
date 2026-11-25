@@ -12,5 +12,6 @@
 
   <Application.Styles>
     <FluentTheme />
+    <StyleInclude Source="avares://Ziwa.App/Themes/AppleHigStyles.axaml" />
   </Application.Styles>
 </Application>
