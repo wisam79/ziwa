@@ -8,6 +8,7 @@ using Ziwa.Application.Collage;
 using Ziwa.Application.Commands;
 using Ziwa.Application.Interaction;
 using Ziwa.Application.Pages;
+using Ziwa.Application.Persistence;
 using Ziwa.Application.PrePress;
 using Ziwa.Application.Printing;
 using Ziwa.Application.Session;
@@ -162,6 +163,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         IFreeformToCollageService transferService,
         StudioBrandKit brandKit,
         IPlatformCapabilities platformCapabilities,
+        ProjectWorkspace projects,
         IAssetRegistrar? assetRegistrar = null,
         IPrintSpooler? printSpooler = null)
     {
@@ -174,9 +176,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
         _platformCapabilities = platformCapabilities;
         _assetRegistrar = assetRegistrar;
         _printSpooler = printSpooler;
+        _projects = projects;
+        _projects.Changed += OnProjectsChanged;
 
         _session.SessionChanged += OnSessionChanged;
         RegisterUnifiedCommands();
+        RegisterProjectCommands();
         LoadStickerStudioFromTemplate(ParametricStickerCatalog.CommercialSeal, existingFields: null, palette: null);
         RefreshPrinters();
         RefreshFromSession();
@@ -539,12 +544,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
             "Alt+1",
             "بداية سريعة",
             () => true,
-            _ =>
+            async ct =>
             {
                 AssetId? sampleAsset = Document.Pages.SelectMany(p => p.Nodes).OfType<ImageNode>().FirstOrDefault()?.OriginalAssetId;
-                _session.ReplaceDocument(QuickStartAndBrandService.CreateQuickStartDocument(QuickStartPresetKind.IdPhotoSheet4x6, sampleAsset));
-                StatusMessage = "تم فتح شيت صور هوية 4×6 بوصة";
-                return Task.CompletedTask;
+                if (await _projects.ReplaceAsync(QuickStartAndBrandService.CreateQuickStartDocument(QuickStartPresetKind.IdPhotoSheet4x6, sampleAsset), ct))
+                {
+                    StatusMessage = "تم فتح شيت صور هوية 4×6 بوصة";
+                }
             }));
 
         _commandRegistry.Register(new CommandDefinition(
@@ -553,11 +559,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
             "Alt+2",
             "بداية سريعة",
             () => true,
-            _ =>
+            async ct =>
             {
-                _session.ReplaceDocument(QuickStartAndBrandService.CreateQuickStartDocument(QuickStartPresetKind.BusinessCardFront));
-                StatusMessage = "تم فتح قالب بطاقة الأعمال";
-                return Task.CompletedTask;
+                if (await _projects.ReplaceAsync(QuickStartAndBrandService.CreateQuickStartDocument(QuickStartPresetKind.BusinessCardFront), ct))
+                {
+                    StatusMessage = "تم فتح قالب بطاقة الأعمال";
+                }
             }));
 
         _commandRegistry.Register(new CommandDefinition(
@@ -566,11 +573,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
             "Alt+3",
             "بداية سريعة",
             () => true,
-            _ =>
+            async ct =>
             {
-                _session.ReplaceDocument(QuickStartAndBrandService.CreateQuickStartDocument(QuickStartPresetKind.StickerSheetA5));
-                StatusMessage = "تم فتح شيت الملصقات البارامتري";
-                return Task.CompletedTask;
+                if (await _projects.ReplaceAsync(QuickStartAndBrandService.CreateQuickStartDocument(QuickStartPresetKind.StickerSheetA5), ct))
+                {
+                    StatusMessage = "تم فتح شيت الملصقات البارامتري";
+                }
             }));
 
         _commandRegistry.Register(new CommandDefinition(
@@ -579,11 +587,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
             "Alt+4",
             "بداية سريعة",
             () => true,
-            _ =>
+            async ct =>
             {
-                _session.ReplaceDocument(QuickStartAndBrandService.CreateQuickStartDocument(QuickStartPresetKind.BlankFreeformA4));
-                StatusMessage = "تم فتح ورقة حرة A4";
-                return Task.CompletedTask;
+                if (await _projects.ReplaceAsync(QuickStartAndBrandService.CreateQuickStartDocument(QuickStartPresetKind.BlankFreeformA4), ct))
+                {
+                    StatusMessage = "تم فتح ورقة حرة A4";
+                }
             }));
 
         _commandRegistry.Register(new CommandDefinition(
@@ -592,13 +601,14 @@ public sealed partial class MainWindowViewModel : ObservableObject
             string.Empty,
             "كولاج",
             () => ActivePage.CollageLayout is null,
-            _ =>
+            async ct =>
             {
                 ZiwaDocument targetCollage = QuickStartAndBrandService.CreateQuickStartDocument(QuickStartPresetKind.IdPhotoSheet4x6);
                 ZiwaDocument populated = _transferService.TransferFreeformPageToCollage(ActivePage, targetCollage);
-                _session.ReplaceDocument(populated);
-                StatusMessage = "تم نقل التصميم الحر إلى شيت الكولاج بدقة 300 DPI";
-                return Task.CompletedTask;
+                if (await _projects.ReplaceAsync(populated, ct))
+                {
+                    StatusMessage = "تم نقل التصميم الحر إلى شيت الكولاج بدقة 300 DPI";
+                }
             }));
 
         _commandRegistry.Register(new CommandDefinition(

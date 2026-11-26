@@ -8,6 +8,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using SkiaSharp;
+using Ziwa.App.Services;
 using Ziwa.Application.Collage;
 using Ziwa.Application.Commands;
 using Ziwa.Application.Interaction;
@@ -633,7 +634,7 @@ public sealed class SkiaViewportHost : Control
 
         if (CommandRegistry is not null)
         {
-            string? gesture = ToShortcutString(e.Key, e.KeyModifiers);
+            string? gesture = KeyboardCommandRouter.GetGesture(e.Key, e.KeyModifiers);
             if (gesture is not null && CommandRegistry.TryGetByShortcut(gesture, out _))
             {
                 _ = CommandRegistry.TryExecuteShortcutAsync(gesture);
@@ -659,34 +660,6 @@ public sealed class SkiaViewportHost : Control
         }
 
         return null;
-    }
-
-    private static string? ToShortcutString(Key key, KeyModifiers modifiers)
-    {
-        if (key == Key.Delete && modifiers == KeyModifiers.None)
-        {
-            return "Delete";
-        }
-
-        if (!modifiers.HasFlag(KeyModifiers.Control))
-        {
-            return null;
-        }
-
-        bool shift = modifiers.HasFlag(KeyModifiers.Shift);
-        return key switch
-        {
-            Key.Z => shift ? "Ctrl+Shift+Z" : "Ctrl+Z",
-            Key.Y => "Ctrl+Y",
-            Key.C => "Ctrl+C",
-            Key.V => "Ctrl+V",
-            Key.G => shift ? "Ctrl+Shift+G" : "Ctrl+G",
-            Key.S => "Ctrl+S",
-            Key.E => "Ctrl+E",
-            Key.K => "Ctrl+K",
-            Key.OemPeriod or Key.Decimal => "Ctrl+.",
-            _ => null,
-        };
     }
 
     private static SKColor ResolveColor(IBrush? brush, SKColor fallback)

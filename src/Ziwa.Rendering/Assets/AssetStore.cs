@@ -123,6 +123,19 @@ public sealed class AssetStore : IRenderAssetProvider, IDisposable
         return id;
     }
 
+    public bool TryGetEncodedBytes(AssetId assetId, out byte[]? bytes)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_assets.TryGetValue(assetId, out StoredAsset? stored))
+        {
+            bytes = (byte[])stored.EncodedBytes.Clone();
+            return true;
+        }
+
+        bytes = null;
+        return false;
+    }
+
     public bool TryGetMetadata(AssetId assetId, out AssetMetadata? metadata)
     {
         if (_assets.TryGetValue(assetId, out StoredAsset? stored))

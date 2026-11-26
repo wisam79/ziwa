@@ -1,8 +1,10 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using Ziwa.App.Services;
 using Ziwa.App.ViewModels;
 using Ziwa.App.Views;
+using Ziwa.Application.Persistence;
 
 namespace Ziwa.App;
 
@@ -26,6 +28,12 @@ public sealed class App : global::Avalonia.Application
             {
                 DataContext = viewModel,
             };
+            if (_serviceProvider.GetRequiredService<IProjectDialogs>() is AvaloniaProjectDialogs dialogs)
+            {
+                dialogs.Owner = desktop.MainWindow;
+            }
+
+            _ = new DesktopProjectLifetime(desktop.MainWindow, viewModel, desktop);
             desktop.Exit += (_, _) => _serviceProvider?.Dispose();
         }
 

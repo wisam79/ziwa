@@ -14,6 +14,8 @@ public static class SchemaValidator
     public const double MinDpi = 72.0;
     public const double MaxDpi = 2400.0;
     public const int MaxGroupDepth = 16;
+    public const int MaxPages = 256;
+    public const int MaxNodes = 100000;
 
     public static bool IsFinitePositive(double value) => double.IsFinite(value) && value > 0.0;
 
@@ -61,6 +63,8 @@ public static class SchemaValidator
         }
 
         ValidatePrintSettings(document.PrintSettings, errors);
+        if (!Enum.IsDefined(document.Mode)) { errors.Add("Document.Mode is unsupported."); }
+        if (!document.Pages.IsDefault && document.Pages.Length > MaxPages) { errors.Add("Document contains too many pages."); }
 
         if (!document.Pages.IsDefault)
         {
@@ -97,6 +101,7 @@ public static class SchemaValidator
             return;
         }
 
+        if (!Enum.IsDefined(settings.CmykProfile)) { errors.Add("PrintSettings.CmykProfile is unsupported."); }
         if (!IsFinitePositive(settings.ExportDpi) || settings.ExportDpi < MinDpi || settings.ExportDpi > MaxDpi)
         {
             errors.Add($"PrintSettings.ExportDpi must be finite within [{MinDpi}, {MaxDpi}].");
@@ -139,7 +144,15 @@ public static class SchemaValidator
         ValidateBackground(page.Background, $"{prefix}.Background", errors);
         ValidateCollageLayout(page.CollageLayout, page.WidthMm, page.HeightMm, $"{prefix}.CollageLayout", errors);
 
-        if (!page.Nodes.IsDefault)
+        if (page.Nodes.IsDefault)
+        {
+            errors.Add($"{prefix}.Nodes cannot be default.");
+        }
+        else if (page.Nodes.Length > MaxNodes)
+        {
+            errors.Add($"{prefix}.Nodes contains too many nodes.");
+        }
+        else
         {
             for (int i = 0; i < page.Nodes.Length; i++)
             {
@@ -154,6 +167,11 @@ public static class SchemaValidator
         {
             errors.Add($"{prefix} cannot be null.");
             return;
+        }
+
+        if (background is not (SolidBackground or LinearGradientBackground or RadialGradientBackground or TransparentBackground))
+        {
+            errors.Add($"{prefix}: unsupported background type.");
         }
 
         if (background is LinearGradientBackground linear && !double.IsFinite(linear.AngleDeg))
@@ -239,6 +257,7 @@ public static class SchemaValidator
             errors.Add($"{prefix}.OriginalAssetId cannot be empty.");
         }
 
+        if (!Enum.IsDefined(image.Mask)) { errors.Add($"{prefix}.Mask is unsupported."); }
         ValidateCrop(image.Crop, $"{prefix}.Crop", errors);
 
         if (!IsFiniteNonNegative(image.CornerRadiusMm))
@@ -253,6 +272,7 @@ public static class SchemaValidator
 
     private static void ValidateShapeNode(ShapeNode shape, string prefix, ImmutableArray<string>.Builder errors)
     {
+        if (!Enum.IsDefined(shape.Kind)) { errors.Add($"{prefix}.Kind is unsupported."); }
         if (shape.Fill is null)
         {
             errors.Add($"{prefix}.Fill cannot be null.");
@@ -309,6 +329,12 @@ public static class SchemaValidator
 
     private static void ValidateTextNode(TextNode text, string prefix, ImmutableArray<string>.Builder errors)
     {
+        if (text.Text is null || !Enum.IsDefined(text.Alignment) || !Enum.IsDefined(text.Direction) ||
+            (text.Curve is not null && !Enum.IsDefined(text.Curve.Kind)))
+        {
+            errors.Add($"{prefix}: invalid text content, alignment, direction or curve kind.");
+        }
+
         if (string.IsNullOrWhiteSpace(text.FontFamily))
         {
             errors.Add($"{prefix}.FontFamily cannot be empty.");
@@ -374,7 +400,7 @@ public static class SchemaValidator
             errors.Add($"{prefix}.TemplateId cannot be empty.");
         }
 
-        if (sticker.Fields is null)
+        if (sticker.Fields is null || sticker.Fields.Any(pair => pair.Value is null))
         {
             errors.Add($"{prefix}.Fields cannot be null.");
         }
@@ -399,6 +425,7 @@ public static class SchemaValidator
             return;
         }
 
+        if (layout.Spec is null) { errors.Add($"{prefix}.Spec cannot be null."); }
         if (layout.Slots.IsDefault)
         {
             errors.Add($"{prefix}.Slots cannot be default.");
@@ -407,8 +434,10 @@ public static class SchemaValidator
 
         for (int i = 0; i < layout.Slots.Length; i++)
         {
-            CollageSlot slot = layout.Slots[i];
+            CollageSlot? slot = layout.Slots[i];
             string slotPrefix = $"{prefix}.Slots[{i}]";
+            if (slot is null) { errors.Add($"{slotPrefix}: slot cannot be null."); continue; }
+            if (!Enum.IsDefined(slot.Mask)) { errors.Add($"{slotPrefix}.Mask is unsupported."); }
             if (slot.Id.IsEmpty)
             {
                 errors.Add($"{slotPrefix}.Id cannot be empty.");
@@ -455,6 +484,7 @@ public static class SchemaValidator
             return;
         }
 
+        if (!Enum.IsDefined(filters.Preset)) { errors.Add($"{prefix}.Preset is unsupported."); }
         if (!double.IsFinite(filters.Brightness) || !double.IsFinite(filters.Contrast) ||
             !double.IsFinite(filters.Saturation) || !IsFiniteNonNegative(filters.BlurPx))
         {
