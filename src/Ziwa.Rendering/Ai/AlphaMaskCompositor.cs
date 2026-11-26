@@ -556,9 +556,24 @@ public static class AlphaMaskCompositor
         MaskPreviewMode mode,
         float splitRatio)
     {
-        ArgumentNullException.ThrowIfNull(canvas);
         ArgumentNullException.ThrowIfNull(originalBitmap);
         ArgumentNullException.ThrowIfNull(cutoutBitmap);
+        using SKImage originalImage = SKImage.FromBitmap(originalBitmap);
+        using SKImage cutoutImage = SKImage.FromBitmap(cutoutBitmap);
+        RenderPreview(canvas, destRect, originalImage, cutoutImage, mode, splitRatio);
+    }
+
+    public static void RenderPreview(
+        SKCanvas canvas,
+        SKRect destRect,
+        SKImage originalImage,
+        SKImage cutoutImage,
+        MaskPreviewMode mode,
+        float splitRatio)
+    {
+        ArgumentNullException.ThrowIfNull(canvas);
+        ArgumentNullException.ThrowIfNull(originalImage);
+        ArgumentNullException.ThrowIfNull(cutoutImage);
 
         if (destRect.Width <= 0f || destRect.Height <= 0f)
         {
@@ -576,11 +591,11 @@ public static class AlphaMaskCompositor
         switch (mode)
         {
             case MaskPreviewMode.BeforeOriginal:
-                canvas.DrawBitmap(originalBitmap, destRect, imagePaint);
+                canvas.DrawImage(originalImage, destRect, imagePaint);
                 break;
 
             case MaskPreviewMode.AfterCheckerboard:
-                canvas.DrawBitmap(cutoutBitmap, destRect, imagePaint);
+                canvas.DrawImage(cutoutImage, destRect, imagePaint);
                 break;
 
             case MaskPreviewMode.SplitBeforeAfter:
@@ -590,12 +605,12 @@ public static class AlphaMaskCompositor
 
                     int beforeSave = canvas.Save();
                     canvas.ClipRect(new SKRect(destRect.Left, destRect.Top, splitX, destRect.Bottom));
-                    canvas.DrawBitmap(originalBitmap, destRect, imagePaint);
+                    canvas.DrawImage(originalImage, destRect, imagePaint);
                     canvas.RestoreToCount(beforeSave);
 
                     int afterSave = canvas.Save();
                     canvas.ClipRect(new SKRect(splitX, destRect.Top, destRect.Right, destRect.Bottom));
-                    canvas.DrawBitmap(cutoutBitmap, destRect, imagePaint);
+                    canvas.DrawImage(cutoutImage, destRect, imagePaint);
                     canvas.RestoreToCount(afterSave);
 
                     using var linePaint = new SKPaint
@@ -621,7 +636,7 @@ public static class AlphaMaskCompositor
 
             case MaskPreviewMode.RubyOverlay:
                 {
-                    canvas.DrawBitmap(originalBitmap, destRect, imagePaint);
+                    canvas.DrawImage(originalImage, destRect, imagePaint);
                     using var rubyTint = new SKPaint
                     {
                         Style = SKPaintStyle.Fill,
@@ -629,7 +644,7 @@ public static class AlphaMaskCompositor
                         IsAntialias = false,
                     };
                     canvas.DrawRect(destRect, rubyTint);
-                    canvas.DrawBitmap(cutoutBitmap, destRect, imagePaint);
+                    canvas.DrawImage(cutoutImage, destRect, imagePaint);
                     break;
                 }
         }

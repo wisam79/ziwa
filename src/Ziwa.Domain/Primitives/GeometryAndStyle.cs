@@ -43,6 +43,16 @@ public enum PhotoFilterPreset
     SepiaVintage,
 }
 
+public enum DocumentScanFilterKind
+{
+    None = 0,
+    MagicColor = 1,
+    OtsuBlackAndWhite = 2,
+    EnhancedGrayscale = 3,
+    RemoveYellowing = 4,
+    Sharpen = 5,
+}
+
 public sealed record ImageFilterSpec(
     double Brightness = 0.0,
     double Contrast = 0.0,
@@ -50,7 +60,8 @@ public sealed record ImageFilterSpec(
     double BlurPx = 0.0,
     double? LuminanceThreshold = null,
     int PixelateBlockSize = 1,
-    PhotoFilterPreset Preset = PhotoFilterPreset.None)
+    PhotoFilterPreset Preset = PhotoFilterPreset.None,
+    DocumentScanFilterKind ScanFilter = DocumentScanFilterKind.None)
 {
     public static ImageFilterSpec None { get; } = new();
 
@@ -61,7 +72,8 @@ public sealed record ImageFilterSpec(
         BlurPx > 0.001 ||
         LuminanceThreshold is not null ||
         PixelateBlockSize > 1 ||
-        Preset != PhotoFilterPreset.None;
+        Preset != PhotoFilterPreset.None ||
+        ScanFilter != DocumentScanFilterKind.None;
 }
 
 public enum EditorWorkflow

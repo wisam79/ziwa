@@ -4,6 +4,7 @@ using Ziwa.Application.Ai;
 using Ziwa.Application.Commands;
 using Ziwa.Application.Persistence;
 using Ziwa.Application.Printing;
+using Ziwa.Application.Scanner;
 using Ziwa.Application.Services;
 using Ziwa.Application.Session;
 using Ziwa.Application.Workspace;
@@ -17,6 +18,7 @@ using Ziwa.Infrastructure.IO;
 using Ziwa.Infrastructure.Persistence;
 using Ziwa.Infrastructure.Platform;
 using Ziwa.Infrastructure.Printing;
+using Ziwa.Infrastructure.Scanner;
 using Ziwa.Rendering;
 using Ziwa.Rendering.Assets;
 using Ziwa.Rendering.Export;
@@ -36,16 +38,19 @@ public static class InfrastructureServiceCollectionExtensions
     public static IServiceCollection AddZiwaCoreServices(
         this IServiceCollection services,
         ProjectStorageOptions? storageOptions = null,
-        OfflineAiOptions? aiOptions = null)
+        OfflineAiOptions? aiOptions = null,
+        DocumentScannerOptions? scannerOptions = null)
     {
         ProjectStorageOptions resolvedStorage = storageOptions ?? new ProjectStorageOptions(
             Environment.GetEnvironmentVariable("ZIWA_DATA_DIRECTORY") ?? Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ZiwaStudio"));
         OfflineAiOptions resolvedAi = aiOptions ?? new OfflineAiOptions(
             Path.Combine(resolvedStorage.RootDirectory, "Models"));
+        DocumentScannerOptions resolvedScanner = scannerOptions ?? new DocumentScannerOptions();
 
         services.AddSingleton(resolvedStorage);
         services.AddSingleton(resolvedAi);
+        services.AddSingleton(resolvedScanner);
         services.AddSingleton<IProjectStore, ZiwaProjectStore>();
         services.AddSingleton<IProjectAssetStore, RenderingProjectAssetStore>();
         services.AddSingleton<IProjectLibrary, SqliteProjectRepo>();
@@ -57,6 +62,8 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IBackgroundRemovalService, OnnxBackgroundRemover>();
         services.AddSingleton<IFaceFramingService, OnnxFaceFramingService>();
         services.AddSingleton<OfflineAiCoordinator>();
+        services.AddSingleton<IDocumentScannerService, OpenCvDocumentScanner>();
+        services.AddSingleton<DocumentScannerCoordinator>();
         services.AddSingleton<FontRegistry>();
         services.AddSingleton<HarfBuzzArabicShaper>();
         services.AddSingleton<TextOnCurveRenderer>();

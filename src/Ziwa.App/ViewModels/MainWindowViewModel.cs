@@ -12,6 +12,7 @@ using Ziwa.Application.Pages;
 using Ziwa.Application.Persistence;
 using Ziwa.Application.PrePress;
 using Ziwa.Application.Printing;
+using Ziwa.Application.Scanner;
 using Ziwa.Application.Session;
 using Ziwa.Application.Stickers;
 using Ziwa.Application.Typography;
@@ -171,7 +172,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         OfflineAiCoordinator? aiCoordinator = null,
         IImageAssetImporter? imageImporter = null,
         AssetStore? assetStore = null,
-        IProjectDialogs? dialogs = null)
+        IProjectDialogs? dialogs = null,
+        DocumentScannerCoordinator? scannerCoordinator = null)
     {
         _session = session;
         _commandRegistry = commandRegistry;
@@ -189,6 +191,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         RegisterUnifiedCommands();
         RegisterProjectCommands();
         InitializeAiIntegration(aiCoordinator, imageImporter, assetStore, dialogs);
+        InitializeScannerIntegration(scannerCoordinator);
         LoadStickerStudioFromTemplate(ParametricStickerCatalog.CommercialSeal, existingFields: null, palette: null);
         RefreshPrinters();
         RefreshFromSession();

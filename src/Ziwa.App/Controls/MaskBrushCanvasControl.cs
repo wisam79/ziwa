@@ -173,13 +173,17 @@ public sealed class MaskBrushCanvasControl : Control
 
         SKColor pasteboardColor = ResolveColor(PasteboardBrush, new SKColor(22, 22, 24, 255));
         SKColor accentColor = ResolveColor(AccentBrush, new SKColor(77, 163, 255, 255));
-        SKRect destRect = ComputeDestRect();
+        SKBitmap? orig = OriginalBitmap is { Handle: not 0 } o ? o : null;
+        SKBitmap? cut = CutoutBitmap is { Handle: not 0 } c ? c : null;
+        SKRect destRect = ComputeDestRect(orig);
+        SKImage? origSnapshot = orig is not null ? SKImage.FromBitmap(orig) : null;
+        SKImage? cutSnapshot = cut is not null ? SKImage.FromBitmap(cut) : null;
 
         context.Custom(new MaskDrawOperation(
             new Rect(0, 0, Bounds.Width, Bounds.Height),
             destRect,
-            OriginalBitmap,
-            CutoutBitmap,
+            origSnapshot,
+            cutSnapshot,
             PreviewMode,
             (float)SplitRatio,
             pasteboardColor,
@@ -349,9 +353,11 @@ public sealed class MaskBrushCanvasControl : Control
         }
     }
 
-    private SKRect ComputeDestRect()
+    private SKRect ComputeDestRect() => ComputeDestRect(OriginalBitmap);
+
+    private SKRect ComputeDestRect(SKBitmap? bmp)
     {
-        if (OriginalBitmap is null || Bounds.Width <= 0 || Bounds.Height <= 0)
+        if (bmp is null || bmp.Handle == IntPtr.Zero || Bounds.Width <= 0 || Bounds.Height <= 0)
         {
             return SKRect.Empty;
         }
@@ -359,9 +365,9 @@ public sealed class MaskBrushCanvasControl : Control
         float pad = 16f;
         float availW = Math.Max(1f, (float)Bounds.Width - (pad * 2f));
         float availH = Math.Max(1f, (float)Bounds.Height - (pad * 2f));
-        float fitScale = Math.Min(availW / OriginalBitmap.Width, availH / OriginalBitmap.Height) * (float)_zoom;
-        float drawW = OriginalBitmap.Width * fitScale;
-        float drawH = OriginalBitmap.Height * fitScale;
+        float fitScale = Math.Min(availW / bmp.Width, availH / bmp.Height) * (float)_zoom;
+        float drawW = bmp.Width * fitScale;
+        float drawH = bmp.Height * fitScale;
         float left = ((float)Bounds.Width - drawW) * 0.5f + (float)_panX;
         float top = ((float)Bounds.Height - drawH) * 0.5f + (float)_panY;
         return SKRect.Create(left, top, drawW, drawH);
@@ -416,8 +422,8 @@ public sealed class MaskBrushCanvasControl : Control
     private sealed class MaskDrawOperation : ICustomDrawOperation
     {
         private readonly SKRect _destRect;
-        private readonly SKBitmap? _originalBitmap;
-        private readonly SKBitmap? _cutoutBitmap;
+        private readonly SKImage? _originalImage;
+        private readonly SKImage? _cutoutImage;
         private readonly MaskPreviewMode _previewMode;
         private readonly float _splitRatio;
         private readonly SKColor _pasteboardColor;
@@ -428,8 +434,8 @@ public sealed class MaskBrushCanvasControl : Control
         public MaskDrawOperation(
             Rect bounds,
             SKRect destRect,
-            SKBitmap? originalBitmap,
-            SKBitmap? cutoutBitmap,
+            SKImage? originalImage,
+            SKImage? cutoutImage,
             MaskPreviewMode previewMode,
             float splitRatio,
             SKColor pasteboardColor,
@@ -439,8 +445,8 @@ public sealed class MaskBrushCanvasControl : Control
         {
             Bounds = bounds;
             _destRect = destRect;
-            _originalBitmap = originalBitmap;
-            _cutoutBitmap = cutoutBitmap;
+            _originalImage = originalImage;
+            _cutoutImage = cutoutImage;
             _previewMode = previewMode;
             _splitRatio = splitRatio;
             _pasteboardColor = pasteboardColor;
@@ -450,7 +456,11 @@ public sealed class MaskBrushCanvasControl : Control
         }
 
         public Rect Bounds { get; }
-        public void Dispose() { }
+        public void Dispose()
+        {
+            _originalImage?.Dispose();
+            _cutoutImage?.Dispose();
+        }
         public bool HitTest(Point p) => Bounds.Contains(p);
         public bool Equals(ICustomDrawOperation? other) => false;
 
@@ -469,13 +479,13 @@ public sealed class MaskBrushCanvasControl : Control
             using var bgPaint = new SKPaint { Style = SKPaintStyle.Fill, Color = _pasteboardColor };
             canvas.DrawRect(viewport, bgPaint);
 
-            if (_originalBitmap is not null && _cutoutBitmap is not null && !_destRect.IsEmpty)
+            if (_originalImage is not null && _cutoutImage is not null && !_destRect.IsEmpty)
             {
                 AlphaMaskCompositor.RenderPreview(
                     canvas,
                     _destRect,
-                    _originalBitmap,
-                    _cutoutBitmap,
+                    _originalImage,
+                    _cutoutImage,
                     _previewMode,
                     _splitRatio);
             }

@@ -302,11 +302,13 @@ public sealed partial class MainWindowViewModel
         IsMaskEditorOpen = false;
         _preparedMaskContext = null;
         _activeMaskSession = null;
-        _maskEditorOriginalBitmap?.Dispose();
+        SKBitmap? oldOriginal = _maskEditorOriginalBitmap;
+        SKBitmap? oldCutout = _maskEditorCutoutBitmap;
         _maskEditorOriginalBitmap = null;
-        _maskEditorCutoutBitmap?.Dispose();
         _maskEditorCutoutBitmap = null;
         RefreshMaskEditorBindings();
+        DisposeBitmapAfterCompositorPass(oldOriginal);
+        DisposeBitmapAfterCompositorPass(oldCutout);
     }
 
     private async Task ImportImageCoreAsync(CancellationToken ct)
@@ -472,6 +474,14 @@ public sealed partial class MainWindowViewModel
             _aiCoordinator.StateChanged -= OnAiCoordinatorStateChanged;
         }
 
-        CloseMaskEditor();
+        IsMaskEditorOpen = false;
+        _preparedMaskContext = null;
+        _activeMaskSession = null;
+        SKBitmap? oldOriginal = _maskEditorOriginalBitmap;
+        SKBitmap? oldCutout = _maskEditorCutoutBitmap;
+        _maskEditorOriginalBitmap = null;
+        _maskEditorCutoutBitmap = null;
+        oldOriginal?.Dispose();
+        oldCutout?.Dispose();
     }
 }

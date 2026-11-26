@@ -485,6 +485,7 @@ public static class SchemaValidator
         }
 
         if (!Enum.IsDefined(filters.Preset)) { errors.Add($"{prefix}.Preset is unsupported."); }
+        if (!Enum.IsDefined(filters.ScanFilter)) { errors.Add($"{prefix}.ScanFilter is unsupported."); }
         if (!double.IsFinite(filters.Brightness) || !double.IsFinite(filters.Contrast) ||
             !double.IsFinite(filters.Saturation) || !IsFiniteNonNegative(filters.BlurPx))
         {

@@ -329,6 +329,18 @@
                   ToolTip.Tip="إدراج صورة من الجهاز (Ctrl+Shift+I)"
                   AutomationProperties.Name="إدراج صورة"
                   Content="صورة" />
+          <Button x:Name="ScannerToolButton"
+                  Command="{Binding OpenDocumentScannerCommand}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  Width="42"
+                  Height="34"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  ToolTip.Tip="الماسح الذكي للمستندات والبطاقات واستعدال المنظور (Ctrl+Shift+D)"
+                  AutomationProperties.Name="الماسح الذكي للمستندات"
+                  Content="ماسح" />
         </StackPanel>
       </Border>
 
@@ -472,6 +484,17 @@
                     ToolTip.Tip="تأطير الوجه التلقائي لصور الهوية (Ctrl+Shift+F)"
                     AutomationProperties.Name="تأطير الوجه السريع"
                     Content="تأطير الوجه" />
+            <Button x:Name="QuickScanDocumentButton"
+                    Command="{Binding OpenDocumentScannerCommand}"
+                    IsVisible="{Binding IsPhotoAiTargetVisible}"
+                    IsEnabled="{Binding IsScannerToolsEnabled}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaSubtleFillBrush}"
+                    Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                    ToolTip.Tip="فتح الماسح الضوئي واستعدال المنظور وتقسيم البطاقات (Ctrl+Shift+D)"
+                    AutomationProperties.Name="ماسح المستندات السريع"
+                    Content="مسح واستعدال" />
             <Button x:Name="QuickDeleteButton"
                     Command="{Binding DeleteSelectionCommand}"
                     MinHeight="{StaticResource CompactButtonSize}"
@@ -1015,6 +1038,16 @@
                           ToolTip.Tip="توسيط الرأس والكتفين تلقائياً وفق نسب صور الهوية (Ctrl+Shift+F)"
                           AutomationProperties.Name="تأطير الوجه لصور الهوية"
                           Content="تأطير الوجه لصور الهوية" />
+                  <Button x:Name="InspectorOpenScannerButton"
+                          Command="{Binding OpenDocumentScannerCommand}"
+                          IsEnabled="{Binding IsScannerToolsEnabled}"
+                          MinHeight="{StaticResource CompactButtonSize}"
+                          CornerRadius="{StaticResource ControlCornerRadius}"
+                          Background="{DynamicResource ZiwaSubtleFillBrush}"
+                          Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                          ToolTip.Tip="فتح ماسح المستندات والبطاقات واستعدال المنظور (Ctrl+Shift+D)"
+                          AutomationProperties.Name="ماسح المستندات والبطاقات"
+                          Content="ماسح المستندات والمنظور" />
                   <StackPanel x:Name="AiWaitPanel" Spacing="4" IsVisible="{Binding IsAiBusy}">
                     <ProgressBar IsIndeterminate="True" Minimum="0" Maximum="100" />
                     <TextBlock Text="{Binding AiBusyStatusText}"
@@ -1305,5 +1338,6 @@
     </Border>
     <views:ProjectLibraryView Grid.RowSpan="4" IsVisible="{Binding IsProjectLibraryOpen}" />
     <views:AiMaskEditorView Grid.RowSpan="4" IsVisible="{Binding IsMaskEditorOpen}" />
+    <views:DocumentScannerView Grid.RowSpan="4" IsVisible="{Binding IsDocumentScannerOpen}" />
   </Grid>
 </Window>

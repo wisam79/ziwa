@@ -4,6 +4,7 @@ using Ziwa.Application.Persistence;
 using Ziwa.App.ViewModels;
 using Ziwa.Infrastructure.Ai;
 using Ziwa.Infrastructure.DependencyInjection;
+using Ziwa.Infrastructure.Scanner;
 #if WINDOWS
 using Ziwa.Platform.Windows;
 #endif
@@ -15,10 +16,11 @@ public static class Bootstrapper
     public static ServiceProvider BuildServiceProvider(
         ProjectStorageOptions? storageOptions = null,
         IProjectDialogs? dialogs = null,
-        OfflineAiOptions? aiOptions = null)
+        OfflineAiOptions? aiOptions = null,
+        DocumentScannerOptions? scannerOptions = null)
     {
         var services = new ServiceCollection();
-        services.AddZiwaCoreServices(storageOptions, aiOptions);
+        services.AddZiwaCoreServices(storageOptions, aiOptions, scannerOptions);
         services.AddSingleton<IProjectDialogs>(dialogs ?? new AvaloniaProjectDialogs());
         services.AddSingleton<ProjectWorkspace>();
 

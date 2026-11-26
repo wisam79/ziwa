@@ -48,7 +48,9 @@ public sealed class ImageFilterPipeline : IDisposable
                 (float)Math.Clamp(filters.BlurPx * dpiScale, 0.01, 200.0))
             : null;
 
-        bool needsPixelPass = filters.PixelateBlockSize > 1 || filters.LuminanceThreshold is not null;
+        bool needsPixelPass = filters.PixelateBlockSize > 1 ||
+            filters.LuminanceThreshold is not null ||
+            filters.ScanFilter != DocumentScanFilterKind.None;
         if (!needsPixelPass)
         {
             return new ImageFilterPipeline(
@@ -96,8 +98,15 @@ public sealed class ImageFilterPipeline : IDisposable
             ApplyLuminanceThresholdInPlace(workBitmap, threshold);
         }
 
+        if (filters.ScanFilter != DocumentScanFilterKind.None)
+        {
+            DocumentScanFilterEngine.ApplyInPlace(workBitmap, filters.ScanFilter);
+        }
+
         SKImage processed = SKImage.FromBitmap(workBitmap);
-        bool keepCrispPixels = filters.PixelateBlockSize > 1 || filters.LuminanceThreshold is not null;
+        bool keepCrispPixels = filters.PixelateBlockSize > 1 ||
+            filters.LuminanceThreshold is not null ||
+            filters.ScanFilter == DocumentScanFilterKind.OtsuBlackAndWhite;
         return new ImageFilterPipeline(
             processed,
             SKRect.Create(0f, 0f, processed.Width, processed.Height),

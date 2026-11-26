@@ -1,0 +1,9 @@
+{
+  ExportWidth: 945,
+  ExportHeight: 709,
+  MagicPaperWhitened: true,
+  OtsuBinarizedCleanly: true,
+  EnhancedGrayscaleNeutral: true,
+  RemoveYellowingLiftedBlue: true,
+  Pipeline300DpiOtsuBlackInk: true
+}
