@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ziwa.Application.Abstractions;
 using Ziwa.Application.Commands;
+using Ziwa.Application.Persistence;
 using Ziwa.Application.Printing;
 using Ziwa.Application.Services;
 using Ziwa.Application.Session;
@@ -11,6 +12,7 @@ using Ziwa.Infrastructure.Assets;
 using Ziwa.Infrastructure.Collage;
 using Ziwa.Infrastructure.Export;
 using Ziwa.Infrastructure.IO;
+using Ziwa.Infrastructure.Persistence;
 using Ziwa.Infrastructure.Platform;
 using Ziwa.Infrastructure.Printing;
 using Ziwa.Rendering;
@@ -29,8 +31,15 @@ public static class InfrastructureServiceCollectionExtensions
         </svg>
         """;
 
-    public static IServiceCollection AddZiwaCoreServices(this IServiceCollection services)
+    public static IServiceCollection AddZiwaCoreServices(this IServiceCollection services, ProjectStorageOptions? storageOptions = null)
     {
+        services.AddSingleton(storageOptions ?? new ProjectStorageOptions(
+            Environment.GetEnvironmentVariable("ZIWA_DATA_DIRECTORY") ?? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ZiwaStudio")));
+        services.AddSingleton<IProjectStore, ZiwaProjectStore>();
+        services.AddSingleton<IProjectAssetStore, RenderingProjectAssetStore>();
+        services.AddSingleton<IProjectLibrary, SqliteProjectRepo>();
+        services.AddSingleton<ICrashGuard, CrashGuard>();
         services.AddSingleton<AssetStore>();
         services.AddSingleton<IRenderAssetProvider>(sp => sp.GetRequiredService<AssetStore>());
         services.AddSingleton<IAssetRegistrar, RenderingAssetRegistrar>();

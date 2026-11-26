@@ -1,9 +1,10 @@
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 
 namespace Ziwa.Rendering.Svg;
 
-public static class SvgSanitizer
+public static partial class SvgSanitizer
 {
     private const int MaxXmlChars = 5 * 1024 * 1024;
 
@@ -50,8 +51,14 @@ public static class SvgSanitizer
             throw new InvalidDataException("Root XML element must be <svg>.");
         }
 
+        foreach (XProcessingInstruction instruction in doc.DescendantNodes().OfType<XProcessingInstruction>().ToArray())
+        {
+            instruction.Remove();
+        }
+
         List<XElement> elementsToRemove = doc.Descendants()
-            .Where(el => BlockedElements.Contains(el.Name.LocalName))
+            .Where(el => BlockedElements.Contains(el.Name.LocalName) ||
+                (el.Name.LocalName.Equals("style", StringComparison.OrdinalIgnoreCase) && HasUnsafeCss(el.Value)))
             .ToList();
         foreach (XElement blocked in elementsToRemove)
         {
@@ -77,6 +84,7 @@ public static class SvgSanitizer
         string localName = attr.Name.LocalName;
         string val = attr.Value.Trim();
 
+        if (HasUnsafeCss(val)) { return true; }
         if (localName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
         {
             return true;
@@ -93,16 +101,32 @@ public static class SvgSanitizer
             return !isInternalRef && !isSafeRasterDataUri;
         }
 
-        if (localName.Equals("style", StringComparison.OrdinalIgnoreCase))
+        return false;
+    }
+
+    private static bool HasUnsafeCss(string value)
+    {
+        if (value.Contains("javascript:", StringComparison.OrdinalIgnoreCase) ||
+            value.Contains("expression(", StringComparison.OrdinalIgnoreCase) ||
+            value.Contains("@import", StringComparison.OrdinalIgnoreCase) || value.Contains('\\'))
         {
-            return val.Contains("javascript:", StringComparison.OrdinalIgnoreCase) ||
-                   val.Contains("expression(", StringComparison.OrdinalIgnoreCase) ||
-                   val.Contains("url(http", StringComparison.OrdinalIgnoreCase) ||
-                   val.Contains("url(//", StringComparison.OrdinalIgnoreCase) ||
-                   val.Contains("url(\"http", StringComparison.OrdinalIgnoreCase) ||
-                   val.Contains("url('http", StringComparison.OrdinalIgnoreCase);
+            return true;
         }
 
-        return val.Contains("javascript:", StringComparison.OrdinalIgnoreCase);
+        foreach (Match match in UrlReferenceRegex().Matches(value))
+        {
+            string target = match.Groups["target"].Value;
+            if (!target.StartsWith('#') &&
+                !target.StartsWith("data:image/png;base64,", StringComparison.OrdinalIgnoreCase) &&
+                !target.StartsWith("data:image/jpeg;base64,", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
+
+    [GeneratedRegex("url\\s*\\(\\s*['\"]?(?<target>[^'\"\\s)]+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex UrlReferenceRegex();
 }

@@ -6,9 +6,10 @@
         xmlns:prep="using:Ziwa.Domain.PrePress"
         xmlns:stk="using:Ziwa.Domain.Stickers"
         xmlns:controls="using:Ziwa.App.Controls"
+        xmlns:views="using:Ziwa.App.Views"
         x:Class="Ziwa.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="{Binding DocumentTitle}"
+        Title="{Binding ProjectWindowTitle}"
         Width="1360"
         Height="860"
         MinWidth="960"
@@ -39,6 +40,21 @@
                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
                      VerticalAlignment="Center"
                      FontWeight="SemiBold" />
+
+          <Button x:Name="ProjectFileMenuButton" Content="ملف" MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}" Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  ToolTip.Tip="فتح وحفظ المشاريع ومكتبة المشاريع" AutomationProperties.Name="ملف المشروع">
+            <Button.Flyout>
+              <Flyout>
+                <StackPanel Spacing="6">
+                  <Button Content="فتح مشروع…" Click="OnProjectMenuItemClick" Command="{Binding OpenProjectCommand}" ToolTip.Tip="فتح مشروع (Ctrl+O)" AutomationProperties.Name="فتح مشروع" />
+                  <Button Content="حفظ" Click="OnProjectMenuItemClick" Command="{Binding SaveProjectCommand}" ToolTip.Tip="حفظ المشروع (Ctrl+S)" AutomationProperties.Name="حفظ المشروع" />
+                  <Button Content="حفظ باسم…" Click="OnProjectMenuItemClick" Command="{Binding SaveProjectAsCommand}" ToolTip.Tip="حفظ باسم (Ctrl+Shift+S)" AutomationProperties.Name="حفظ المشروع باسم" />
+                  <Button Content="مكتبة المشاريع والتعافي" Click="OnProjectMenuItemClick" Command="{Binding OpenProjectLibraryCommand}" ToolTip.Tip="عرض المشاريع الحديثة والتعافي" AutomationProperties.Name="مكتبة المشاريع والتعافي" />
+                </StackPanel>
+              </Flyout>
+            </Button.Flyout>
+          </Button>
 
           <Button x:Name="UndoButton"
                   Command="{Binding UndoCommand}"
@@ -359,6 +375,7 @@
                                    Grid.Row="1"
                                    Grid.Column="1"
                                    Session="{Binding Session}"
+                                   IsEnabled="{Binding IsProjectEditable}"
                                    CommandRegistry="{Binding CommandRegistry}"
                                    Page="{Binding ActivePage}"
                                    SceneRenderer="{Binding SceneRenderer}"
@@ -1146,7 +1163,7 @@
             BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
             BorderThickness="0,1,0,0"
             Padding="{StaticResource ToolbarPadding}">
-      <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto">
         <TextBlock Grid.Column="0"
                    Text="{Binding StatusMessage}"
                    Foreground="{DynamicResource ZiwaSecondaryTextBrush}"
@@ -1168,7 +1185,12 @@
                    Text="{Binding PlatformStatusText}"
                    Foreground="{DynamicResource ZiwaSuccessBrush}"
                    VerticalAlignment="Center" />
+        <TextBlock Grid.Column="4" Text="{Binding ProjectSaveStateText}" Margin="16,0,0,0"
+                   Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" />
+        <Button Grid.Column="5" IsVisible="{Binding IsProjectBusy}" Command="{Binding CancelProjectOperationCommand}"
+                Content="إلغاء العملية" ToolTip.Tip="إلغاء عملية المشروع الحالية" AutomationProperties.Name="إلغاء عملية المشروع" />
       </Grid>
     </Border>
+    <views:ProjectLibraryView Grid.RowSpan="4" IsVisible="{Binding IsProjectLibraryOpen}" />
   </Grid>
 </Window>

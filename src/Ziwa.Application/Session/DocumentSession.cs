@@ -34,6 +34,8 @@ public sealed class DocumentSession
     public bool CanRedo => _history.CanRedo;
     public int UndoCount => _history.UndoCount;
     public int RedoCount => _history.RedoCount;
+    public long Generation { get; private set; }
+    public long Revision { get; private set; }
 
     public void BeginInteraction(string descriptionAr)
     {
@@ -75,6 +77,7 @@ public sealed class DocumentSession
         {
             _history.Push(description, before, after);
             CommittedDocument = after;
+            Revision++;
             PruneSelection();
             SessionChanged?.Invoke();
             return true;
@@ -120,6 +123,7 @@ public sealed class DocumentSession
 
         _history.Push(descriptionAr, before, after, coalesceKey, timestampUtc);
         CommittedDocument = after;
+        Revision++;
         PruneSelection();
         SessionChanged?.Invoke();
         return true;
@@ -131,6 +135,8 @@ public sealed class DocumentSession
         InteractionPreview = null;
         _pendingInteractionDescription = null;
         CommittedDocument = newDocument;
+        Generation++;
+        Revision++;
         SelectedNodeIds = [];
         SelectedCollageSlotId = null;
         ActiveCropNodeId = null;
@@ -153,6 +159,7 @@ public sealed class DocumentSession
         }
 
         CommittedDocument = entry.Before;
+        Revision++;
         PruneSelection();
         SessionChanged?.Invoke();
         return true;
@@ -171,6 +178,7 @@ public sealed class DocumentSession
         }
 
         CommittedDocument = entry.After;
+        Revision++;
         PruneSelection();
         SessionChanged?.Invoke();
         return true;
