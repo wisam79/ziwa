@@ -1,0 +1,97 @@
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="Button.workspaceAction">
+    <Setter Property="MinWidth" Value="{StaticResource CompactButtonSize}" />
+    <Setter Property="MinHeight" Value="{StaticResource ToolbarButtonHeight}" />
+    <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+    <Setter Property="FontSize" Value="{StaticResource WorkspaceLabelSize}" />
+    <Setter Property="Padding" Value="8,2" />
+    <Setter Property="BorderThickness" Value="{StaticResource HairlineBorderThickness}" />
+    <Setter Property="Background" Value="{DynamicResource ZiwaTransparentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ZiwaPrimaryTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ZiwaTransparentBrush}" />
+  </Style>
+  <Style Selector="Button.workspaceAction.zoomReadout">
+    <Setter Property="MinWidth" Value="58" />
+    <Setter Property="Padding" Value="4,2" />
+  </Style>
+  <Style Selector="Button.workspaceAction.statusAction">
+    <Setter Property="MinHeight" Value="{StaticResource CompactButtonSize}" />
+    <Setter Property="FontSize" Value="{StaticResource WorkspaceSmallLabelSize}" />
+  </Style>
+  <Style Selector="Button.workspaceAction:not(.primary):pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ZiwaSubtleFillBrush}" />
+  </Style>
+  <Style Selector="Button.workspaceAction.iconOnly">
+    <Setter Property="Width" Value="{StaticResource ToolbarButtonHeight}" />
+    <Setter Property="Padding" Value="0" />
+  </Style>
+  <Style Selector="Button.workspaceAction.primary">
+    <Setter Property="Background" Value="{DynamicResource ZiwaPrimaryActionBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ZiwaOnPrimaryActionBrush}" />
+  </Style>
+  <Style Selector="Button.workspaceAction.destructive">
+    <Setter Property="Foreground" Value="{DynamicResource ZiwaDestructiveActionBrush}" />
+  </Style>
+  <Style Selector="Button.workspaceAction.pageTab">
+    <Setter Property="Background" Value="{DynamicResource ZiwaSurfaceBrush}" />
+  </Style>
+  <Style Selector="Button.workspaceAction.pageTab.active">
+    <Setter Property="Background" Value="{DynamicResource ZiwaCardBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ZiwaFocusStrokeBrush}" />
+  </Style>
+  <Style Selector="Ellipse.pageTabMarker">
+    <Setter Property="Opacity" Value="0" />
+  </Style>
+  <Style Selector="Button.pageTab.active Ellipse.pageTabMarker">
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+  <Style Selector="Button.workspaceAction:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="BorderBrush" Value="{DynamicResource ZiwaFocusStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+
+  <Style Selector="Button.workspaceAction.railTool, Border.currentTool">
+    <Setter Property="MinWidth" Value="44" />
+    <Setter Property="MinHeight" Value="44" />
+  </Style>
+  <Style Selector="Button.workspaceAction.railTool">
+    <Setter Property="Padding" Value="2,3" />
+  </Style>
+  <Style Selector="Border.currentTool">
+    <Setter Property="Padding" Value="2,3" />
+    <Setter Property="Background" Value="{DynamicResource ZiwaSubtleFillBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ZiwaFocusStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource HairlineBorderThickness}" />
+    <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+  </Style>
+  <Style Selector="PathIcon.workspaceIcon">
+    <Setter Property="Width" Value="{StaticResource WorkspaceIconSize}" />
+    <Setter Property="Height" Value="{StaticResource WorkspaceIconSize}" />
+    <Setter Property="IsHitTestVisible" Value="False" />
+  </Style>
+  <Style Selector="StackPanel.workspaceRailLabel > PathIcon.workspaceIcon">
+    <Setter Property="Width" Value="{StaticResource WorkspaceRailIconSize}" />
+    <Setter Property="Height" Value="{StaticResource WorkspaceRailIconSize}" />
+  </Style>
+  <Style Selector="StackPanel.workspaceRailLabel">
+    <Setter Property="Spacing" Value="2" />
+  </Style>
+  <Style Selector="StackPanel.workspaceRailLabel > TextBlock">
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="StackPanel.workspaceActionLabel">
+    <Setter Property="Orientation" Value="Horizontal" />
+    <Setter Property="Spacing" Value="5" />
+  </Style>
+  <Style Selector="Border.workspaceDivider">
+    <Setter Property="Width" Value="1" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="Background" Value="{DynamicResource ZiwaHairlineBorderBrush}" />
+  </Style>
+  <Style Selector="Border.workspaceDivider.railDivider">
+    <Setter Property="Width" Value="24" />
+    <Setter Property="Height" Value="1" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+  </Style>
+</Styles>

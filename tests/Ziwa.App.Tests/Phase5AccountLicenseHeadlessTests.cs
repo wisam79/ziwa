@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Ziwa.App.ViewModels;
 using Ziwa.App.Views;
+using Ziwa.App.Views.Workspace;
 using Ziwa.Application.Persistence;
 using Ziwa.Infrastructure.Ai;
 using Ziwa.Infrastructure.Auth;
@@ -32,7 +33,7 @@ public sealed class Phase5AccountLicenseHeadlessTests
                 string path = req.RequestUri!.PathAndQuery;
                 if (path.StartsWith("/auth/v1/token?grant_type=password", StringComparison.Ordinal))
                 {
-                    return Task.FromResult(JsonResp(HttpStatusCode.OK, """{"access_token":"ui-jwt-1","refresh_token":"ui-ref-1","user":{"id":"11111111-2222-4333-8444-555555555555","email":"studio@ziwa.app","user_metadata":{"name":"استوديو زِيوا"}}}"""));
+                    return Task.FromResult(JsonResp(HttpStatusCode.OK, """{"access_token":"ui-jwt-1","refresh_token":"ui-ref-1","user":{"id":"11111111-2222-4333-8444-555555555555","email":"studio@ziwa.app","user_metadata":{"name":"اسم استوديو عربي طويل جدًا لمعاينة شارة الحساب في مساحة العمل"}}}"""));
                 }
 
                 if (path.StartsWith("/rest/v1/profiles", StringComparison.Ordinal))
@@ -81,7 +82,7 @@ public sealed class Phase5AccountLicenseHeadlessTests
                 authOptions: authOptions);
 
             MainWindowViewModel vm = sp.GetRequiredService<MainWindowViewModel>();
-            var window = new MainWindow { DataContext = vm };
+            var window = new MainWindow { DataContext = vm, Width = 960, Height = 640 };
             window.Show();
 
             AccountLicenseView dialog = Assert.Single(window.GetVisualDescendants().OfType<AccountLicenseView>());
@@ -100,6 +101,13 @@ public sealed class Phase5AccountLicenseHeadlessTests
             await vm.SubmitLoginCommand.ExecuteAsync(null);
 
             Assert.True(vm.IsUserAuthenticated);
+            CommandBarView commandBar = Assert.IsType<CommandBarView>(window.FindControl<CommandBarView>("CommandBarRegion"));
+            Button account = Assert.IsType<Button>(commandBar.FindControl<Button>("AccountHeaderButton"));
+            TextBlock badge = Assert.Single(account.GetVisualDescendants().OfType<TextBlock>());
+            Assert.Equal(vm.AccountHeaderBadgeText, badge.Text);
+            Assert.Equal(vm.AccountHeaderBadgeText, ToolTip.GetTip(account));
+            Assert.Equal(TextTrimming.CharacterEllipsis, badge.TextTrimming);
+            Assert.True(badge.MaxWidth < 100);
             Assert.Equal("Free", vm.AccountPlanBadgeText);
             Assert.Contains("3/5", vm.CloudQuotaBadgeText, StringComparison.Ordinal);
 

@@ -11,6 +11,7 @@ using Xunit;
 using Ziwa.App.Controls;
 using Ziwa.App.ViewModels;
 using Ziwa.App.Views;
+using Ziwa.App.Views.Workspace;
 
 namespace Ziwa.App.Tests;
 
@@ -26,11 +27,12 @@ public sealed partial class MainWindowHeadlessTests
         window.Show();
 
         Assert.Equal(FlowDirection.RightToLeft, window.FlowDirection);
-        Assert.NotNull(window.FindControl<Border>("CommandBarRegion"));
-        Assert.NotNull(window.FindControl<Border>("WorkspaceRailRegion"));
+        Assert.NotNull(window.FindControl<CommandBarView>("CommandBarRegion"));
+        Assert.NotNull(window.FindControl<WorkspaceRailView>("WorkspaceRailRegion"));
         Assert.NotNull(window.FindControl<Grid>("CanvasWorkspaceRegion"));
         Assert.NotNull(window.FindControl<Border>("InspectorRegion"));
-        Assert.NotNull(window.FindControl<Border>("StatusBarRegion"));
+        Assert.NotNull(window.FindControl<PageStripView>("PageStripRegion"));
+        Assert.NotNull(window.FindControl<WorkspaceStatusBarView>("StatusBarRegion"));
 
         SkiaViewportHost? host = window.FindControl<SkiaViewportHost>("ViewportHost");
         Assert.NotNull(host);

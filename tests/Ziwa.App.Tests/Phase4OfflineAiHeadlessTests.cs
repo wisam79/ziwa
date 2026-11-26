@@ -1,5 +1,7 @@
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -10,6 +12,7 @@ using Xunit;
 using Ziwa.App.Services;
 using Ziwa.App.ViewModels;
 using Ziwa.App.Views;
+using Ziwa.App.Views.Workspace;
 using Ziwa.Application.Persistence;
 using Ziwa.Domain.Ai;
 using Ziwa.Domain.Models;
@@ -123,9 +126,15 @@ public sealed class Phase4OfflineAiHeadlessTests
             AssetId beforeAsset = img.CurrentAssetId;
 
             Task runTask = vm.RemoveBackgroundCommand.ExecuteAsync(null);
-            await Task.Delay(40);
-            vm.CancelAiOperationCommand.Execute(null);
+            window.UpdateLayout();
+            var status = Assert.IsType<WorkspaceStatusBarView>(window.FindControl<WorkspaceStatusBarView>("StatusBarRegion"));
+            var cancel = Assert.IsType<Button>(status.FindControl<Button>("CancelAiStatusBarButton"));
+            Assert.True(cancel.IsVisible);
+            var point = cancel.TranslatePoint(new Point(cancel.Bounds.Width / 2, cancel.Bounds.Height / 2), window)!.Value;
+            window.MouseDown(point, MouseButton.Left);
+            window.MouseUp(point, MouseButton.Left);
             await runTask;
+            Assert.False(cancel.IsVisible);
 
             ImageNode afterImg = Assert.IsType<ImageNode>(vm.ActivePage.Nodes.First(n => n.Id == img.Id));
             Assert.Equal(beforeAsset, afterImg.CurrentAssetId);

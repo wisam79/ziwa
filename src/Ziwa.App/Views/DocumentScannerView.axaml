@@ -115,6 +115,7 @@
                   BorderThickness="{StaticResource HairlineBorderThickness}"
                   ClipToBounds="True">
             <controls:ScannerQuadCanvasControl x:Name="ScannerQuadCanvas"
+                                               FlowDirection="LeftToRight"
                                                IsEnabled="{Binding IsScannerToolsEnabled}"
                                                SourceBitmap="{Binding ScannerSourceBitmap}"
                                                Regions="{Binding ScannerRegions}"
@@ -157,6 +158,7 @@
                   BorderThickness="{StaticResource HairlineBorderThickness}"
                   ClipToBounds="True">
             <controls:SkiaBitmapPreviewControl x:Name="ScannerRectifiedPreview"
+                                               FlowDirection="LeftToRight"
                                                PreviewBitmap="{Binding ScannerRectifiedPreviewBitmap}"
                                                PasteboardBrush="{DynamicResource ZiwaCanvasBackgroundBrush}" />
           </Border>

@@ -29,11 +29,6 @@ using Ziwa.Rendering.Viewport;
 
 namespace Ziwa.App.ViewModels;
 
-public sealed record PageTabItemViewModel(int Index, string Name, bool IsActive)
-{
-    public string DisplayLabel => IsActive ? $"● {Index + 1}. {Name}" : $"{Index + 1}. {Name}";
-}
-
 public sealed partial class StickerFieldViewModel : ObservableObject
 {
     public StickerFieldViewModel(string key, string labelAr, string value)
@@ -895,11 +890,27 @@ public sealed partial class MainWindowViewModel : ObservableObject
             SyncFilterFields(slot.EffectiveFilters);
         }
 
-        PageTabs.Clear();
         for (int i = 0; i < Document.Pages.Length; i++)
         {
-            PageModel p = Document.Pages[i];
-            PageTabs.Add(new PageTabItemViewModel(i, p.Name, i == Document.ActivePageIndex));
+            PageModel page = Document.Pages[i];
+            bool isActive = i == Document.ActivePageIndex;
+            if (i == PageTabs.Count)
+            {
+                PageTabs.Add(new PageTabItemViewModel(i, page.Name, isActive));
+            }
+            else if (PageTabs[i].Name != page.Name)
+            {
+                PageTabs[i] = new PageTabItemViewModel(i, page.Name, isActive);
+            }
+            else
+            {
+                PageTabs[i].IsActive = isActive;
+            }
+        }
+
+        while (PageTabs.Count > Document.Pages.Length)
+        {
+            PageTabs.RemoveAt(PageTabs.Count - 1);
         }
 
         PreflightIssues.Clear();

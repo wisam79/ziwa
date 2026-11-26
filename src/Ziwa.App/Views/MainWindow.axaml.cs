@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Ziwa.App.Services;
 using Ziwa.App.ViewModels;
@@ -13,9 +12,6 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
-
-    private void OnProjectMenuItemClick(object? sender, RoutedEventArgs e) =>
-        this.FindControl<Button>("ProjectFileMenuButton")?.Flyout?.Hide();
 
     protected override void OnKeyDown(KeyEventArgs e)
     {

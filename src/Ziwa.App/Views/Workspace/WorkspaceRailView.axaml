@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             x:Class="Ziwa.App.Views.Workspace.WorkspaceRailView"
+             x:DataType="vm:MainWindowViewModel"
+             Width="{StaticResource RailWidth}">
+  <Border Background="{DynamicResource ZiwaCardBrush}"
+          BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+          BorderThickness="0,0,1,0">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="5" Margin="0,8" HorizontalAlignment="Center">
+        <Border Classes="currentTool" ToolTip.Tip="أداة التحديد والتحريك نشطة"
+                AutomationProperties.Name="الأداة النشطة: التحديد والتحريك">
+          <StackPanel Classes="workspaceRailLabel" VerticalAlignment="Center">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconCursor}" />
+            <TextBlock Text="تحديد" FontWeight="Bold" />
+          </StackPanel>
+        </Border>
+        <Button x:Name="TextToolButton" Classes="workspaceAction railTool" Command="{Binding AddHeadingTextCommand}"
+                ToolTip.Tip="إدراج نص عربي" AutomationProperties.Name="إدراج نص عربي">
+          <StackPanel Classes="workspaceRailLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconText}" />
+            <TextBlock Text="نص" />
+          </StackPanel>
+        </Button>
+        <Button x:Name="CurvedSealToolButton" Classes="workspaceAction railTool" Command="{Binding AddCurvedSealCommand}"
+                ToolTip.Tip="إدراج ختم عربي منحنٍ" AutomationProperties.Name="إدراج ختم عربي منحنٍ">
+          <StackPanel Classes="workspaceRailLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconSeal}" />
+            <TextBlock Text="ختم" />
+          </StackPanel>
+        </Button>
+        <Button x:Name="ShapeToolButton" Classes="workspaceAction railTool" Command="{Binding AddStarShapeCommand}"
+                ToolTip.Tip="إدراج نجمة هندسية" AutomationProperties.Name="إدراج نجمة هندسية">
+          <StackPanel Classes="workspaceRailLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconShape}" />
+            <TextBlock Text="شكل" />
+          </StackPanel>
+        </Button>
+        <Button x:Name="StickerStudioToolButton" Classes="workspaceAction railTool" Command="{Binding OpenStickerStudioCommand}"
+                ToolTip.Tip="استوديو الملصقات والبطاقات البارامتري" AutomationProperties.Name="استوديو الملصقات">
+          <StackPanel Classes="workspaceRailLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconSticker}" />
+            <TextBlock Text="ملصق" />
+          </StackPanel>
+        </Button>
+        <Button x:Name="BrandLogoToolButton" Classes="workspaceAction railTool" Command="{Binding InsertBrandLogoCommand}"
+                ToolTip.Tip="أصولي: إدراج شعار الاستوديو" AutomationProperties.Name="شعار الاستوديو">
+          <StackPanel Classes="workspaceRailLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconBrand}" />
+            <TextBlock Text="شعار" />
+          </StackPanel>
+        </Button>
+        <Border Classes="workspaceDivider railDivider" />
+        <Button x:Name="ImportImageToolButton" Classes="workspaceAction railTool" Command="{Binding ImportImageCommand}"
+                ToolTip.Tip="إدراج صورة من الجهاز (Ctrl+Shift+I)" AutomationProperties.Name="إدراج صورة">
+          <StackPanel Classes="workspaceRailLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconImage}" />
+            <TextBlock Text="صورة" />
+          </StackPanel>
+        </Button>
+        <Button x:Name="ScannerToolButton" Classes="workspaceAction railTool" Command="{Binding OpenDocumentScannerCommand}"
+                ToolTip.Tip="الماسح الذكي للمستندات والبطاقات (Ctrl+Shift+D)" AutomationProperties.Name="الماسح الذكي للمستندات">
+          <StackPanel Classes="workspaceRailLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconScanner}" />
+            <TextBlock Text="ماسح" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </ScrollViewer>
+  </Border>
+</UserControl>

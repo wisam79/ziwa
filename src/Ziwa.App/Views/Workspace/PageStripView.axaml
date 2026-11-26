@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             xmlns:local="using:Ziwa.App.Views.Workspace"
+             x:Class="Ziwa.App.Views.Workspace.PageStripView"
+             x:DataType="vm:MainWindowViewModel">
+  <Border Background="{DynamicResource ZiwaSurfaceBrush}"
+          BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+          BorderThickness="0,1,0,0"
+          Padding="{StaticResource PageStripPadding}">
+    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+      <StackPanel x:Name="PageActions" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+        <Button x:Name="AddPageButton" Classes="workspaceAction" Command="{Binding AddPageCommand}"
+                ToolTip.Tip="إضافة صفحة جديدة (Ctrl+Shift+N)" AutomationProperties.Name="إضافة صفحة">
+          <StackPanel Classes="workspaceActionLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconPlus}" />
+            <TextBlock Text="صفحة" />
+          </StackPanel>
+        </Button>
+        <Button x:Name="DuplicatePageButton" Classes="workspaceAction iconOnly" Command="{Binding DuplicateActivePageCommand}"
+                ToolTip.Tip="تكرار الصفحة النشطة" AutomationProperties.Name="تكرار الصفحة">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconDuplicate}" />
+        </Button>
+        <Button x:Name="FrontBackToggleButton" Classes="workspaceAction" Command="{Binding EnsureOrToggleFrontBackCommand}"
+                ToolTip.Tip="إنشاء أو تبديل الوجه والظهر" AutomationProperties.Name="وجه وظهر" Content="وجه / ظهر" />
+        <Border Classes="workspaceDivider" />
+        <Button x:Name="MovePageEarlierButton" Classes="workspaceAction iconOnly" Command="{Binding MovePageEarlierCommand}" IsEnabled="{Binding CanMovePageEarlier}"
+                ToolTip.Tip="تقديم الصفحة" AutomationProperties.Name="تقديم الصفحة">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconPageEarlier}" />
+        </Button>
+        <Button x:Name="MovePageLaterButton" Classes="workspaceAction iconOnly" Command="{Binding MovePageLaterCommand}" IsEnabled="{Binding CanMovePageLater}"
+                ToolTip.Tip="تأخير الصفحة" AutomationProperties.Name="تأخير الصفحة">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconPageLater}" />
+        </Button>
+        <Button x:Name="DeletePageButton" Classes="workspaceAction iconOnly destructive" Command="{Binding DeleteActivePageCommand}" IsEnabled="{Binding CanDeleteActivePage}"
+                ToolTip.Tip="حذف الصفحة النشطة (محمي للصفحة الوحيدة)" AutomationProperties.Name="حذف الصفحة">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconDelete}" />
+        </Button>
+      </StackPanel>
+
+      <ScrollViewer x:Name="PageTabsScroller" Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                    AllowAutoHide="False" AutomationProperties.Name="صفحات المستند">
+        <ItemsControl ItemsSource="{Binding PageTabs}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="4" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:PageTabItemViewModel">
+              <Button Classes="workspaceAction pageTab" Classes.active="{Binding IsActive}"
+                      Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).SelectPageByIndexCommand}"
+                      CommandParameter="{Binding Index}" ToolTip.Tip="{Binding Name}" AutomationProperties.Name="{Binding AccessibleLabel}">
+                <StackPanel Classes="workspaceActionLabel">
+                  <Ellipse Classes="pageTabMarker" Width="6" Height="6" VerticalAlignment="Center"
+                           Fill="{DynamicResource ZiwaFocusStrokeBrush}" />
+                  <TextBlock Text="{Binding DisplayLabel}" TextTrimming="CharacterEllipsis" MaxWidth="144" />
+                </StackPanel>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <TextBlock Grid.Column="2" MaxWidth="140" TextTrimming="CharacterEllipsis"
+                 Text="{Binding ActivePageDisplayText}" ToolTip.Tip="{Binding ActivePageDisplayText}"
+                 Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" FontSize="12" />
+    </Grid>
+  </Border>
+</UserControl>

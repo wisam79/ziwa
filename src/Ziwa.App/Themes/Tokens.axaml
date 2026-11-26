@@ -23,7 +23,14 @@
   <GridLength x:Key="RulerGridLength">20</GridLength>
 
   <Thickness x:Key="HairlineBorderThickness">1</Thickness>
-  <Thickness x:Key="ToolbarPadding">14,8</Thickness>
+  <Thickness x:Key="ToolbarPadding">14,7</Thickness>
+  <Thickness x:Key="PageStripPadding">14,4</Thickness>
+  <Thickness x:Key="StatusBarPadding">14,2</Thickness>
+  <x:Double x:Key="WorkspaceLabelSize">13</x:Double>
+  <x:Double x:Key="WorkspaceSmallLabelSize">12</x:Double>
+  <x:Double x:Key="WorkspaceTitleSize">15</x:Double>
+  <x:Double x:Key="WorkspaceIconSize">16</x:Double>
+  <x:Double x:Key="WorkspaceRailIconSize">19</x:Double>
   <Thickness x:Key="InspectorPadding">14</Thickness>
   <Thickness x:Key="CardPadding">12</Thickness>
   <Thickness x:Key="ControlPadding">10,5</Thickness>

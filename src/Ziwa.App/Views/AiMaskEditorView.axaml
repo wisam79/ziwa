@@ -97,6 +97,7 @@
               BorderThickness="{StaticResource HairlineBorderThickness}"
               ClipToBounds="True">
         <controls:MaskBrushCanvasControl x:Name="MaskBrushCanvas"
+                                         FlowDirection="LeftToRight"
                                          MaskSession="{Binding ActiveMaskSession}"
                                          OriginalBitmap="{Binding MaskEditorOriginalBitmap}"
                                          CutoutBitmap="{Binding MaskEditorCutoutBitmap}"

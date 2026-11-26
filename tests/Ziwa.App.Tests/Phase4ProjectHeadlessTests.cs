@@ -8,6 +8,7 @@ using Xunit;
 using Ziwa.App.Services;
 using Ziwa.App.ViewModels;
 using Ziwa.App.Views;
+using Ziwa.App.Views.Workspace;
 using Ziwa.Application.Persistence;
 
 namespace Ziwa.App.Tests;
@@ -27,7 +28,8 @@ public sealed class Phase4ProjectHeadlessTests
             window.Show();
             await vm.InitializeProjectsAsync();
             Assert.Equal(Avalonia.Media.FlowDirection.RightToLeft, window.FlowDirection);
-            Assert.NotNull(window.FindControl<Button>("ProjectFileMenuButton"));
+            var commandBar = Assert.IsType<CommandBarView>(window.FindControl<CommandBarView>("CommandBarRegion"));
+            Assert.NotNull(commandBar.FindControl<Button>("ProjectFileMenuButton"));
             vm.Session.ApplyCommand("تغيير العنوان", doc => doc with { Title = "مشروع محفوظ بالعربية" });
             Assert.True(vm.HasUnsavedChanges);
             Assert.Contains("غير محفوظ", window.Title);

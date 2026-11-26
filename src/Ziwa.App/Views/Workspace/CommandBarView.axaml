@@ -1,0 +1,118 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             x:Class="Ziwa.App.Views.Workspace.CommandBarView"
+             x:DataType="vm:MainWindowViewModel">
+  <Border Background="{DynamicResource ZiwaCardBrush}"
+          BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+          BorderThickness="0,0,0,1"
+          Padding="{StaticResource ToolbarPadding}">
+    <DockPanel>
+      <StackPanel DockPanel.Dock="Left" Margin="0,0,10,0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+        <Button x:Name="ProjectFileMenuButton" Classes="workspaceAction"
+                ToolTip.Tip="فتح وحفظ المشاريع ومكتبة المشاريع" AutomationProperties.Name="ملف المشروع">
+          <StackPanel Classes="workspaceActionLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconFolder}" />
+            <TextBlock Text="ملف" />
+          </StackPanel>
+          <Button.Flyout>
+            <Flyout>
+              <StackPanel Spacing="4">
+                <Button Classes="workspaceAction" Content="فتح مشروع…" Click="OnProjectMenuItemClick" Command="{Binding OpenProjectCommand}" ToolTip.Tip="فتح مشروع (Ctrl+O)" AutomationProperties.Name="فتح مشروع" />
+                <Button Classes="workspaceAction" Content="حفظ" Click="OnProjectMenuItemClick" Command="{Binding SaveProjectCommand}" ToolTip.Tip="حفظ المشروع (Ctrl+S)" AutomationProperties.Name="حفظ المشروع" />
+                <Button Classes="workspaceAction" Content="حفظ باسم…" Click="OnProjectMenuItemClick" Command="{Binding SaveProjectAsCommand}" ToolTip.Tip="حفظ باسم (Ctrl+Shift+S)" AutomationProperties.Name="حفظ المشروع باسم" />
+                <Button Classes="workspaceAction" Content="مكتبة المشاريع والتعافي" Click="OnProjectMenuItemClick" Command="{Binding OpenProjectLibraryCommand}" ToolTip.Tip="عرض المشاريع الحديثة والتعافي" AutomationProperties.Name="مكتبة المشاريع والتعافي" />
+              </StackPanel>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+        <Button x:Name="UndoButton" Classes="workspaceAction iconOnly" Command="{Binding UndoCommand}" IsEnabled="{Binding CanUndo}"
+                ToolTip.Tip="تراجع (Ctrl+Z)" AutomationProperties.Name="تراجع">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconUndo}" />
+        </Button>
+        <Button x:Name="RedoButton" Classes="workspaceAction iconOnly" Command="{Binding RedoCommand}" IsEnabled="{Binding CanRedo}"
+                ToolTip.Tip="إعادة (Ctrl+Y)" AutomationProperties.Name="إعادة">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconRedo}" />
+        </Button>
+        <Border Classes="workspaceDivider" />
+        <Button x:Name="TemplatesMenuButton" Classes="workspaceAction"
+                ToolTip.Tip="قوالب البدء السريع" AutomationProperties.Name="قوالب البدء السريع" Content="قوالب">
+          <Button.Flyout>
+            <Flyout>
+              <StackPanel Spacing="4">
+                <Button x:Name="QuickStartIdButton" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding StartIdPhotoSheetCommand}"
+                        ToolTip.Tip="بدء سريع: شيت صور هوية 4×6 (Alt+1)" AutomationProperties.Name="شيت صور هوية" Content="شيت هوية" />
+                <Button x:Name="QuickStartCardButton" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding StartBusinessCardCommand}"
+                        ToolTip.Tip="بدء سريع: بطاقة عمل (Alt+2)" AutomationProperties.Name="بطاقة عمل" Content="بطاقة عمل" />
+                <Button x:Name="TransferToCollageButton" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding TransferFreeformToCollageCommand}"
+                        ToolTip.Tip="نقل التصميم الحر إلى شيت الكولاج" AutomationProperties.Name="نقل إلى الكولاج">
+                  <StackPanel Classes="workspaceActionLabel">
+                    <PathIcon Classes="workspaceIcon" Data="{StaticResource IconCollage}" />
+                    <TextBlock Text="نقل للكولاج" />
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+      </StackPanel>
+
+      <StackPanel DockPanel.Dock="Right" Margin="10,0,0,0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+        <Button x:Name="CommandPaletteButton" Classes="workspaceAction iconOnly" Command="{Binding ToggleCommandPaletteCommand}"
+                ToolTip.Tip="البحث عن الأوامر (Ctrl+K)" AutomationProperties.Name="لوحة الأوامر">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconSearch}" />
+        </Button>
+        <Border Classes="workspaceDivider" />
+        <Button x:Name="ZoomOutButton" Classes="workspaceAction iconOnly" Command="{Binding ZoomOutCommand}"
+                ToolTip.Tip="تصغير المعاينة" AutomationProperties.Name="تصغير المعاينة">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconMinus}" />
+        </Button>
+        <Button x:Name="ResetZoomButton" Classes="workspaceAction zoomReadout" Command="{Binding ResetZoomCommand}"
+                ToolTip.Tip="إعادة التكبير إلى 100%" AutomationProperties.Name="إعادة التكبير إلى 100%">
+          <TextBlock Text="{Binding ZoomPercentText}" FlowDirection="LeftToRight" />
+        </Button>
+        <Button x:Name="ZoomInButton" Classes="workspaceAction iconOnly" Command="{Binding ZoomInCommand}"
+                ToolTip.Tip="تكبير المعاينة" AutomationProperties.Name="تكبير المعاينة">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconPlus}" />
+        </Button>
+        <Button x:Name="ZenModeButton" Classes="workspaceAction iconOnly" Command="{Binding ToggleZenModeCommand}"
+                ToolTip.Tip="وضع التركيز الكامل (Ctrl+.)" AutomationProperties.Name="وضع التركيز">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconFocus}" />
+        </Button>
+        <Border Classes="workspaceDivider" />
+        <Button x:Name="ThemeToggleButton" Classes="workspaceAction iconOnly" Command="{Binding ToggleThemeCommand}"
+                ToolTip.Tip="{Binding ThemeToggleText}" AutomationProperties.Name="{Binding ThemeToggleText}">
+          <Grid>
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconSun}" IsVisible="{Binding IsDarkTheme}" />
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconMoon}" IsVisible="{Binding !IsDarkTheme}" />
+          </Grid>
+        </Button>
+        <Button x:Name="AccountHeaderButton" Classes="workspaceAction" Command="{Binding OpenAccountDialogCommand}"
+                ToolTip.Tip="{Binding AccountHeaderBadgeText}" AutomationProperties.Name="الحساب والترخيص (Ctrl+Shift+A)">
+          <StackPanel Classes="workspaceActionLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconAccount}" />
+            <TextBlock Text="{Binding AccountHeaderBadgeText}" MaxWidth="96" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Button>
+        <Border Classes="workspaceDivider" />
+        <Button x:Name="PrintDialogButton" Classes="workspaceAction" Command="{Binding OpenPrintDialogCommand}"
+                ToolTip.Tip="الطباعة المباشرة وتصدير PDF وCMYK (Ctrl+P)" AutomationProperties.Name="طباعة وتصدير احترافي">
+          <StackPanel Classes="workspaceActionLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconPrinter}" />
+            <TextBlock Text="طباعة وPDF" />
+          </StackPanel>
+        </Button>
+        <Button x:Name="Export300DpiButton" Classes="workspaceAction primary" Command="{Binding ExportSample300DpiCommand}"
+                ToolTip.Tip="تصدير الورقة النشطة بدقة 300 DPI" AutomationProperties.Name="تصدير الورقة النشطة بدقة 300 DPI">
+          <StackPanel Classes="workspaceActionLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconExport}" />
+            <TextBlock Text="تصدير 300 DPI" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+      <TextBlock x:Name="DocumentTitleLabel" Text="{Binding DocumentTitle}" ToolTip.Tip="{Binding DocumentTitle}"
+                 MaxWidth="240" TextTrimming="CharacterEllipsis" FontSize="{StaticResource WorkspaceTitleSize}"
+                 FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+    </DockPanel>
+  </Border>
+</UserControl>

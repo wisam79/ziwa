@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             x:Class="Ziwa.App.Views.Workspace.WorkspaceStatusBarView"
+             x:DataType="vm:MainWindowViewModel"
+             FontSize="{StaticResource WorkspaceSmallLabelSize}">
+  <Border Background="{DynamicResource ZiwaCardBrush}"
+          BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+          BorderThickness="0,1,0,0"
+          Padding="{StaticResource StatusBarPadding}">
+    <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" MinHeight="{StaticResource CompactButtonSize}">
+      <TextBlock x:Name="StatusMessageLabel" Text="{Binding StatusMessage}" ToolTip.Tip="{Binding StatusMessage}"
+                 TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center"
+                 AutomationProperties.LiveSetting="Polite" />
+      <TextBlock Grid.Column="1" Text="{Binding PageSizeMmText}" FlowDirection="LeftToRight" VerticalAlignment="Center" />
+      <TextBlock Grid.Column="2" Text="{Binding ZoomPercentText}" FlowDirection="LeftToRight" VerticalAlignment="Center" />
+      <TextBlock Grid.Column="3" Text="{Binding PlatformStatusText}" Foreground="{DynamicResource ZiwaSuccessBrush}" VerticalAlignment="Center" />
+      <TextBlock Grid.Column="4" Text="{Binding ProjectSaveStateText}" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" />
+      <Button x:Name="CancelProjectStatusBarButton" Grid.Column="5" Classes="workspaceAction statusAction" IsVisible="{Binding IsProjectBusy}" Command="{Binding CancelProjectOperationCommand}"
+              Content="إلغاء العملية" ToolTip.Tip="إلغاء عملية المشروع الحالية" AutomationProperties.Name="إلغاء عملية المشروع" />
+      <Button x:Name="CancelAiStatusBarButton" Grid.Column="6" Classes="workspaceAction statusAction" IsVisible="{Binding IsAnyAiBusy}" Command="{Binding CancelActiveAiOperationCommand}"
+              Content="إلغاء الذكاء" ToolTip.Tip="إلغاء عملية الذكاء الاصطناعي فوراً" AutomationProperties.Name="إلغاء عملية الذكاء الاصطناعي" />
+    </Grid>
+  </Border>
+</UserControl>
