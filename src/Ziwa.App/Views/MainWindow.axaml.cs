@@ -23,6 +23,7 @@ public partial class MainWindow : Window
         if (e.Handled || DataContext is not MainWindowViewModel vm) { return; }
         if (e.Key == Key.Escape)
         {
+            if (vm.IsMaskEditorOpen) { vm.CloseMaskEditorCommand.Execute(null); e.Handled = true; return; }
             if (vm.IsProjectLibraryOpen) { vm.CloseProjectLibraryCommand.Execute(null); e.Handled = true; return; }
             if (vm.IsPrintDialogOpen) { vm.ClosePrintDialogCommand.Execute(null); e.Handled = true; return; }
             if (vm.IsCommandPaletteOpen) { vm.IsCommandPaletteOpen = false; e.Handled = true; return; }

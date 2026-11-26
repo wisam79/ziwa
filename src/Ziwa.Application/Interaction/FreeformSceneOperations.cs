@@ -421,6 +421,90 @@ public static class FreeformSceneOperations
     public static ZiwaDocument ResetImageFilters(ZiwaDocument doc, NodeId imageNodeId) =>
         ApplyImageFilters(doc, imageNodeId, ImageFilterSpec.None);
 
+    public static ZiwaDocument ApplyProcessedImageAsset(
+        ZiwaDocument doc,
+        NodeId imageNodeId,
+        AssetId processedAssetId,
+        PageId? targetPageId = null)
+    {
+        if (processedAssetId.IsEmpty)
+        {
+            return doc;
+        }
+
+        int pageIndex = ResolvePageIndex(doc, targetPageId);
+        if (pageIndex < 0)
+        {
+            return doc;
+        }
+
+        PageModel page = doc.Pages[pageIndex];
+        SceneNode? node = page.Nodes.FirstOrDefault(n => n.Id == imageNodeId);
+        if (node is not ImageNode img || img.IsLocked)
+        {
+            return doc;
+        }
+
+        // Preserve OriginalAssetId so non-destructive restoration always works.
+        ImageNode updated = img with { CurrentAssetId = processedAssetId };
+        return ReplaceNodeOnPage(doc, pageIndex, img.Id, updated);
+    }
+
+    public static ZiwaDocument ApplyAutoFaceFraming(
+        ZiwaDocument doc,
+        NodeId imageNodeId,
+        CropSpec framingCrop,
+        PageId? targetPageId = null)
+    {
+        int pageIndex = ResolvePageIndex(doc, targetPageId);
+        if (pageIndex < 0)
+        {
+            return doc;
+        }
+
+        PageModel page = doc.Pages[pageIndex];
+        SceneNode? node = page.Nodes.FirstOrDefault(n => n.Id == imageNodeId);
+        if (node is not ImageNode img || img.IsLocked)
+        {
+            return doc;
+        }
+
+        var clamped = new CropSpec(
+            DomainMath.Clamp(framingCrop.Zoom, 1.0, 20.0),
+            DomainMath.Clamp(framingCrop.PanX, -1.0, 1.0),
+            DomainMath.Clamp(framingCrop.PanY, -1.0, 1.0));
+        return ReplaceNodeOnPage(doc, pageIndex, img.Id, img with { Crop = clamped });
+    }
+
+    private static int ResolvePageIndex(ZiwaDocument doc, PageId? targetPageId)
+    {
+        if (targetPageId is not { IsEmpty: false } pid)
+        {
+            return doc.ActivePageIndex;
+        }
+
+        for (int i = 0; i < doc.Pages.Length; i++)
+        {
+            if (doc.Pages[i].Id == pid)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static ZiwaDocument ReplaceNodeOnPage(ZiwaDocument doc, int pageIndex, NodeId nodeId, SceneNode replacement)
+    {
+        PageModel page = doc.Pages[pageIndex];
+        ImmutableArray<SceneNode> nextNodes = page.Nodes
+            .Select(n => n.Id == nodeId ? replacement : n)
+            .ToImmutableArray();
+        PageModel nextPage = page with { Nodes = nextNodes };
+        ImmutableArray<PageModel> nextPages = doc.Pages.SetItem(pageIndex, nextPage);
+        return doc with { Pages = nextPages, UpdatedAtUtc = DateTimeOffset.UtcNow };
+    }
+
     private static RectMm ComputeSingleResizedBounds(
         RectMm oldBounds,
         double rotationDeg,

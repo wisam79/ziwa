@@ -317,6 +317,18 @@
                   ToolTip.Tip="أصولي: إدراج شعار الاستوديو"
                   AutomationProperties.Name="شعار الاستوديو"
                   Content="هويتي" />
+          <Button x:Name="ImportImageToolButton"
+                  Command="{Binding ImportImageCommand}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  Width="42"
+                  Height="34"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  ToolTip.Tip="إدراج صورة من الجهاز (Ctrl+Shift+I)"
+                  AutomationProperties.Name="إدراج صورة"
+                  Content="صورة" />
         </StackPanel>
       </Border>
 
@@ -438,6 +450,28 @@
                     ToolTip.Tip="قلب محتوى الخانة أفقياً"
                     AutomationProperties.Name="قلب الخانة"
                     Content="قلب أفقي" />
+            <Button x:Name="QuickRemoveBgButton"
+                    Command="{Binding RemoveBackgroundCommand}"
+                    IsVisible="{Binding IsPhotoAiTargetVisible}"
+                    IsEnabled="{Binding IsAiIdle}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                    Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                    ToolTip.Tip="عزل الخلفية محلياً أوفلاين (Ctrl+Shift+B)"
+                    AutomationProperties.Name="عزل الخلفية السريع"
+                    Content="عزل الخلفية" />
+            <Button x:Name="QuickAutoFrameFaceButton"
+                    Command="{Binding AutoFrameFaceCommand}"
+                    IsVisible="{Binding IsPhotoAiTargetVisible}"
+                    IsEnabled="{Binding IsAiIdle}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaSubtleFillBrush}"
+                    Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                    ToolTip.Tip="تأطير الوجه التلقائي لصور الهوية (Ctrl+Shift+F)"
+                    AutomationProperties.Name="تأطير الوجه السريع"
+                    Content="تأطير الوجه" />
             <Button x:Name="QuickDeleteButton"
                     Command="{Binding DeleteSelectionCommand}"
                     MinHeight="{StaticResource CompactButtonSize}"
@@ -924,8 +958,82 @@
                       Content="قنّع بالشكل" />
             </StackPanel>
 
-            <!-- أدوات الصورة والمرشحات (تُطوى تلقائياً عند تحديد ملصق) -->
+            <!-- أدوات الصورة والمرشحات والذكاء الاصطناعي المحلي (تُطوى تلقائياً عند تحديد ملصق) -->
             <StackPanel x:Name="PhotoAndFilterToolsPanel" Spacing="6" IsVisible="{Binding IsPhotoToolsVisible}">
+              <Border x:Name="OfflineAiCard"
+                      IsVisible="{Binding IsPhotoAiTargetVisible}"
+                      Background="{DynamicResource ZiwaSurfaceBrush}"
+                      BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                      BorderThickness="{StaticResource HairlineBorderThickness}"
+                      CornerRadius="{StaticResource OverlayCornerRadius}"
+                      Padding="{StaticResource CardPadding}">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="الذكاء الاصطناعي المحلي (أوفلاين)"
+                             FontSize="12"
+                             FontWeight="SemiBold"
+                             Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+                  <Button x:Name="InspectorRemoveBgButton"
+                          Command="{Binding RemoveBackgroundCommand}"
+                          IsEnabled="{Binding IsAiIdle}"
+                          MinHeight="{StaticResource CompactButtonSize}"
+                          CornerRadius="{StaticResource ControlCornerRadius}"
+                          Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                          Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                          ToolTip.Tip="عزل الخلفية محلياً عبر ONNX مع حفظ تفاصيل الشعر (Ctrl+Shift+B)"
+                          AutomationProperties.Name="عزل الخلفية تلقائياً"
+                          Content="عزل الخلفية تلقائياً" />
+                  <Button x:Name="InspectorEditMaskButton"
+                          Command="{Binding OpenMaskEditorCommand}"
+                          IsEnabled="{Binding IsAiIdle}"
+                          MinHeight="{StaticResource CompactButtonSize}"
+                          CornerRadius="{StaticResource ControlCornerRadius}"
+                          Background="{DynamicResource ZiwaSubtleFillBrush}"
+                          Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                          ToolTip.Tip="فتح محرر القناع اليدوي بفرشاة المسح والاستعادة ومعاينة قبل/بعد"
+                          AutomationProperties.Name="تعديل القناع بالفرشاة"
+                          Content="تعديل القناع بالفرشاة (قبل/بعد)" />
+                  <TextBlock Text="معيار تأطير الوجه للهوية"
+                             FontSize="11"
+                             Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                  <ComboBox x:Name="FramingPresetComboBox"
+                            ItemsSource="{Binding AvailableFramingPresets}"
+                            SelectedItem="{Binding SelectedFramingPresetOption}"
+                            HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:IdPhotoFramingPresetOption">
+                        <TextBlock Text="{Binding TitleAr}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                  <Button x:Name="InspectorAutoFrameFaceButton"
+                          Command="{Binding AutoFrameFaceCommand}"
+                          IsEnabled="{Binding IsAiIdle}"
+                          MinHeight="{StaticResource CompactButtonSize}"
+                          CornerRadius="{StaticResource ControlCornerRadius}"
+                          Background="{DynamicResource ZiwaSubtleFillBrush}"
+                          Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                          ToolTip.Tip="توسيط الرأس والكتفين تلقائياً وفق نسب صور الهوية (Ctrl+Shift+F)"
+                          AutomationProperties.Name="تأطير الوجه لصور الهوية"
+                          Content="تأطير الوجه لصور الهوية" />
+                  <StackPanel x:Name="AiWaitPanel" Spacing="4" IsVisible="{Binding IsAiBusy}">
+                    <ProgressBar IsIndeterminate="True" Minimum="0" Maximum="100" />
+                    <TextBlock Text="{Binding AiBusyStatusText}"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource ZiwaInfoBrush}" />
+                    <Button x:Name="CancelAiOperationButton"
+                            Command="{Binding CancelAiOperationCommand}"
+                            MinHeight="{StaticResource CompactButtonSize}"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
+                            Background="{DynamicResource ZiwaSubtleFillBrush}"
+                            Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
+                            ToolTip.Tip="إلغاء عملية الذكاء الاصطناعي الجارية فوراً"
+                            AutomationProperties.Name="إلغاء الاستدلال المحلي"
+                            Content="إلغاء الاستدلال" />
+                  </StackPanel>
+                </StackPanel>
+              </Border>
+
               <TextBlock Text="مرشحات الصورة الموحدة" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
               <ComboBox ItemsSource="{Binding AvailableFilterPresets}"
                         SelectedItem="{Binding SelectedFilterPreset}"
@@ -960,6 +1068,17 @@
                         AutomationProperties.Name="إعادة تعيين المرشح"
                         Content="إعادة تعيين" />
               </StackPanel>
+
+              <Button x:Name="RestoreOriginalImageButton"
+                      Command="{Binding RestoreOriginalImageCommand}"
+                      IsVisible="{Binding CanRestoreOriginalTarget}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                      ToolTip.Tip="استعادة الصورة الأصلية وإلغاء العزل والقص"
+                      AutomationProperties.Name="استعادة الأصل"
+                      Content="استعادة الأصل" />
             </StackPanel>
 
             <StackPanel Spacing="6" IsVisible="{Binding IsImageSelected}">
@@ -967,15 +1086,6 @@
               <ComboBox ItemsSource="{Binding AvailableMasks}"
                         SelectedItem="{Binding SelectedImageMask}"
                         HorizontalAlignment="Stretch" />
-              <Button x:Name="RestoreOriginalImageButton"
-                      Command="{Binding RestoreOriginalImageCommand}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="استعادة الصورة الأصلية وإلغاء القص"
-                      AutomationProperties.Name="استعادة الأصل"
-                      Content="استعادة الأصل" />
             </StackPanel>
 
             <StackPanel Spacing="6" IsVisible="{Binding IsSvgSelected}">
@@ -1163,7 +1273,7 @@
             BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
             BorderThickness="0,1,0,0"
             Padding="{StaticResource ToolbarPadding}">
-      <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto">
         <TextBlock Grid.Column="0"
                    Text="{Binding StatusMessage}"
                    Foreground="{DynamicResource ZiwaSecondaryTextBrush}"
@@ -1189,8 +1299,11 @@
                    Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" />
         <Button Grid.Column="5" IsVisible="{Binding IsProjectBusy}" Command="{Binding CancelProjectOperationCommand}"
                 Content="إلغاء العملية" ToolTip.Tip="إلغاء عملية المشروع الحالية" AutomationProperties.Name="إلغاء عملية المشروع" />
+        <Button x:Name="CancelAiStatusBarButton" Grid.Column="6" IsVisible="{Binding IsAiBusy}" Command="{Binding CancelAiOperationCommand}"
+                Margin="8,0,0,0" Content="إلغاء الذكاء" ToolTip.Tip="إلغاء عملية الذكاء الاصطناعي فوراً" AutomationProperties.Name="إلغاء عملية الذكاء الاصطناعي" />
       </Grid>
     </Border>
     <views:ProjectLibraryView Grid.RowSpan="4" IsVisible="{Binding IsProjectLibraryOpen}" />
+    <views:AiMaskEditorView Grid.RowSpan="4" IsVisible="{Binding IsMaskEditorOpen}" />
   </Grid>
 </Window>

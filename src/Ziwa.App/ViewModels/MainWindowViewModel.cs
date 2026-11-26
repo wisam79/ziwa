@@ -4,6 +4,7 @@ using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Ziwa.Application.Abstractions;
+using Ziwa.Application.Ai;
 using Ziwa.Application.Collage;
 using Ziwa.Application.Commands;
 using Ziwa.Application.Interaction;
@@ -21,6 +22,7 @@ using Ziwa.Domain.PrePress;
 using Ziwa.Domain.Primitives;
 using Ziwa.Domain.Stickers;
 using Ziwa.Rendering;
+using Ziwa.Rendering.Assets;
 using Ziwa.Rendering.Viewport;
 
 namespace Ziwa.App.ViewModels;
@@ -165,7 +167,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
         IPlatformCapabilities platformCapabilities,
         ProjectWorkspace projects,
         IAssetRegistrar? assetRegistrar = null,
-        IPrintSpooler? printSpooler = null)
+        IPrintSpooler? printSpooler = null,
+        OfflineAiCoordinator? aiCoordinator = null,
+        IImageAssetImporter? imageImporter = null,
+        AssetStore? assetStore = null,
+        IProjectDialogs? dialogs = null)
     {
         _session = session;
         _commandRegistry = commandRegistry;
@@ -182,6 +188,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         _session.SessionChanged += OnSessionChanged;
         RegisterUnifiedCommands();
         RegisterProjectCommands();
+        InitializeAiIntegration(aiCoordinator, imageImporter, assetStore, dialogs);
         LoadStickerStudioFromTemplate(ParametricStickerCatalog.CommercialSeal, existingFields: null, palette: null);
         RefreshPrinters();
         RefreshFromSession();
@@ -447,10 +454,15 @@ public sealed partial class MainWindowViewModel : ObservableObject
             "استعادة الأصل",
             string.Empty,
             "صور",
-            () => IsImageSelected,
+            () => CanRestoreOriginalTarget,
             _ =>
             {
-                if (SelectedNodes.FirstOrDefault() is ImageNode img)
+                if (IsCollageSlotSelected && _session.SelectedCollageSlotId is { } sid)
+                {
+                    _session.ApplyCommand("استعادة صورة الخانة الأصلية", doc => CollageOperations.RestoreOriginalSlotImage(doc, sid));
+                    StatusMessage = "تمت استعادة الصورة الأصلية للخانة";
+                }
+                else if (SelectedNodes.FirstOrDefault() is ImageNode img)
                 {
                     _session.ApplyCommand("استعادة الصورة الأصلية", doc => FreeformSceneOperations.RestoreOriginalImage(doc, img.Id));
                     StatusMessage = "تمت استعادة الصورة الأصلية";
@@ -916,6 +928,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(HasSelection));
         OnPropertyChanged(nameof(IsCollageMode));
         OnPropertyChanged(nameof(IsCollageSlotSelected));
+        OnPropertyChanged(nameof(IsCollageSlotWithImageSelected));
         OnPropertyChanged(nameof(HasAnySelection));
         OnPropertyChanged(nameof(CanGroup));
         OnPropertyChanged(nameof(CanUngroup));
@@ -924,6 +937,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(IsSvgSelected));
         OnPropertyChanged(nameof(IsStickerSelected));
         OnPropertyChanged(nameof(IsPhotoToolsVisible));
+        OnPropertyChanged(nameof(IsPhotoAiTargetVisible));
+        OnPropertyChanged(nameof(CanRestoreOriginalTarget));
         OnPropertyChanged(nameof(IsQuickBarVisible));
         OnPropertyChanged(nameof(CanMaskImageWithShape));
         OnPropertyChanged(nameof(SelectionSummary));

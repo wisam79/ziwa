@@ -354,9 +354,22 @@ public sealed class DocumentSession
         SessionChanged?.Invoke();
     }
 
-    public OperationTicket CreateOperationTicket(NodeId? targetNodeId = null, CancellationToken token = default)
+    public OperationTicket CreateOperationTicket(
+        NodeId? targetNodeId = null,
+        CancellationToken token = default,
+        SlotId? targetSlotId = null,
+        PageId? targetPageId = null,
+        AssetId? expectedSourceAssetId = null)
     {
-        return new OperationTicket(Guid.NewGuid(), CommittedDocument.Id, targetNodeId, token);
+        return new OperationTicket(
+            Guid.NewGuid(),
+            CommittedDocument.Id,
+            targetNodeId,
+            token,
+            targetSlotId,
+            targetPageId ?? CommittedDocument.ActivePage.Id,
+            Generation,
+            expectedSourceAssetId);
     }
 
     public bool TryApplyAsyncResult(
@@ -376,10 +389,45 @@ public sealed class DocumentSession
             return false;
         }
 
+        if (ticket.ExpectedGeneration is long expectedGen && Generation != expectedGen)
+        {
+            return false;
+        }
+
+        PageModel? targetPage = ticket.TargetPageId is { IsEmpty: false } pageId
+            ? CommittedDocument.Pages.FirstOrDefault(p => p.Id == pageId)
+            : CommittedDocument.ActivePage;
+
+        if (targetPage is null)
+        {
+            return false;
+        }
+
         if (ticket.TargetNodeId is { } targetId)
         {
-            SceneNode? target = CommittedDocument.ActivePage.Nodes.FirstOrDefault(n => n.Id == targetId);
+            SceneNode? target = targetPage.Nodes.FirstOrDefault(n => n.Id == targetId);
             if (target is null || target.IsLocked)
+            {
+                return false;
+            }
+
+            if (ticket.ExpectedSourceAssetId is { IsEmpty: false } expNodeAsset && target is ImageNode img &&
+                img.OriginalAssetId != expNodeAsset && img.CurrentAssetId != expNodeAsset)
+            {
+                return false;
+            }
+        }
+
+        if (ticket.TargetSlotId is { } slotId)
+        {
+            var slot = targetPage.CollageLayout?.Slots.FirstOrDefault(s => s.Id == slotId);
+            if (slot is null || slot.AssignedAssetId is not { IsEmpty: false })
+            {
+                return false;
+            }
+
+            if (ticket.ExpectedSourceAssetId is { IsEmpty: false } expSlotAsset &&
+                slot.OriginalAssetId != expSlotAsset && slot.AssignedAssetId != expSlotAsset)
             {
                 return false;
             }

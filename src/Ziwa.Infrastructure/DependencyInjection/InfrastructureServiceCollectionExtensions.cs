@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ziwa.Application.Abstractions;
+using Ziwa.Application.Ai;
 using Ziwa.Application.Commands;
 using Ziwa.Application.Persistence;
 using Ziwa.Application.Printing;
@@ -8,6 +9,7 @@ using Ziwa.Application.Session;
 using Ziwa.Application.Workspace;
 using Ziwa.Domain.Models;
 using Ziwa.Domain.Primitives;
+using Ziwa.Infrastructure.Ai;
 using Ziwa.Infrastructure.Assets;
 using Ziwa.Infrastructure.Collage;
 using Ziwa.Infrastructure.Export;
@@ -31,11 +33,19 @@ public static class InfrastructureServiceCollectionExtensions
         </svg>
         """;
 
-    public static IServiceCollection AddZiwaCoreServices(this IServiceCollection services, ProjectStorageOptions? storageOptions = null)
+    public static IServiceCollection AddZiwaCoreServices(
+        this IServiceCollection services,
+        ProjectStorageOptions? storageOptions = null,
+        OfflineAiOptions? aiOptions = null)
     {
-        services.AddSingleton(storageOptions ?? new ProjectStorageOptions(
+        ProjectStorageOptions resolvedStorage = storageOptions ?? new ProjectStorageOptions(
             Environment.GetEnvironmentVariable("ZIWA_DATA_DIRECTORY") ?? Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ZiwaStudio")));
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ZiwaStudio"));
+        OfflineAiOptions resolvedAi = aiOptions ?? new OfflineAiOptions(
+            Path.Combine(resolvedStorage.RootDirectory, "Models"));
+
+        services.AddSingleton(resolvedStorage);
+        services.AddSingleton(resolvedAi);
         services.AddSingleton<IProjectStore, ZiwaProjectStore>();
         services.AddSingleton<IProjectAssetStore, RenderingProjectAssetStore>();
         services.AddSingleton<IProjectLibrary, SqliteProjectRepo>();
@@ -43,6 +53,10 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<AssetStore>();
         services.AddSingleton<IRenderAssetProvider>(sp => sp.GetRequiredService<AssetStore>());
         services.AddSingleton<IAssetRegistrar, RenderingAssetRegistrar>();
+        services.AddSingleton<IImageAssetImporter, FileImageAssetImporter>();
+        services.AddSingleton<IBackgroundRemovalService, OnnxBackgroundRemover>();
+        services.AddSingleton<IFaceFramingService, OnnxFaceFramingService>();
+        services.AddSingleton<OfflineAiCoordinator>();
         services.AddSingleton<FontRegistry>();
         services.AddSingleton<HarfBuzzArabicShaper>();
         services.AddSingleton<TextOnCurveRenderer>();

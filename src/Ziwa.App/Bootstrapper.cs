@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Ziwa.App.Services;
 using Ziwa.Application.Persistence;
 using Ziwa.App.ViewModels;
+using Ziwa.Infrastructure.Ai;
 using Ziwa.Infrastructure.DependencyInjection;
 #if WINDOWS
 using Ziwa.Platform.Windows;
@@ -11,10 +12,13 @@ namespace Ziwa.App;
 
 public static class Bootstrapper
 {
-    public static ServiceProvider BuildServiceProvider(ProjectStorageOptions? storageOptions = null, IProjectDialogs? dialogs = null)
+    public static ServiceProvider BuildServiceProvider(
+        ProjectStorageOptions? storageOptions = null,
+        IProjectDialogs? dialogs = null,
+        OfflineAiOptions? aiOptions = null)
     {
         var services = new ServiceCollection();
-        services.AddZiwaCoreServices(storageOptions);
+        services.AddZiwaCoreServices(storageOptions, aiOptions);
         services.AddSingleton<IProjectDialogs>(dialogs ?? new AvaloniaProjectDialogs());
         services.AddSingleton<ProjectWorkspace>();
 

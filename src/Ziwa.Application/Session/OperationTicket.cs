@@ -6,4 +6,8 @@ public sealed record OperationTicket(
     Guid OperationId,
     DocumentId DocumentId,
     NodeId? TargetNodeId,
-    CancellationToken Token);
+    CancellationToken Token,
+    SlotId? TargetSlotId = null,
+    PageId? TargetPageId = null,
+    long? ExpectedGeneration = null,
+    AssetId? ExpectedSourceAssetId = null);

@@ -11,10 +11,14 @@ public sealed class AvaloniaProjectDialogs : IProjectDialogs
 {
     private static readonly FilePickerFileType ProjectType = new("مشروع Ziwa") { Patterns = ["*.ziwa"] };
     private static readonly FilePickerFileType BackupType = new("نسخة مكتبة Ziwa") { Patterns = ["*.ziwabackup"] };
+    private static readonly FilePickerFileType ImageType = new("صور نقطية") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"] };
     public Window? Owner { get; set; }
 
     public Task<string?> PickOpenProjectAsync(CancellationToken cancellationToken = default) =>
         PickOpenAsync("فتح مشروع", ProjectType, cancellationToken);
+
+    public Task<string?> PickOpenImageAsync(CancellationToken cancellationToken = default) =>
+        PickOpenAsync("إدراج صورة", ImageType, cancellationToken);
 
     public Task<string?> PickSaveProjectAsync(string title, string? currentPath, CancellationToken cancellationToken = default) =>
         PickSaveAsync("حفظ مشروع باسم", "project.ziwa", "ziwa", ProjectType, cancellationToken);

@@ -324,6 +324,155 @@ public static class CollageOperations
     public static ZiwaDocument ResetSlotFilters(ZiwaDocument doc, SlotId slotId) =>
         ApplyFiltersToSlot(doc, slotId, ImageFilterSpec.None);
 
+    public static ZiwaDocument ApplyProcessedSlotAsset(
+        ZiwaDocument doc,
+        SlotId slotId,
+        AssetId processedAssetId,
+        bool syncAutoRepeat = true,
+        PageId? targetPageId = null)
+    {
+        if (processedAssetId.IsEmpty)
+        {
+            return doc;
+        }
+
+        int pageIndex = ResolvePageIndex(doc, targetPageId);
+        if (pageIndex < 0 || doc.Pages[pageIndex].CollageLayout is not { } layout)
+        {
+            return doc;
+        }
+
+        CollageSlot? target = layout.Slots.FirstOrDefault(s => s.Id == slotId);
+        if (target is null || target.AssignedAssetId is not { IsEmpty: false } currentAsset)
+        {
+            return doc;
+        }
+
+        AssetId sourceOriginal = target.OriginalAssetId ?? currentAsset;
+        bool syncAll = syncAutoRepeat && layout.AutoRepeatMode;
+
+        ImmutableArray<CollageSlot> next = layout.Slots.Select(s =>
+        {
+            if (s.Id == slotId)
+            {
+                return s with { AssignedAssetId = processedAssetId, OriginalAssetId = sourceOriginal };
+            }
+
+            if (syncAll && (s.OriginalAssetId ?? s.AssignedAssetId) == sourceOriginal && s.AssignedAssetId is { IsEmpty: false })
+            {
+                return s with { AssignedAssetId = processedAssetId, OriginalAssetId = sourceOriginal };
+            }
+
+            return s;
+        }).ToImmutableArray();
+
+        return ReplaceCollageLayoutOnPage(doc, pageIndex, layout with { Slots = next });
+    }
+
+    public static ZiwaDocument ApplyFaceCropToSlot(
+        ZiwaDocument doc,
+        SlotId slotId,
+        CropSpec framingCrop,
+        bool syncAutoRepeat = true,
+        PageId? targetPageId = null)
+    {
+        int pageIndex = ResolvePageIndex(doc, targetPageId);
+        if (pageIndex < 0 || doc.Pages[pageIndex].CollageLayout is not { } layout)
+        {
+            return doc;
+        }
+
+        CollageSlot? target = layout.Slots.FirstOrDefault(s => s.Id == slotId);
+        if (target is null || target.AssignedAssetId is not { IsEmpty: false })
+        {
+            return doc;
+        }
+
+        var clamped = new CropSpec(
+            DomainMath.Clamp(framingCrop.Zoom, 1.0, 20.0),
+            DomainMath.Clamp(framingCrop.PanX, -1.0, 1.0),
+            DomainMath.Clamp(framingCrop.PanY, -1.0, 1.0));
+
+        AssetId sourceOriginal = target.OriginalAssetId ?? target.AssignedAssetId.Value;
+        double targetAspect = target.BoundsMm.Width / target.BoundsMm.Height;
+        bool syncAll = syncAutoRepeat && layout.AutoRepeatMode;
+
+        ImmutableArray<CollageSlot> next = layout.Slots.Select(s =>
+        {
+            if (s.Id == slotId)
+            {
+                return s with { Crop = clamped };
+            }
+
+            if (syncAll &&
+                s.AssignedAssetId is { IsEmpty: false } &&
+                (s.OriginalAssetId ?? s.AssignedAssetId) == sourceOriginal &&
+                s.QuarterTurns == target.QuarterTurns &&
+                s.FlipHorizontal == target.FlipHorizontal &&
+                s.FlipVertical == target.FlipVertical &&
+                Math.Abs((s.BoundsMm.Width / s.BoundsMm.Height) - targetAspect) <= 0.02)
+            {
+                return s with { Crop = clamped };
+            }
+
+            return s;
+        }).ToImmutableArray();
+
+        return ReplaceCollageLayoutOnPage(doc, pageIndex, layout with { Slots = next });
+    }
+
+    public static ZiwaDocument RestoreOriginalSlotImage(ZiwaDocument doc, SlotId slotId)
+    {
+        if (doc.ActivePage.CollageLayout is not { } layout)
+        {
+            return doc;
+        }
+
+        ImmutableArray<CollageSlot> next = layout.Slots.Select(s =>
+        {
+            if (s.Id != slotId || s.AssignedAssetId is null)
+            {
+                return s;
+            }
+
+            AssetId restored = s.OriginalAssetId ?? s.AssignedAssetId.Value;
+            return s with
+            {
+                AssignedAssetId = restored,
+                OriginalAssetId = restored,
+                Crop = CropSpec.Identity,
+                Mask = MaskShapeKind.None,
+            };
+        }).ToImmutableArray();
+
+        return ReplaceCollageLayout(doc, layout with { Slots = next });
+    }
+
+    private static int ResolvePageIndex(ZiwaDocument doc, PageId? targetPageId)
+    {
+        if (targetPageId is not { IsEmpty: false } pid)
+        {
+            return doc.ActivePageIndex;
+        }
+
+        for (int i = 0; i < doc.Pages.Length; i++)
+        {
+            if (doc.Pages[i].Id == pid)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static ZiwaDocument ReplaceCollageLayoutOnPage(ZiwaDocument doc, int pageIndex, CollageLayoutModel nextLayout)
+    {
+        PageModel nextPage = doc.Pages[pageIndex] with { CollageLayout = nextLayout };
+        ImmutableArray<PageModel> nextPages = doc.Pages.SetItem(pageIndex, nextPage);
+        return doc with { Pages = nextPages, UpdatedAtUtc = DateTimeOffset.UtcNow };
+    }
+
     private static ZiwaDocument ReplaceCollageLayout(ZiwaDocument doc, CollageLayoutModel nextLayout)
     {
         PageModel nextPage = doc.ActivePage with { CollageLayout = nextLayout };

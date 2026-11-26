@@ -149,5 +149,6 @@ public sealed partial class MainWindowViewModel : IDisposable
     {
         _session.SessionChanged -= OnSessionChanged;
         _projects.Changed -= OnProjectsChanged;
+        DisposeAiResources();
     }
 }

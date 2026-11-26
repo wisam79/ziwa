@@ -77,4 +77,5 @@ public interface IProjectDialogs
     Task<string?> PickOpenBackupAsync(CancellationToken cancellationToken = default);
     Task<string?> PickSaveBackupAsync(CancellationToken cancellationToken = default);
     Task<UnsavedChangesChoice> ConfirmUnsavedChangesAsync(CancellationToken cancellationToken = default);
+    Task<string?> PickOpenImageAsync(CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
 }

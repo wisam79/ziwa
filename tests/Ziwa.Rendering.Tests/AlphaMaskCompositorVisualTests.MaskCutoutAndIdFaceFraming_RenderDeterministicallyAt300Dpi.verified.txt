@@ -1,0 +1,9 @@
+{
+  ExportWidth300: 650,
+  ExportHeight300: 768,
+  FramingZoom: 1.846,
+  FramingPanX: 0.365,
+  FramingPanY: -0.433,
+  CropMidXCentered: true,
+  CutoutPreservesPageBackdrop: true
+}
