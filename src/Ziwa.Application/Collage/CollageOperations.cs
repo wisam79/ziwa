@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Ziwa.Domain.Ai;
 using Ziwa.Domain.Collage;
 using Ziwa.Domain.Math;
 using Ziwa.Domain.Models;
@@ -361,6 +362,82 @@ public static class CollageOperations
             if (syncAll && (s.OriginalAssetId ?? s.AssignedAssetId) == sourceOriginal && s.AssignedAssetId is { IsEmpty: false })
             {
                 return s with { AssignedAssetId = processedAssetId, OriginalAssetId = sourceOriginal };
+            }
+
+            return s;
+        }).ToImmutableArray();
+
+        return ReplaceCollageLayoutOnPage(doc, pageIndex, layout with { Slots = next });
+    }
+
+    public static ZiwaDocument ApplyUpscaledSlotAsset(
+        ZiwaDocument doc,
+        SlotId slotId,
+        AssetId upscaledAssetId,
+        int sourceWidthPx,
+        int sourceHeightPx,
+        int outputWidthPx,
+        int outputHeightPx,
+        bool syncAutoRepeat = true,
+        PageId? targetPageId = null)
+    {
+        if (upscaledAssetId.IsEmpty)
+        {
+            return doc;
+        }
+
+        int pageIndex = ResolvePageIndex(doc, targetPageId);
+        if (pageIndex < 0 || doc.Pages[pageIndex].CollageLayout is not { } layout)
+        {
+            return doc;
+        }
+
+        CollageSlot? target = layout.Slots.FirstOrDefault(s => s.Id == slotId);
+        if (target is null || target.AssignedAssetId is not { IsEmpty: false } currentAsset)
+        {
+            return doc;
+        }
+
+        AssetId sourceOriginal = target.OriginalAssetId ?? currentAsset;
+        bool syncAll = syncAutoRepeat && layout.AutoRepeatMode;
+
+        static CropSpec RecalibrateSlotCrop(CollageSlot slot, int srcW, int srcH, int outW, int outH)
+        {
+            bool swapsAxes = slot.QuarterTurns is 1 or 3;
+            double logicalW = swapsAxes ? slot.BoundsMm.Height : slot.BoundsMm.Width;
+            double logicalH = swapsAxes ? slot.BoundsMm.Width : slot.BoundsMm.Height;
+            return CropCalibrationMath.RecalibrateForResizedAsset(
+                slot.EffectiveCrop,
+                srcW,
+                srcH,
+                outW,
+                outH,
+                logicalW,
+                logicalH);
+        }
+
+        ImmutableArray<CollageSlot> next = layout.Slots.Select(s =>
+        {
+            if (s.Id == slotId)
+            {
+                CropSpec nextCrop = RecalibrateSlotCrop(s, sourceWidthPx, sourceHeightPx, outputWidthPx, outputHeightPx);
+                return s with
+                {
+                    AssignedAssetId = upscaledAssetId,
+                    OriginalAssetId = sourceOriginal,
+                    Crop = nextCrop,
+                };
+            }
+
+            if (syncAll && (s.OriginalAssetId ?? s.AssignedAssetId) == sourceOriginal && s.AssignedAssetId is { IsEmpty: false })
+            {
+                CropSpec siblingCrop = RecalibrateSlotCrop(s, sourceWidthPx, sourceHeightPx, outputWidthPx, outputHeightPx);
+                return s with
+                {
+                    AssignedAssetId = upscaledAssetId,
+                    OriginalAssetId = sourceOriginal,
+                    Crop = siblingCrop,
+                };
             }
 
             return s;

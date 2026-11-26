@@ -17,10 +17,11 @@ public static class Bootstrapper
         ProjectStorageOptions? storageOptions = null,
         IProjectDialogs? dialogs = null,
         OfflineAiOptions? aiOptions = null,
-        DocumentScannerOptions? scannerOptions = null)
+        DocumentScannerOptions? scannerOptions = null,
+        CloudAiOptions? cloudAiOptions = null)
     {
         var services = new ServiceCollection();
-        services.AddZiwaCoreServices(storageOptions, aiOptions, scannerOptions);
+        services.AddZiwaCoreServices(storageOptions, aiOptions, scannerOptions, cloudAiOptions);
         services.AddSingleton<IProjectDialogs>(dialogs ?? new AvaloniaProjectDialogs());
         services.AddSingleton<ProjectWorkspace>();
 

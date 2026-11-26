@@ -173,7 +173,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         IImageAssetImporter? imageImporter = null,
         AssetStore? assetStore = null,
         IProjectDialogs? dialogs = null,
-        DocumentScannerCoordinator? scannerCoordinator = null)
+        DocumentScannerCoordinator? scannerCoordinator = null,
+        CloudAiCoordinator? cloudAiCoordinator = null)
     {
         _session = session;
         _commandRegistry = commandRegistry;
@@ -190,7 +191,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         _session.SessionChanged += OnSessionChanged;
         RegisterUnifiedCommands();
         RegisterProjectCommands();
-        InitializeAiIntegration(aiCoordinator, imageImporter, assetStore, dialogs);
+        InitializeAiIntegration(aiCoordinator, imageImporter, assetStore, dialogs, cloudAiCoordinator);
         InitializeScannerIntegration(scannerCoordinator);
         LoadStickerStudioFromTemplate(ParametricStickerCatalog.CommercialSeal, existingFields: null, palette: null);
         RefreshPrinters();

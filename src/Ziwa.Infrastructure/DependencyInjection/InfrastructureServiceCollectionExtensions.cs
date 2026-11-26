@@ -39,7 +39,8 @@ public static class InfrastructureServiceCollectionExtensions
         this IServiceCollection services,
         ProjectStorageOptions? storageOptions = null,
         OfflineAiOptions? aiOptions = null,
-        DocumentScannerOptions? scannerOptions = null)
+        DocumentScannerOptions? scannerOptions = null,
+        CloudAiOptions? cloudAiOptions = null)
     {
         ProjectStorageOptions resolvedStorage = storageOptions ?? new ProjectStorageOptions(
             Environment.GetEnvironmentVariable("ZIWA_DATA_DIRECTORY") ?? Path.Combine(
@@ -47,10 +48,12 @@ public static class InfrastructureServiceCollectionExtensions
         OfflineAiOptions resolvedAi = aiOptions ?? new OfflineAiOptions(
             Path.Combine(resolvedStorage.RootDirectory, "Models"));
         DocumentScannerOptions resolvedScanner = scannerOptions ?? new DocumentScannerOptions();
+        CloudAiOptions resolvedCloudAi = cloudAiOptions ?? CloudAiOptions.LoadFromAppDataAndEnvironment(resolvedStorage.RootDirectory);
 
         services.AddSingleton(resolvedStorage);
         services.AddSingleton(resolvedAi);
         services.AddSingleton(resolvedScanner);
+        services.AddSingleton(resolvedCloudAi);
         services.AddSingleton<IProjectStore, ZiwaProjectStore>();
         services.AddSingleton<IProjectAssetStore, RenderingProjectAssetStore>();
         services.AddSingleton<IProjectLibrary, SqliteProjectRepo>();
@@ -62,6 +65,11 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IBackgroundRemovalService, OnnxBackgroundRemover>();
         services.AddSingleton<IFaceFramingService, OnnxFaceFramingService>();
         services.AddSingleton<OfflineAiCoordinator>();
+        services.AddSingleton<CloudAuthSessionStore>();
+        services.AddSingleton<ICloudAuthSessionStore>(sp => sp.GetRequiredService<CloudAuthSessionStore>());
+        services.AddSingleton<ICloudAuthSessionProvider>(sp => sp.GetRequiredService<CloudAuthSessionStore>());
+        services.AddSingleton<IModalAiUpscaler, ModalAiUpscaler>();
+        services.AddSingleton<CloudAiCoordinator>();
         services.AddSingleton<IDocumentScannerService, OpenCvDocumentScanner>();
         services.AddSingleton<DocumentScannerCoordinator>();
         services.AddSingleton<FontRegistry>();

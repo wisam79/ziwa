@@ -24,6 +24,7 @@ public sealed record IdPhotoFramingPresetOption(IdPhotoFramingPreset Preset, str
 public sealed partial class MainWindowViewModel
 {
     private OfflineAiCoordinator? _aiCoordinator;
+    private CloudAiCoordinator? _cloudAiCoordinator;
     private IImageAssetImporter? _imageImporter;
     private AssetStore? _assetStore;
     private IProjectDialogs? _dialogs;
@@ -81,6 +82,12 @@ public sealed partial class MainWindowViewModel
     public bool IsAiIdle => !IsAiBusy;
     public string AiBusyStatusText => _aiCoordinator?.BusyStatusAr ?? string.Empty;
 
+    public bool IsCloudAiBusy => _cloudAiCoordinator?.IsBusy == true;
+    public bool IsAnyAiBusy => IsAiBusy || IsCloudAiBusy;
+    public bool IsAllAiIdle => !IsAnyAiBusy;
+    public string CloudAiBusyStatusText => _cloudAiCoordinator?.BusyStatusAr ?? string.Empty;
+    public string CloudQuotaBadgeText => _cloudAiCoordinator?.QuotaBadgeTextAr ?? "تسجيل الدخول مطلوب للترميم السحابي";
+
     public bool IsCollageSlotWithImageSelected =>
         IsCollageSlotSelected && SelectedCollageSlot?.AssignedAssetId is { IsEmpty: false };
 
@@ -101,9 +108,11 @@ public sealed partial class MainWindowViewModel
         OfflineAiCoordinator? aiCoordinator,
         IImageAssetImporter? imageImporter,
         AssetStore? assetStore,
-        IProjectDialogs? dialogs)
+        IProjectDialogs? dialogs,
+        CloudAiCoordinator? cloudAiCoordinator)
     {
         _aiCoordinator = aiCoordinator;
+        _cloudAiCoordinator = cloudAiCoordinator;
         _imageImporter = imageImporter;
         _assetStore = assetStore;
         _dialogs = dialogs;
@@ -111,6 +120,11 @@ public sealed partial class MainWindowViewModel
         if (_aiCoordinator is not null)
         {
             _aiCoordinator.StateChanged += OnAiCoordinatorStateChanged;
+        }
+
+        if (_cloudAiCoordinator is not null)
+        {
+            _cloudAiCoordinator.StateChanged += OnAiCoordinatorStateChanged;
         }
 
         RegisterAiCommands();
@@ -131,7 +145,7 @@ public sealed partial class MainWindowViewModel
             "عزل الخلفية تلقائياً (أوفلاين)",
             "Ctrl+Shift+B",
             "ذكاء اصطناعي",
-            () => _aiCoordinator is not null && IsPhotoAiTargetVisible && IsAiIdle,
+            () => _aiCoordinator is not null && IsPhotoAiTargetVisible && IsAllAiIdle,
             RemoveBackgroundCoreAsync));
 
         _commandRegistry.Register(new CommandDefinition(
@@ -139,7 +153,7 @@ public sealed partial class MainWindowViewModel
             "تعديل قناع العزل بالفرشاة (قبل/بعد)",
             string.Empty,
             "ذكاء اصطناعي",
-            () => _aiCoordinator is not null && _assetStore is not null && IsPhotoAiTargetVisible && IsAiIdle,
+            () => _aiCoordinator is not null && _assetStore is not null && IsPhotoAiTargetVisible && IsAllAiIdle,
             OpenMaskEditorCoreAsync));
 
         _commandRegistry.Register(new CommandDefinition(
@@ -147,8 +161,16 @@ public sealed partial class MainWindowViewModel
             "تأطير الوجه التلقائي لصور الهوية",
             "Ctrl+Shift+F",
             "ذكاء اصطناعي",
-            () => _aiCoordinator is not null && IsPhotoAiTargetVisible && IsAiIdle,
+            () => _aiCoordinator is not null && IsPhotoAiTargetVisible && IsAllAiIdle,
             AutoFrameFaceCoreAsync));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("ai.cloudEnhance"),
+            "ترميم الوجوه ومضاعفة الدقة 2x (سحابي)",
+            "Ctrl+Shift+U",
+            "ذكاء اصطناعي",
+            () => _cloudAiCoordinator is not null && IsPhotoAiTargetVisible && IsAllAiIdle,
+            EnhancePhotoCloudCoreAsync));
     }
 
     partial void OnSelectedMaskPreviewModeOptionChanged(MaskPreviewModeOption value)
@@ -201,9 +223,28 @@ public sealed partial class MainWindowViewModel
         _commandRegistry.TryExecuteAsync(new CommandId("ai.autoFrameFace"), ct);
 
     [RelayCommand]
+    private Task EnhancePhotoCloudAsync(CancellationToken ct) =>
+        _commandRegistry.TryExecuteAsync(new CommandId("ai.cloudEnhance"), ct);
+
+    [RelayCommand]
     private void CancelAiOperation()
     {
         _aiCoordinator?.CancelActiveOperation();
+        StatusMessage = "جارٍ إلغاء عملية الذكاء الاصطناعي...";
+    }
+
+    [RelayCommand]
+    private void CancelCloudAiOperation()
+    {
+        _cloudAiCoordinator?.CancelActiveOperation();
+        StatusMessage = "جارٍ إلغاء الترميم السحابي...";
+    }
+
+    [RelayCommand]
+    private void CancelActiveAiOperation()
+    {
+        _aiCoordinator?.CancelActiveOperation();
+        _cloudAiCoordinator?.CancelActiveOperation();
         StatusMessage = "جارٍ إلغاء عملية الذكاء الاصطناعي...";
     }
 
@@ -439,6 +480,17 @@ public sealed partial class MainWindowViewModel
         StatusMessage = outcome.MessageAr;
     }
 
+    private async Task EnhancePhotoCloudCoreAsync(CancellationToken ct)
+    {
+        if (_cloudAiCoordinator is null)
+        {
+            return;
+        }
+
+        AiOperationOutcome outcome = await _cloudAiCoordinator.EnhanceSelectedPhotoAsync(fidelity: 0.7, ct);
+        StatusMessage = outcome.MessageAr;
+    }
+
     private void OnAiCoordinatorStateChanged()
     {
         void Raise()
@@ -446,6 +498,11 @@ public sealed partial class MainWindowViewModel
             OnPropertyChanged(nameof(IsAiBusy));
             OnPropertyChanged(nameof(IsAiIdle));
             OnPropertyChanged(nameof(AiBusyStatusText));
+            OnPropertyChanged(nameof(IsCloudAiBusy));
+            OnPropertyChanged(nameof(IsAnyAiBusy));
+            OnPropertyChanged(nameof(IsAllAiIdle));
+            OnPropertyChanged(nameof(CloudAiBusyStatusText));
+            OnPropertyChanged(nameof(CloudQuotaBadgeText));
         }
 
         if (Dispatcher.UIThread.CheckAccess())
@@ -472,6 +529,11 @@ public sealed partial class MainWindowViewModel
         if (_aiCoordinator is not null)
         {
             _aiCoordinator.StateChanged -= OnAiCoordinatorStateChanged;
+        }
+
+        if (_cloudAiCoordinator is not null)
+        {
+            _cloudAiCoordinator.StateChanged -= OnAiCoordinatorStateChanged;
         }
 
         IsMaskEditorOpen = false;

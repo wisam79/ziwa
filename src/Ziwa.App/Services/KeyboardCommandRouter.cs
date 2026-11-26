@@ -23,6 +23,7 @@ public static class KeyboardCommandRouter
             Key.N when shift => "Ctrl+Shift+N",
             Key.B when shift => "Ctrl+Shift+B",
             Key.F when shift => "Ctrl+Shift+F",
+            Key.U when shift => "Ctrl+Shift+U",
             Key.I when shift => "Ctrl+Shift+I",
             Key.D when shift => "Ctrl+Shift+D",
             Key.K => "Ctrl+K",

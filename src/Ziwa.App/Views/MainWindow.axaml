@@ -465,7 +465,7 @@
             <Button x:Name="QuickRemoveBgButton"
                     Command="{Binding RemoveBackgroundCommand}"
                     IsVisible="{Binding IsPhotoAiTargetVisible}"
-                    IsEnabled="{Binding IsAiIdle}"
+                    IsEnabled="{Binding IsAllAiIdle}"
                     MinHeight="{StaticResource CompactButtonSize}"
                     CornerRadius="{StaticResource ControlCornerRadius}"
                     Background="{DynamicResource ZiwaPrimaryActionBrush}"
@@ -476,7 +476,7 @@
             <Button x:Name="QuickAutoFrameFaceButton"
                     Command="{Binding AutoFrameFaceCommand}"
                     IsVisible="{Binding IsPhotoAiTargetVisible}"
-                    IsEnabled="{Binding IsAiIdle}"
+                    IsEnabled="{Binding IsAllAiIdle}"
                     MinHeight="{StaticResource CompactButtonSize}"
                     CornerRadius="{StaticResource ControlCornerRadius}"
                     Background="{DynamicResource ZiwaSubtleFillBrush}"
@@ -484,6 +484,17 @@
                     ToolTip.Tip="تأطير الوجه التلقائي لصور الهوية (Ctrl+Shift+F)"
                     AutomationProperties.Name="تأطير الوجه السريع"
                     Content="تأطير الوجه" />
+            <Button x:Name="QuickCloudEnhanceButton"
+                    Command="{Binding EnhancePhotoCloudCommand}"
+                    IsVisible="{Binding IsPhotoAiTargetVisible}"
+                    IsEnabled="{Binding IsAllAiIdle}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaSubtleFillBrush}"
+                    Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                    ToolTip.Tip="ترميم الوجوه ومضاعفة الدقة 2x عبر Modal CPU (Ctrl+Shift+U)"
+                    AutomationProperties.Name="ترميم 2x سحابي"
+                    Content="ترميم 2x سحابي" />
             <Button x:Name="QuickScanDocumentButton"
                     Command="{Binding OpenDocumentScannerCommand}"
                     IsVisible="{Binding IsPhotoAiTargetVisible}"
@@ -997,7 +1008,7 @@
                              Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
                   <Button x:Name="InspectorRemoveBgButton"
                           Command="{Binding RemoveBackgroundCommand}"
-                          IsEnabled="{Binding IsAiIdle}"
+                          IsEnabled="{Binding IsAllAiIdle}"
                           MinHeight="{StaticResource CompactButtonSize}"
                           CornerRadius="{StaticResource ControlCornerRadius}"
                           Background="{DynamicResource ZiwaPrimaryActionBrush}"
@@ -1007,7 +1018,7 @@
                           Content="عزل الخلفية تلقائياً" />
                   <Button x:Name="InspectorEditMaskButton"
                           Command="{Binding OpenMaskEditorCommand}"
-                          IsEnabled="{Binding IsAiIdle}"
+                          IsEnabled="{Binding IsAllAiIdle}"
                           MinHeight="{StaticResource CompactButtonSize}"
                           CornerRadius="{StaticResource ControlCornerRadius}"
                           Background="{DynamicResource ZiwaSubtleFillBrush}"
@@ -1030,7 +1041,7 @@
                   </ComboBox>
                   <Button x:Name="InspectorAutoFrameFaceButton"
                           Command="{Binding AutoFrameFaceCommand}"
-                          IsEnabled="{Binding IsAiIdle}"
+                          IsEnabled="{Binding IsAllAiIdle}"
                           MinHeight="{StaticResource CompactButtonSize}"
                           CornerRadius="{StaticResource ControlCornerRadius}"
                           Background="{DynamicResource ZiwaSubtleFillBrush}"
@@ -1063,6 +1074,59 @@
                             ToolTip.Tip="إلغاء عملية الذكاء الاصطناعي الجارية فوراً"
                             AutomationProperties.Name="إلغاء الاستدلال المحلي"
                             Content="إلغاء الاستدلال" />
+                  </StackPanel>
+                </StackPanel>
+              </Border>
+
+              <Border x:Name="CloudAiCard"
+                      IsVisible="{Binding IsPhotoAiTargetVisible}"
+                      Background="{DynamicResource ZiwaSurfaceBrush}"
+                      BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                      BorderThickness="{StaticResource HairlineBorderThickness}"
+                      CornerRadius="{StaticResource OverlayCornerRadius}"
+                      Padding="{StaticResource CardPadding}">
+                <StackPanel Spacing="6">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="الترميم السحابي المزدوج (Modal 2x)"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+                    <Border Grid.Column="1"
+                            Background="{DynamicResource ZiwaSubtleFillBrush}"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
+                            Padding="6,2">
+                      <TextBlock x:Name="CloudQuotaBadgeTextBlock"
+                                 Text="{Binding CloudQuotaBadgeText}"
+                                 FontSize="10"
+                                 Foreground="{DynamicResource ZiwaInfoBrush}" />
+                    </Border>
+                  </Grid>
+                  <Button x:Name="InspectorCloudEnhanceButton"
+                          Command="{Binding EnhancePhotoCloudCommand}"
+                          IsEnabled="{Binding IsAllAiIdle}"
+                          MinHeight="{StaticResource CompactButtonSize}"
+                          CornerRadius="{StaticResource ControlCornerRadius}"
+                          Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                          Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                          ToolTip.Tip="ترميم الوجوه بـ CodeFormer ومضاعفة الدقة 2x عبر Modal CPU (Ctrl+Shift+U)"
+                          AutomationProperties.Name="ترميم الوجوه ومضاعفة الدقة 2x"
+                          Content="ترميم الوجوه ومضاعفة الدقة 2x" />
+                  <StackPanel x:Name="CloudAiWaitPanel" Spacing="4" IsVisible="{Binding IsCloudAiBusy}">
+                    <ProgressBar IsIndeterminate="True" Minimum="0" Maximum="100" />
+                    <TextBlock Text="{Binding CloudAiBusyStatusText}"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource ZiwaInfoBrush}" />
+                    <Button x:Name="CancelCloudAiButton"
+                            Command="{Binding CancelCloudAiOperationCommand}"
+                            MinHeight="{StaticResource CompactButtonSize}"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
+                            Background="{DynamicResource ZiwaSubtleFillBrush}"
+                            Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
+                            ToolTip.Tip="إلغاء الترميم السحابي فوراً دون إعادة محاولة"
+                            AutomationProperties.Name="إلغاء الترميم السحابي"
+                            Content="إلغاء الترميم السحابي" />
                   </StackPanel>
                 </StackPanel>
               </Border>
@@ -1332,7 +1396,7 @@
                    Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" />
         <Button Grid.Column="5" IsVisible="{Binding IsProjectBusy}" Command="{Binding CancelProjectOperationCommand}"
                 Content="إلغاء العملية" ToolTip.Tip="إلغاء عملية المشروع الحالية" AutomationProperties.Name="إلغاء عملية المشروع" />
-        <Button x:Name="CancelAiStatusBarButton" Grid.Column="6" IsVisible="{Binding IsAiBusy}" Command="{Binding CancelAiOperationCommand}"
+        <Button x:Name="CancelAiStatusBarButton" Grid.Column="6" IsVisible="{Binding IsAnyAiBusy}" Command="{Binding CancelActiveAiOperationCommand}"
                 Margin="8,0,0,0" Content="إلغاء الذكاء" ToolTip.Tip="إلغاء عملية الذكاء الاصطناعي فوراً" AutomationProperties.Name="إلغاء عملية الذكاء الاصطناعي" />
       </Grid>
     </Border>
