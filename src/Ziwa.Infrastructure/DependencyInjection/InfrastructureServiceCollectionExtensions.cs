@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ziwa.Application.Abstractions;
 using Ziwa.Application.Ai;
+using Ziwa.Application.Auth;
 using Ziwa.Application.Commands;
 using Ziwa.Application.Persistence;
 using Ziwa.Application.Printing;
@@ -12,6 +13,7 @@ using Ziwa.Domain.Models;
 using Ziwa.Domain.Primitives;
 using Ziwa.Infrastructure.Ai;
 using Ziwa.Infrastructure.Assets;
+using Ziwa.Infrastructure.Auth;
 using Ziwa.Infrastructure.Collage;
 using Ziwa.Infrastructure.Export;
 using Ziwa.Infrastructure.IO;
@@ -40,7 +42,9 @@ public static class InfrastructureServiceCollectionExtensions
         ProjectStorageOptions? storageOptions = null,
         OfflineAiOptions? aiOptions = null,
         DocumentScannerOptions? scannerOptions = null,
-        CloudAiOptions? cloudAiOptions = null)
+        CloudAiOptions? cloudAiOptions = null,
+        SupabaseAuthOptions? authOptions = null,
+        IBrowserLauncher? browserLauncher = null)
     {
         ProjectStorageOptions resolvedStorage = storageOptions ?? new ProjectStorageOptions(
             Environment.GetEnvironmentVariable("ZIWA_DATA_DIRECTORY") ?? Path.Combine(
@@ -49,11 +53,13 @@ public static class InfrastructureServiceCollectionExtensions
             Path.Combine(resolvedStorage.RootDirectory, "Models"));
         DocumentScannerOptions resolvedScanner = scannerOptions ?? new DocumentScannerOptions();
         CloudAiOptions resolvedCloudAi = cloudAiOptions ?? CloudAiOptions.LoadFromAppDataAndEnvironment(resolvedStorage.RootDirectory);
+        SupabaseAuthOptions resolvedAuth = authOptions ?? SupabaseAuthOptions.LoadFromAppDataAndEnvironment(resolvedStorage.RootDirectory, resolvedCloudAi);
 
         services.AddSingleton(resolvedStorage);
         services.AddSingleton(resolvedAi);
         services.AddSingleton(resolvedScanner);
         services.AddSingleton(resolvedCloudAi);
+        services.AddSingleton(resolvedAuth);
         services.AddSingleton<IProjectStore, ZiwaProjectStore>();
         services.AddSingleton<IProjectAssetStore, RenderingProjectAssetStore>();
         services.AddSingleton<IProjectLibrary, SqliteProjectRepo>();
@@ -68,8 +74,12 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<CloudAuthSessionStore>();
         services.AddSingleton<ICloudAuthSessionStore>(sp => sp.GetRequiredService<CloudAuthSessionStore>());
         services.AddSingleton<ICloudAuthSessionProvider>(sp => sp.GetRequiredService<CloudAuthSessionStore>());
+        services.AddSingleton<ILocalAuthSessionStore, AtomicLocalAuthSessionStore>();
+        services.AddSingleton<IBrowserLauncher>(browserLauncher ?? new SystemBrowserLauncher());
+        services.AddSingleton<ISupabaseAuthClient, SupabaseAuthClient>();
         services.AddSingleton<IModalAiUpscaler, ModalAiUpscaler>();
         services.AddSingleton<CloudAiCoordinator>();
+        services.AddSingleton<AccountSessionCoordinator>();
         services.AddSingleton<IDocumentScannerService, OpenCvDocumentScanner>();
         services.AddSingleton<DocumentScannerCoordinator>();
         services.AddSingleton<FontRegistry>();

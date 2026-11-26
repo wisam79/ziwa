@@ -151,5 +151,6 @@ public sealed partial class MainWindowViewModel : IDisposable
         _projects.Changed -= OnProjectsChanged;
         DisposeAiResources();
         DisposeScannerResources();
+        DisposeAccountResources();
     }
 }

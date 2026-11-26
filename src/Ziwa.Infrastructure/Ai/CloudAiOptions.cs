@@ -1,3 +1,5 @@
+using Ziwa.Infrastructure.IO;
+
 namespace Ziwa.Infrastructure.Ai;
 
 public sealed class CloudAiOptions
@@ -39,84 +41,22 @@ public sealed class CloudAiOptions
         }
 
         string candidate = string.IsNullOrWhiteSpace(SupabaseUrl) ? DefaultSupabaseUrl : SupabaseUrl!;
-        return ResolveSecureUriOrNull(candidate, AllowInsecureHttpForTesting);
+        return AppEnvConfigReader.ResolveSecureUriOrNull(candidate, AllowInsecureHttpForTesting);
     }
 
     public static CloudAiOptions LoadFromAppDataAndEnvironment(string appDataRoot)
     {
-        Dictionary<string, string> appDataVars = new(StringComparer.OrdinalIgnoreCase);
-
-        if (!string.IsNullOrWhiteSpace(appDataRoot))
-        {
-            string envFile = Path.Combine(appDataRoot, ".env");
-            if (File.Exists(envFile))
-            {
-                foreach (string rawLine in File.ReadLines(envFile))
-                {
-                    string line = rawLine.Trim();
-                    if (line.Length == 0 || line.StartsWith('#'))
-                    {
-                        continue;
-                    }
-
-                    int eq = line.IndexOf('=');
-                    if (eq <= 0)
-                    {
-                        continue;
-                    }
-
-                    string key = line[..eq].Trim();
-                    string val = line[(eq + 1)..].Trim().Trim('"', '\'');
-                    if (key.Length > 0 && val.Length > 0)
-                    {
-                        appDataVars[key] = val;
-                    }
-                }
-            }
-        }
-
-        string? ReadSetting(string name) =>
-            appDataVars.TryGetValue(name, out string? v) && !string.IsNullOrWhiteSpace(v)
-                ? v
-                : Environment.GetEnvironmentVariable(name);
+        Func<string, string?> readSetting = AppEnvConfigReader.CreateReader(appDataRoot);
 
         return new CloudAiOptions
         {
-            ModalEndpointUrl = ReadSetting("MODAL_AI_URL"),
-            SupabaseUrl = ReadSetting("SUPABASE_URL"),
-            SupabasePublishableKey = ReadSetting("SUPABASE_ANON_KEY"),
+            ModalEndpointUrl = readSetting("MODAL_AI_URL"),
+            SupabaseUrl = readSetting("SUPABASE_URL"),
+            SupabasePublishableKey = readSetting("SUPABASE_PUBLISHABLE_KEY") ?? readSetting("SUPABASE_ANON_KEY"),
         };
     }
 
-    private static Uri ResolveSecureUri(string? configured, string fallbackUrl, bool allowHttpForTesting)
-    {
-        Uri? resolved = ResolveSecureUriOrNull(configured, allowHttpForTesting);
-        return resolved ?? new Uri(fallbackUrl, UriKind.Absolute);
-    }
-
-    private static Uri? ResolveSecureUriOrNull(string? configured, bool allowHttpForTesting)
-    {
-        if (string.IsNullOrWhiteSpace(configured))
-        {
-            return null;
-        }
-
-        string normalized = configured.Trim().TrimEnd('/');
-        if (!Uri.TryCreate(normalized, UriKind.Absolute, out Uri? uri))
-        {
-            return null;
-        }
-
-        if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-        {
-            return uri;
-        }
-
-        if (allowHttpForTesting && string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
-        {
-            return uri;
-        }
-
-        return null;
-    }
+    private static Uri ResolveSecureUri(string? configured, string fallbackUrl, bool allowHttpForTesting) =>
+        AppEnvConfigReader.ResolveSecureUriOrNull(configured, allowHttpForTesting)
+        ?? new Uri(fallbackUrl, UriKind.Absolute);
 }

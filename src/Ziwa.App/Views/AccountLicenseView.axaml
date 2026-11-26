@@ -1,0 +1,359 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             x:Class="Ziwa.App.Views.AccountLicenseView"
+             x:DataType="vm:MainWindowViewModel"
+             FlowDirection="RightToLeft">
+  <Border Background="{DynamicResource ZiwaCardBrush}"
+          Padding="24">
+    <Border Width="520"
+            MaxHeight="760"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="{DynamicResource ZiwaSurfaceBrush}"
+            BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+            BorderThickness="{StaticResource HairlineBorderThickness}"
+            CornerRadius="{StaticResource DialogCornerRadius}"
+            BoxShadow="{StaticResource ZiwaSheetShadow}"
+            Padding="{StaticResource InspectorPadding}">
+      <ScrollViewer>
+        <StackPanel Spacing="12">
+          <!-- العنوان وإغلاق النافذة -->
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0"
+                       Text="الحساب، الاشتراك، والحصة السحابية"
+                       FontSize="16"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+            <Button x:Name="CloseAccountDialogButton"
+                    Grid.Column="1"
+                    Command="{Binding CloseAccountDialogCommand}"
+                    IsEnabled="{Binding IsAccountIdle}"
+                    MinWidth="{StaticResource CompactButtonSize}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaSubtleFillBrush}"
+                    Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                    ToolTip.Tip="إغلاق نافذة الحساب والترخيص (Esc)"
+                    AutomationProperties.Name="إغلاق نافذة الحساب"
+                    Content="✕" />
+          </Grid>
+
+          <!-- تنبيه طرد الجلسة عند الدخول من جهاز آخر (Last-Wins) -->
+          <Border x:Name="SessionSupersededBanner"
+                  IsVisible="{Binding HasSessionSupersededWarning}"
+                  Background="{DynamicResource ZiwaCardBrush}"
+                  BorderBrush="{DynamicResource ZiwaDestructiveActionBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Padding="{StaticResource ControlPadding}">
+            <TextBlock Text="{Binding SessionSupersededWarningText}"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource ZiwaDestructiveActionBrush}" />
+          </Border>
+
+          <!-- رسالة النتيجة / الأخطاء -->
+          <Border x:Name="AccountFeedbackBanner"
+                  IsVisible="{Binding HasAccountFeedback}"
+                  Background="{DynamicResource ZiwaCardBrush}"
+                  BorderBrush="{DynamicResource ZiwaFocusStrokeBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Padding="{StaticResource ControlPadding}">
+            <TextBlock x:Name="AccountFeedbackTextBlock"
+                       Text="{Binding AccountFeedbackMessage}"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       Foreground="{DynamicResource ZiwaInfoBrush}" />
+          </Border>
+
+          <!-- حالة الحساب عند تسجيل الدخول -->
+          <Border x:Name="AuthenticatedAccountCard"
+                  IsVisible="{Binding IsUserAuthenticated}"
+                  Background="{DynamicResource ZiwaCardBrush}"
+                  BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  CornerRadius="{StaticResource OverlayCornerRadius}"
+                  Padding="{StaticResource CardPadding}">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="2">
+                  <TextBlock x:Name="AccountDisplayNameText"
+                             Text="{Binding AccountDisplayName}"
+                             FontSize="14"
+                             FontWeight="Bold"
+                             Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+                  <TextBlock Text="{Binding AccountEmailDisplay}"
+                             FlowDirection="LeftToRight"
+                             HorizontalAlignment="Right"
+                             FontSize="12"
+                             Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                </StackPanel>
+                <Border Grid.Column="1"
+                        Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Padding="10,4"
+                        VerticalAlignment="Center">
+                  <TextBlock x:Name="AccountPlanBadgeTextBlock"
+                             Text="{Binding AccountPlanBadgeText}"
+                             FontWeight="Bold"
+                             Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}" />
+                </Border>
+              </Grid>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding AccountStatusDisplayText}"
+                           FontSize="12"
+                           Foreground="{DynamicResource ZiwaSuccessBrush}" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding AccountExpiryDisplayText}"
+                           FontSize="12"
+                           Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              </Grid>
+
+              <TextBlock x:Name="AccountQuotaSummaryTextBlock"
+                         Text="{Binding CloudQuotaBadgeText}"
+                         FontSize="12"
+                         FontWeight="SemiBold"
+                         Foreground="{DynamicResource ZiwaInfoBrush}" />
+
+              <!-- تفعيل مفتاح ترخيص -->
+              <StackPanel Spacing="6">
+                <TextBlock Text="تفعيل مفتاح ترخيص"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBox x:Name="LicenseKeyTextBox"
+                           Grid.Column="0"
+                           FlowDirection="LeftToRight"
+                           Watermark="ZIWA-XXXX-XXXX-XXXX"
+                           Text="{Binding LicenseKeyInput}" />
+                  <Button x:Name="ActivateLicenseButton"
+                          Grid.Column="1"
+                          Margin="8,0,0,0"
+                          Command="{Binding ActivateLicenseKeyCommand}"
+                          IsEnabled="{Binding IsAccountIdle}"
+                          MinHeight="{StaticResource CompactButtonSize}"
+                          CornerRadius="{StaticResource ControlCornerRadius}"
+                          Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                          Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                          ToolTip.Tip="تفعيل مفتاح الترخيص وتمديد الاشتراك عبر Supabase"
+                          AutomationProperties.Name="تفعيل مفتاح الترخيص"
+                          Content="تفعيل المفتاح" />
+                </Grid>
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button x:Name="RefreshAccountStatusButton"
+                        Command="{Binding RefreshAccountStatusCommand}"
+                        IsEnabled="{Binding IsAccountIdle}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="مزامنة حالة الاشتراك والحصة والجلسة النشطة"
+                        AutomationProperties.Name="مزامنة الحساب"
+                        Content="مزامنة الحالة" />
+                <Button x:Name="LogoutAccountButton"
+                        Command="{Binding LogoutAccountCommand}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
+                        ToolTip.Tip="تسجيل الخروج وتصفير الجلسة المحلية والحصة"
+                        AutomationProperties.Name="تسجيل الخروج"
+                        Content="تسجيل الخروج" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- بوابة المصادقة عند عدم تسجيل الدخول -->
+          <Border x:Name="AnonymousAuthCard"
+                  IsVisible="{Binding IsUserAnonymous}"
+                  Background="{DynamicResource ZiwaCardBrush}"
+                  BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  CornerRadius="{StaticResource OverlayCornerRadius}"
+                  Padding="{StaticResource CardPadding}">
+            <StackPanel Spacing="10">
+              <WrapPanel Orientation="Horizontal">
+                <Button x:Name="SelectLoginFlowButton"
+                        Margin="0,0,6,6"
+                        Command="{Binding SelectLoginFlowCommand}"
+                        IsEnabled="{Binding IsAccountIdle}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="التبديل إلى تسجيل الدخول بالبريد"
+                        AutomationProperties.Name="تبويب تسجيل الدخول"
+                        Content="دخول" />
+                <Button x:Name="SelectRegisterFlowButton"
+                        Margin="0,0,6,6"
+                        Command="{Binding SelectRegisterFlowCommand}"
+                        IsEnabled="{Binding IsAccountIdle}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="التبديل إلى إنشاء حساب جديد"
+                        AutomationProperties.Name="تبويب إنشاء حساب"
+                        Content="حساب جديد" />
+                <Button x:Name="SelectVerifyOtpFlowButton"
+                        Margin="0,0,6,6"
+                        Command="{Binding SelectVerifyOtpFlowCommand}"
+                        IsEnabled="{Binding IsAccountIdle}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="التحقق من رمز OTP المرسل للبريد"
+                        AutomationProperties.Name="تبويب تأكيد الرمز"
+                        Content="تأكيد OTP" />
+                <Button x:Name="SelectRecoverPasswordFlowButton"
+                        Margin="0,0,0,6"
+                        Command="{Binding SelectRecoverPasswordFlowCommand}"
+                        IsEnabled="{Binding IsAccountIdle}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="استعادة كلمة المرور عبر البريد"
+                        AutomationProperties.Name="تبويب استعادة كلمة المرور"
+                        Content="استعادة" />
+              </WrapPanel>
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsRegisterFlowMode}">
+                <TextBlock Text="الاسم الكامل" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <TextBox x:Name="AccountNameTextBox" Text="{Binding AccountNameInput}" Watermark="اسم الاستوديو أو المصمم" />
+              </StackPanel>
+
+              <StackPanel Spacing="6">
+                <TextBlock Text="البريد الإلكتروني" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <TextBox x:Name="AccountEmailTextBox" FlowDirection="LeftToRight" Text="{Binding AccountEmailInput}" Watermark="studio@example.com" />
+              </StackPanel>
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsLoginFlowMode}">
+                <TextBlock Text="كلمة المرور" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <TextBox x:Name="LoginPasswordTextBox" PasswordChar="●" Text="{Binding AccountPasswordInput}" Watermark="كلمة المرور" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button x:Name="SubmitLoginButton"
+                          Command="{Binding SubmitLoginCommand}"
+                          IsEnabled="{Binding IsAccountIdle}"
+                          MinHeight="{StaticResource CompactButtonSize}"
+                          CornerRadius="{StaticResource ControlCornerRadius}"
+                          Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                          Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                          ToolTip.Tip="تسجيل الدخول باستخدام Supabase Auth"
+                          AutomationProperties.Name="تسجيل الدخول بالبريد"
+                          Content="تسجيل الدخول" />
+                  <Button x:Name="GoogleOAuthButton"
+                          Command="{Binding LoginWithGoogleCommand}"
+                          IsEnabled="{Binding IsAccountIdle}"
+                          MinHeight="{StaticResource CompactButtonSize}"
+                          CornerRadius="{StaticResource ControlCornerRadius}"
+                          Background="{DynamicResource ZiwaSubtleFillBrush}"
+                          Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                          ToolTip.Tip="تسجيل الدخول عبر حساب Google باستخدام Loopback OAuth الآمن"
+                          AutomationProperties.Name="الدخول عبر Google"
+                          Content="الدخول عبر Google" />
+                </StackPanel>
+              </StackPanel>
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsRegisterFlowMode}">
+                <TextBlock Text="كلمة المرور (8 أحرف على الأقل تتضمن حروفاً وأرقاماً)" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <TextBox x:Name="RegisterPasswordTextBox" PasswordChar="●" Text="{Binding AccountPasswordInput}" Watermark="كلمة مرور قوية" />
+                <Button x:Name="SubmitRegisterButton"
+                        Command="{Binding SubmitRegisterCommand}"
+                        IsEnabled="{Binding IsAccountIdle}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                        Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                        ToolTip.Tip="إنشاء حساب جديد وإرسال رمز التفعيل"
+                        AutomationProperties.Name="إنشاء حساب جديد"
+                        Content="إنشاء الحساب" />
+              </StackPanel>
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsVerifyOtpFlowMode}">
+                <TextBlock Text="رمز التحقق (OTP)" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <TextBox x:Name="VerifyOtpTextBox" FlowDirection="LeftToRight" Text="{Binding AccountOtpInput}" Watermark="123456" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button x:Name="SubmitVerifyOtpButton"
+                          Command="{Binding SubmitVerifyOtpCommand}"
+                          IsEnabled="{Binding IsAccountIdle}"
+                          MinHeight="{StaticResource CompactButtonSize}"
+                          CornerRadius="{StaticResource ControlCornerRadius}"
+                          Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                          Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                          ToolTip.Tip="تأكيد الحساب برمز التحقق"
+                          AutomationProperties.Name="تأكيد رمز OTP"
+                          Content="تأكيد الرمز" />
+                  <Button x:Name="ResendOtpButton"
+                          Command="{Binding ResendOtpCommand}"
+                          IsEnabled="{Binding IsAccountIdle}"
+                          MinHeight="{StaticResource CompactButtonSize}"
+                          CornerRadius="{StaticResource ControlCornerRadius}"
+                          Background="{DynamicResource ZiwaSubtleFillBrush}"
+                          Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                          ToolTip.Tip="إعادة إرسال رمز التحقق للبريد"
+                          AutomationProperties.Name="إعادة إرسال OTP"
+                          Content="إعادة إرسال" />
+                </StackPanel>
+              </StackPanel>
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsRecoverPasswordFlowMode}">
+                <Button x:Name="RequestRecoveryButton"
+                        Command="{Binding RequestPasswordRecoveryCommand}"
+                        IsEnabled="{Binding IsAccountIdle}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaSubtleFillBrush}"
+                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                        ToolTip.Tip="إرسال رمز الاستعادة إلى البريد الإلكتروني"
+                        AutomationProperties.Name="طلب رمز استعادة كلمة المرور"
+                        Content="إرسال رمز الاستعادة" />
+                <TextBlock Text="رمز الاستعادة" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <TextBox x:Name="RecoveryOtpTextBox" FlowDirection="LeftToRight" Text="{Binding AccountOtpInput}" Watermark="رمز الاستعادة" />
+                <TextBlock Text="كلمة المرور الجديدة" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <TextBox x:Name="RecoveryNewPasswordTextBox" PasswordChar="●" Text="{Binding AccountPasswordInput}" Watermark="كلمة المرور الجديدة" />
+                <Button x:Name="SubmitPasswordRecoveryButton"
+                        Command="{Binding SubmitPasswordRecoveryCommand}"
+                        IsEnabled="{Binding IsAccountIdle}"
+                        MinHeight="{StaticResource CompactButtonSize}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                        Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                        ToolTip.Tip="تأكيد رمز الاستعادة وتعيين كلمة المرور الجديدة"
+                        AutomationProperties.Name="تحديث كلمة المرور"
+                        Content="تعيين كلمة المرور الجديدة" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- مؤشر الانتظار والإلغاء -->
+          <StackPanel x:Name="AccountBusyPanel" Spacing="6" IsVisible="{Binding IsAccountBusy}">
+            <ProgressBar IsIndeterminate="True" Minimum="0" Maximum="100" />
+            <TextBlock Text="{Binding AccountBusyStatusText}"
+                       FontSize="12"
+                       Foreground="{DynamicResource ZiwaInfoBrush}" />
+            <Button x:Name="CancelAccountOperationButton"
+                    Command="{Binding CancelAccountOperationCommand}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaSubtleFillBrush}"
+                    Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
+                    ToolTip.Tip="إلغاء العملية الجارية"
+                    AutomationProperties.Name="إلغاء عملية الحساب"
+                    Content="إلغاء" />
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+  </Border>
+</UserControl>

@@ -113,6 +113,28 @@ public sealed class CloudAiCoordinator : IDisposable
         }
     }
 
+    public void UpdateServerQuotaSnapshot(CloudAiQuotaSnapshot? snapshot)
+    {
+        CloudAuthSessionSnapshot? session = _authProvider.GetCurrentSession();
+        lock (_quotaSync)
+        {
+            if (snapshot is null || snapshot.DailyLimit <= 0 || snapshot.UsedToday < 0 || session is null)
+            {
+                _serverQuotaSnapshot = null;
+            }
+            else
+            {
+                _serverQuotaSnapshot = snapshot with { UserIdentifier = session.UserIdentifier };
+                _localUtcDayKey = CloudAiQuotaPolicy.GetUtcDayKey(snapshot.CapturedAtUtc);
+                _localUserIdentifier = session.UserIdentifier;
+                _localPlan = session.Plan;
+                _localUsedTodayUtc = Math.Max(_localUsedTodayUtc, snapshot.UsedToday);
+            }
+        }
+
+        StateChanged?.Invoke();
+    }
+
     public async Task<AiOperationOutcome> EnhanceSelectedPhotoAsync(
         double fidelity = 0.7,
         CancellationToken externalCt = default)

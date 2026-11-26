@@ -196,6 +196,18 @@
                   AutomationProperties.Name="تبديل المظهر الفاتح والداكن"
                   Content="{Binding ThemeToggleText}" />
 
+          <Button x:Name="AccountHeaderButton"
+                  Command="{Binding OpenAccountDialogCommand}"
+                  MinHeight="{StaticResource ToolbarButtonHeight}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  ToolTip.Tip="الحساب والترخيص والحصة السحابية (Ctrl+Shift+A)"
+                  AutomationProperties.Name="الحساب والترخيص"
+                  Content="{Binding AccountHeaderBadgeText}" />
+
           <Border Width="1"
                   Height="18"
                   Margin="2,0"
@@ -1403,5 +1415,6 @@
     <views:ProjectLibraryView Grid.RowSpan="4" IsVisible="{Binding IsProjectLibraryOpen}" />
     <views:AiMaskEditorView Grid.RowSpan="4" IsVisible="{Binding IsMaskEditorOpen}" />
     <views:DocumentScannerView Grid.RowSpan="4" IsVisible="{Binding IsDocumentScannerOpen}" />
+    <views:AccountLicenseView Grid.RowSpan="4" IsVisible="{Binding IsAccountDialogOpen}" />
   </Grid>
 </Window>

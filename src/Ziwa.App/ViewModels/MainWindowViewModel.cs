@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Ziwa.Application.Abstractions;
 using Ziwa.Application.Ai;
+using Ziwa.Application.Auth;
 using Ziwa.Application.Collage;
 using Ziwa.Application.Commands;
 using Ziwa.Application.Interaction;
@@ -174,7 +175,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         AssetStore? assetStore = null,
         IProjectDialogs? dialogs = null,
         DocumentScannerCoordinator? scannerCoordinator = null,
-        CloudAiCoordinator? cloudAiCoordinator = null)
+        CloudAiCoordinator? cloudAiCoordinator = null,
+        AccountSessionCoordinator? accountCoordinator = null)
     {
         _session = session;
         _commandRegistry = commandRegistry;
@@ -192,6 +194,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         RegisterUnifiedCommands();
         RegisterProjectCommands();
         InitializeAiIntegration(aiCoordinator, imageImporter, assetStore, dialogs, cloudAiCoordinator);
+        InitializeAccountIntegration(accountCoordinator);
         InitializeScannerIntegration(scannerCoordinator);
         LoadStickerStudioFromTemplate(ParametricStickerCatalog.CommercialSeal, existingFields: null, palette: null);
         RefreshPrinters();

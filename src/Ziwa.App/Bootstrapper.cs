@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ziwa.App.Services;
+using Ziwa.Application.Abstractions;
 using Ziwa.Application.Persistence;
 using Ziwa.App.ViewModels;
 using Ziwa.Infrastructure.Ai;
+using Ziwa.Infrastructure.Auth;
 using Ziwa.Infrastructure.DependencyInjection;
 using Ziwa.Infrastructure.Scanner;
 #if WINDOWS
@@ -18,10 +20,12 @@ public static class Bootstrapper
         IProjectDialogs? dialogs = null,
         OfflineAiOptions? aiOptions = null,
         DocumentScannerOptions? scannerOptions = null,
-        CloudAiOptions? cloudAiOptions = null)
+        CloudAiOptions? cloudAiOptions = null,
+        SupabaseAuthOptions? authOptions = null,
+        IBrowserLauncher? browserLauncher = null)
     {
         var services = new ServiceCollection();
-        services.AddZiwaCoreServices(storageOptions, aiOptions, scannerOptions, cloudAiOptions);
+        services.AddZiwaCoreServices(storageOptions, aiOptions, scannerOptions, cloudAiOptions, authOptions, browserLauncher);
         services.AddSingleton<IProjectDialogs>(dialogs ?? new AvaloniaProjectDialogs());
         services.AddSingleton<ProjectWorkspace>();
 
