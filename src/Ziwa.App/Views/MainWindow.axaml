@@ -136,11 +136,12 @@
         <Canvas Grid.Row="1"
                 Grid.Column="1"
                 FlowDirection="LeftToRight"
+                ZIndex="1"
+                SizeChanged="OnInlineEditorSizeChanged"
                 IsVisible="{Binding IsInlineTextEditOpen}">
           <Border x:Name="InlineTextEditOverlay"
                   FlowDirection="RightToLeft"
-                  Canvas.Left="24"
-                  Canvas.Top="24"
+                  SizeChanged="OnInlineEditorSizeChanged"
                   MinWidth="260"
                   MaxWidth="390"
                   Padding="12"
@@ -204,7 +205,7 @@
                 BoxShadow="{StaticResource ZiwaFloatingShadow}">
           <Grid>
             <!-- شريط أدوات القص الموضعي -->
-            <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsCropModeActive}">
+            <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsCropModeActive}" KeyDown="OnCropBarKeyDown">
               <Button x:Name="QuickCropZoomOutButton" Classes="quickBarChip quickBarIcon"
                       Command="{Binding ZoomOutCropCommand}"
                       ToolTip.Tip="تصغير الصورة داخل إطار القص" AutomationProperties.Name="تصغير القص">

@@ -72,6 +72,7 @@ public sealed class DocumentScannerCoordinator : IDisposable
         try
         {
             ScanDetectionResult result = await _scanner.DetectDocumentsAsync(sourceAssetId, mode, linkedCts.Token);
+            linkedCts.Token.ThrowIfCancellationRequested();
             return new ScannerDetectionOutcome(
                 true,
                 result,
@@ -126,6 +127,7 @@ public sealed class DocumentScannerCoordinator : IDisposable
                 sourceAssetId,
                 items,
                 linkedCts.Token);
+            linkedCts.Token.ThrowIfCancellationRequested();
 
             ImmutableArray<NodeId> insertedIds = [];
             bool applied = _session.TryApplyAsyncResult(
@@ -193,6 +195,7 @@ public sealed class DocumentScannerCoordinator : IDisposable
                 sourceAssetId,
                 items,
                 linkedCts.Token);
+            linkedCts.Token.ThrowIfCancellationRequested();
 
             bool applied = _session.TryApplyAsyncResult(
                 ticket,

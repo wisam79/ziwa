@@ -49,16 +49,16 @@
           </ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:PageTabItemViewModel">
-              <Button Classes="workspaceAction pageTab" Classes.active="{Binding IsActive}"
+              <Button x:Name="PageTabButton" Classes="workspaceAction pageTab" Classes.active="{Binding IsActive}"
                       Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).SelectPageByIndexCommand}"
                       CommandParameter="{Binding Index}" ToolTip.Tip="{Binding Name}" AutomationProperties.Name="{Binding AccessibleLabel}">
                 <Button.ContextMenu>
-                  <ContextMenu FlowDirection="RightToLeft">
-                    <MenuItem Header="تكرار الصفحة النشطة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).DuplicateActivePageCommand}" />
-                    <MenuItem Header="تقديم الصفحة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).MovePageEarlierCommand}" />
-                    <MenuItem Header="تأخير الصفحة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).MovePageLaterCommand}" />
+                  <ContextMenu DataContext="{Binding #PageTabButton.DataContext}" FlowDirection="RightToLeft" x:DataType="vm:PageTabItemViewModel">
+                    <MenuItem Header="تكرار الصفحة" Command="{Binding DuplicateCommand}" />
+                    <MenuItem Header="تقديم الصفحة" Command="{Binding MoveEarlierCommand}" />
+                    <MenuItem Header="تأخير الصفحة" Command="{Binding MoveLaterCommand}" />
                     <Separator />
-                    <MenuItem Header="حذف الصفحة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).DeleteActivePageCommand}" />
+                    <MenuItem Header="حذف الصفحة" Command="{Binding DeleteCommand}" />
                   </ContextMenu>
                 </Button.ContextMenu>
                 <StackPanel Classes="workspaceActionLabel">
