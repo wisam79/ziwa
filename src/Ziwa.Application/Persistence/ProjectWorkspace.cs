@@ -165,6 +165,15 @@ public sealed class ProjectWorkspace : IDisposable
         return true;
     }, ct);
 
+    public Task<bool> RemoveFromLibraryAsync(string path, CancellationToken ct = default) => RunAsync(async token =>
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        await _library.RemoveAsync(path, token);
+        Projects = await _library.ListAsync(token);
+        StatusMessage = "تمت إزالة المشروع من قائمة المكتبة";
+        return true;
+    }, ct);
+
     public Task<bool> ExportBackupAsync(CancellationToken ct = default) => RunAsync(async token =>
     {
         string? path = await _dialogs.PickSaveBackupAsync(token);

@@ -17,21 +17,61 @@
   <Border Background="{DynamicResource ZiwaCardBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
           BorderThickness="{StaticResource HairlineBorderThickness}" CornerRadius="{StaticResource DialogCornerRadius}"
           BoxShadow="{StaticResource ZiwaSheetShadow}" Padding="24" Margin="24"
-          Width="740" MaxHeight="700" HorizontalAlignment="Center" VerticalAlignment="Center">
-    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto" RowSpacing="12">
+          Width="780" MaxHeight="720" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto" RowSpacing="12">
       <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Text="مكتبة المشاريع والتعافي" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+        <TextBlock Text="مكتبة المشاريع والبدء السريع" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
         <Button Grid.Column="1" Content="إغلاق / الاحتفاظ للاحق" Command="{Binding CloseProjectLibraryCommand}"
                 ToolTip.Tip="إغلاق المكتبة دون حذف لقطات التعافي" AutomationProperties.Name="إغلاق المكتبة والاحتفاظ بالتعافي" />
       </Grid>
-      <StackPanel Grid.Row="1" Spacing="8" IsVisible="{Binding HasRecoveries}">
+
+      <!-- البدء السريع من قالب -->
+      <Border Grid.Row="1" Padding="10" CornerRadius="{StaticResource ControlCornerRadius}"
+              Background="{DynamicResource ZiwaSurfaceBrush}"
+              BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+              BorderThickness="{StaticResource HairlineBorderThickness}"
+              IsEnabled="{Binding IsProjectEditable}">
+        <StackPanel Spacing="6">
+          <TextBlock Text="مشروع جديد من قالب جاهز:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+          <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="6">
+            <Button x:Name="LibraryQuickIdSheetButton"
+                    Command="{Binding StartQuickStartFromLibraryCommand}"
+                    CommandParameter="quickstart.idPhotoSheet"
+                    Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                    Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                    ToolTip.Tip="إنشاء شيت صور هوية 4×6 بوصة جاهز للطباعة (Alt+1)"
+                    AutomationProperties.Name="قالب شيت صور هوية 4×6"
+                    Content="شيت هوية 4×6" />
+            <Button x:Name="LibraryQuickBusinessCardButton"
+                    Command="{Binding StartQuickStartFromLibraryCommand}"
+                    CommandParameter="quickstart.businessCard"
+                    ToolTip.Tip="إنشاء مشروع بطاقة أعمال احترافية (Alt+2)"
+                    AutomationProperties.Name="قالب بطاقة عمل"
+                    Content="بطاقة عمل" />
+            <Button x:Name="LibraryQuickStickerSheetButton"
+                    Command="{Binding StartQuickStartFromLibraryCommand}"
+                    CommandParameter="quickstart.stickerSheet"
+                    ToolTip.Tip="إنشاء شيت ملصقات بارامتري A5 (Alt+3)"
+                    AutomationProperties.Name="قالب شيت ملصقات"
+                    Content="شيت ملصقات" />
+            <Button x:Name="LibraryQuickBlankA4Button"
+                    Command="{Binding StartQuickStartFromLibraryCommand}"
+                    CommandParameter="quickstart.blankA4"
+                    ToolTip.Tip="إنشاء صفحة تصميم حرة مقاس A4 (Alt+4)"
+                    AutomationProperties.Name="قالب صفحة حرة A4"
+                    Content="صفحة حرة A4" />
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+
+      <StackPanel Grid.Row="2" Spacing="8" IsVisible="{Binding HasRecoveries}">
         <TextBlock Text="عمل قابل للتعافي بعد إغلاق غير طبيعي" FontWeight="SemiBold" />
         <ListBox x:Name="RecoveryList" ItemsSource="{Binding RecoveryEntries}" SelectedItem="{Binding SelectedRecovery}" MaxHeight="100">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="persist:RecoveryEntry">
               <StackPanel Orientation="Horizontal" Spacing="12">
                 <TextBlock Text="{Binding Title}" />
-                <TextBlock Text="{Binding CapturedAtUtc}" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <TextBlock Text="{Binding CapturedAtUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
               </StackPanel>
             </DataTemplate>
           </ListBox.ItemTemplate>
@@ -41,24 +81,67 @@
           <Button Content="تجاهل لقطة التعافي…" Command="{Binding AskDiscardRecoveryCommand}" ToolTip.Tip="طلب حذف لقطة التعافي المختارة بعد التأكيد" AutomationProperties.Name="طلب تجاهل لقطة التعافي" />
         </StackPanel>
       </StackPanel>
-      <TextBlock Grid.Row="2" Text="المشاريع الحديثة — ملف .ziwa يحتفظ بالتصميم وجميع أصوله" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
-      <ListBox x:Name="ProjectLibraryList" Grid.Row="3" ItemsSource="{Binding ProjectEntries}" SelectedItem="{Binding SelectedProject}" MinHeight="100" MaxHeight="220">
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="persist:ProjectLibraryEntry">
-            <StackPanel Spacing="4">
-              <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-              <TextBlock Text="{Binding Path}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
-            </StackPanel>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-      <WrapPanel Grid.Row="4" IsEnabled="{Binding IsProjectEditable}">
-        <Button Content="فتح المشروع المحدد" Command="{Binding OpenSelectedProjectCommand}" Margin="0,0,0,8" ToolTip.Tip="فتح المشروع المحدد مع حماية العمل غير المحفوظ" AutomationProperties.Name="فتح المشروع المحدد" />
-        <Button Content="فتح ملف آخر…" Command="{Binding OpenProjectCommand}" Margin="8,0,0,8" ToolTip.Tip="اختيار ملف .ziwa" AutomationProperties.Name="فتح ملف مشروع آخر" />
-        <Button Content="تصدير نسخة احتياطية…" Command="{Binding ExportLibraryBackupCommand}" Margin="8,0,0,8" ToolTip.Tip="نسخ المكتبة ومشاريعها إلى حزمة احتياطية" AutomationProperties.Name="تصدير نسخة احتياطية" />
-        <Button Content="استيراد نسخة احتياطية…" Command="{Binding ImportLibraryBackupCommand}" Margin="8,0,0,8" ToolTip.Tip="استيراد مشاريع إلى مجلد مستقل دون استبدال الموجود" AutomationProperties.Name="استيراد نسخة احتياطية" />
+
+      <Grid Grid.Row="3" ColumnDefinitions="*,240" ColumnSpacing="10">
+        <TextBlock Grid.Column="0" Text="{Binding ProjectLibraryCountText}" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+        <TextBox x:Name="ProjectLibrarySearchBox"
+                 Grid.Column="1"
+                 Text="{Binding ProjectLibrarySearchQuery}"
+                 Watermark="ابحث باسم المشروع أو المسار..."
+                 ToolTip.Tip="تصفية قائمة المشاريع المحفوظة"
+                 AutomationProperties.Name="بحث في مكتبة المشاريع" />
+      </Grid>
+
+      <Grid Grid.Row="4">
+        <ListBox x:Name="ProjectLibraryList"
+                 ItemsSource="{Binding FilteredProjectEntries}"
+                 SelectedItem="{Binding SelectedProject}"
+                 DoubleTapped="OnProjectListDoubleTapped"
+                 MinHeight="110"
+                 MaxHeight="230">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="persist:ProjectLibraryEntry">
+              <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="2">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Title}" FontWeight="SemiBold" />
+                <TextBlock Grid.Row="0" Grid.Column="1"
+                           Text="{Binding SavedAtUtc, StringFormat='حُفظ: {0:yyyy-MM-dd HH:mm}'}"
+                           FlowDirection="LeftToRight"
+                           FontSize="11"
+                           Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                           Text="{Binding Path}"
+                           TextTrimming="CharacterEllipsis"
+                           FontSize="11"
+                           Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBlock IsVisible="{Binding HasNoFilteredProjects}"
+                   Text="لا توجد مشاريع مطابقة أو محفوظة بعد — اختر قالباً للبدء أو افتح ملف .ziwa"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+      </Grid>
+
+      <WrapPanel Grid.Row="5" Orientation="Horizontal" ItemSpacing="8" LineSpacing="8" IsEnabled="{Binding IsProjectEditable}">
+        <Button x:Name="OpenSelectedProjectButton"
+                Content="فتح المشروع المحدد"
+                Command="{Binding OpenSelectedProjectCommand}"
+                IsEnabled="{Binding HasSelectedProject}"
+                ToolTip.Tip="فتح المشروع المحدد مع حماية العمل غير المحفوظ"
+                AutomationProperties.Name="فتح المشروع المحدد" />
+        <Button x:Name="RemoveSelectedProjectButton"
+                Content="إزالة من القائمة"
+                Command="{Binding RemoveSelectedProjectFromLibraryCommand}"
+                IsEnabled="{Binding HasSelectedProject}"
+                ToolTip.Tip="إزالة المرجع من فهرس المكتبة دون حذف الملف من القرص"
+                AutomationProperties.Name="إزالة المشروع من القائمة" />
+        <Button Content="فتح ملف آخر…" Command="{Binding OpenProjectCommand}" ToolTip.Tip="اختيار ملف .ziwa" AutomationProperties.Name="فتح ملف مشروع آخر" />
+        <Button Content="تصدير نسخة احتياطية…" Command="{Binding ExportLibraryBackupCommand}" ToolTip.Tip="نسخ المكتبة ومشاريعها إلى حزمة احتياطية" AutomationProperties.Name="تصدير نسخة احتياطية" />
+        <Button Content="استيراد نسخة احتياطية…" Command="{Binding ImportLibraryBackupCommand}" ToolTip.Tip="استيراد مشاريع إلى مجلد مستقل دون استبدال الموجود" AutomationProperties.Name="استيراد نسخة احتياطية" />
       </WrapPanel>
-      <Border Grid.Row="5" IsVisible="{Binding IsRecoveryDiscardConfirmationOpen}" Padding="12"
+      <Border Grid.Row="6" IsVisible="{Binding IsRecoveryDiscardConfirmationOpen}" Padding="12"
               CornerRadius="{StaticResource ControlCornerRadius}" Background="{DynamicResource ZiwaSubtleFillBrush}">
         <StackPanel Spacing="8">
           <TextBlock Text="{Binding RecoveryDiscardTitle}" FontWeight="SemiBold" />
@@ -69,7 +152,7 @@
           </StackPanel>
         </StackPanel>
       </Border>
-      <StackPanel Grid.Row="6" Spacing="8">
+      <StackPanel Grid.Row="7" Spacing="8">
         <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
         <Button IsVisible="{Binding IsProjectBusy}" Command="{Binding CancelProjectOperationCommand}" Content="إلغاء العملية"
                 ToolTip.Tip="إلغاء عملية المشروع الحالية" AutomationProperties.Name="إلغاء عملية المكتبة" />

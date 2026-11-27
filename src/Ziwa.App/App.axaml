@@ -13,6 +13,7 @@
 
   <Application.Styles>
     <FluentTheme />
+    <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
     <StyleInclude Source="avares://Ziwa.App/Themes/AppleHigStyles.axaml" />
   </Application.Styles>
 </Application>

@@ -29,8 +29,19 @@
     <Setter Property="Background" Value="{DynamicResource ZiwaPrimaryActionBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource ZiwaOnPrimaryActionBrush}" />
   </Style>
+  <Style Selector="Button.workspaceAction.active">
+    <Setter Property="Background" Value="{DynamicResource ZiwaCardBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ZiwaFocusStrokeBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
   <Style Selector="Button.workspaceAction.destructive">
     <Setter Property="Foreground" Value="{DynamicResource ZiwaDestructiveActionBrush}" />
+  </Style>
+  <Style Selector="Button.workspaceAction.windowClose:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ZiwaDestructiveActionBrush}" />
+  </Style>
+  <Style Selector="Button.workspaceAction.windowClose:pointerover">
+    <Setter Property="Foreground" Value="{DynamicResource ZiwaOnPrimaryActionBrush}" />
   </Style>
   <Style Selector="Button.workspaceAction.pageTab">
     <Setter Property="Background" Value="{DynamicResource ZiwaSurfaceBrush}" />
@@ -93,5 +104,33 @@
     <Setter Property="Width" Value="24" />
     <Setter Property="Height" Value="1" />
     <Setter Property="HorizontalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="ButtonSpinner /template/ RepeatButton#PART_IncreaseButton">
+    <Setter Property="AutomationProperties.Name" Value="زيادة القيمة" />
+    <Setter Property="ToolTip.Tip" Value="زيادة القيمة" />
+  </Style>
+  <Style Selector="ButtonSpinner /template/ RepeatButton#PART_DecreaseButton">
+    <Setter Property="AutomationProperties.Name" Value="إنقاص القيمة" />
+    <Setter Property="ToolTip.Tip" Value="إنقاص القيمة" />
+  </Style>
+  <Style Selector="ColorPicker /template/ DropDownButton">
+    <Setter Property="AutomationProperties.Name" Value="اختيار اللون" />
+    <Setter Property="ToolTip.Tip" Value="فتح منتقي الألوان" />
+  </Style>
+  <Style Selector="ScrollBar /template/ RepeatButton">
+    <Setter Property="AutomationProperties.Name" Value="تمرير" />
+    <Setter Property="ToolTip.Tip" Value="تمرير" />
+  </Style>
+  <Style Selector="ScrollBar /template/ RepeatButton#PART_LineUpButton">
+    <Setter Property="AutomationProperties.Name" Value="تمرير للأعلى" />
+    <Setter Property="ToolTip.Tip" Value="تمرير للأعلى" />
+  </Style>
+  <Style Selector="ScrollBar /template/ RepeatButton#PART_LineDownButton">
+    <Setter Property="AutomationProperties.Name" Value="تمرير للأسفل" />
+    <Setter Property="ToolTip.Tip" Value="تمرير للأسفل" />
+  </Style>
+  <Style Selector="Slider /template/ RepeatButton">
+    <Setter Property="AutomationProperties.Name" Value="تعديل القيمة" />
+    <Setter Property="ToolTip.Tip" Value="اسحب أو انقر لتعديل القيمة" />
   </Style>
 </Styles>

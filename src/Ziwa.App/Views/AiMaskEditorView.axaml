@@ -13,6 +13,11 @@
       <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
       <Setter Property="MinHeight" Value="{StaticResource ToolbarButtonHeight}" />
     </Style>
+    <Style Selector="Button.activeTool">
+      <Setter Property="Background" Value="{DynamicResource ZiwaPrimaryActionBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ZiwaOnPrimaryActionBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ZiwaFocusStrokeBrush}" />
+    </Style>
   </UserControl.Styles>
   <Border Background="{DynamicResource ZiwaCardBrush}"
           BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
@@ -47,12 +52,14 @@
       <WrapPanel Grid.Row="1" Orientation="Horizontal">
         <Button x:Name="EraseBrushModeButton"
                 Margin="0,0,6,6"
+                Classes.activeTool="{Binding IsEraseBrushActive}"
                 Command="{Binding SetEraseMaskBrushCommand}"
                 Content="فرشاة المسح"
                 ToolTip.Tip="مسح أجزاء من الخلفية"
                 AutomationProperties.Name="فرشاة المسح" />
         <Button x:Name="RestoreBrushModeButton"
                 Margin="0,0,6,6"
+                Classes.activeTool="{Binding IsRestoreBrushActive}"
                 Command="{Binding SetRestoreMaskBrushCommand}"
                 Content="فرشاة الاستعادة"
                 ToolTip.Tip="استعادة أجزاء من الصورة الأصلية"
@@ -71,12 +78,24 @@
                 Content="إعادة الضربة"
                 ToolTip.Tip="إعادة ضربة الفرشاة"
                 AutomationProperties.Name="إعادة ضربة الفرشاة" />
+        <Button x:Name="InvertMaskButton"
+                Margin="0,0,6,6"
+                Command="{Binding InvertMaskCommand}"
+                Content="عكس القناع"
+                ToolTip.Tip="عكس مناطق الإظهار والإخفاء في القناع"
+                AutomationProperties.Name="عكس القناع" />
         <Button x:Name="ResetAutoMaskButton"
-                Margin="0,0,12,6"
+                Margin="0,0,6,6"
                 Command="{Binding ResetMaskToAutoCommand}"
                 Content="إعادة لقناع الذكاء"
                 ToolTip.Tip="إعادة القناع إلى النتيجة التلقائية لـ ONNX"
                 AutomationProperties.Name="إعادة القناع التلقائي" />
+        <Button x:Name="ResetMaskViewButton"
+                Margin="0,0,12,6"
+                Click="OnResetMaskViewClick"
+                Content="ملاءمة 100%"
+                ToolTip.Tip="إعادة التكبير والموضع للعرض الكامل (R)"
+                AutomationProperties.Name="إعادة ضبط عرض القناع" />
         <ComboBox x:Name="MaskPreviewModeComboBox"
                   Width="210"
                   ItemsSource="{Binding AvailableMaskPreviewModes}"
@@ -104,7 +123,7 @@
                                          PreviewMode="{Binding SelectedMaskPreviewMode}"
                                          SplitRatio="{Binding MaskSplitRatio, Mode=TwoWay}"
                                          BrushMode="{Binding SelectedMaskBrushMode}"
-                                         BrushRadiusPx="{Binding MaskBrushRadiusPx}"
+                                         BrushRadiusPx="{Binding MaskBrushRadiusPx, Mode=TwoWay}"
                                          BrushSoftness="{Binding MaskBrushSoftness}"
                                          PasteboardBrush="{DynamicResource ZiwaCanvasBackgroundBrush}"
                                          AccentBrush="{DynamicResource ZiwaPrimaryActionBrush}"

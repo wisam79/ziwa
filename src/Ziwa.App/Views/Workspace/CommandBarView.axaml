@@ -22,21 +22,31 @@
                 <Button Classes="workspaceAction" Content="حفظ" Click="OnProjectMenuItemClick" Command="{Binding SaveProjectCommand}" ToolTip.Tip="حفظ المشروع (Ctrl+S)" AutomationProperties.Name="حفظ المشروع" />
                 <Button Classes="workspaceAction" Content="حفظ باسم…" Click="OnProjectMenuItemClick" Command="{Binding SaveProjectAsCommand}" ToolTip.Tip="حفظ باسم (Ctrl+Shift+S)" AutomationProperties.Name="حفظ المشروع باسم" />
                 <Button Classes="workspaceAction" Content="مكتبة المشاريع والتعافي" Click="OnProjectMenuItemClick" Command="{Binding OpenProjectLibraryCommand}" ToolTip.Tip="عرض المشاريع الحديثة والتعافي" AutomationProperties.Name="مكتبة المشاريع والتعافي" />
+                <Button Classes="workspaceAction" Content="تصدير سجلات الدعم الفني…" Click="OnProjectMenuItemClick" Command="{Binding ExportSupportLogsCommand}" ToolTip.Tip="تصدير أرشيف سجلات الدعم المنقّاة من البيانات الحساسة" AutomationProperties.Name="تصدير سجلات الدعم الفني" />
+                <Button Classes="workspaceAction" Content="التحقق من وجود تحديثات…" Click="OnProjectMenuItemClick" Command="{Binding OpenUpdateDialogCommand}" ToolTip.Tip="فحص التحديثات والتحقق عبر HTTPS وSHA-256" AutomationProperties.Name="التحقق من وجود تحديثات" />
               </StackPanel>
             </Flyout>
           </Button.Flyout>
         </Button>
+        <Button x:Name="QuickSaveButton" Classes="workspaceAction iconOnly" Command="{Binding SaveProjectCommand}"
+                ToolTip.Tip="حفظ المشروع (Ctrl+S)" AutomationProperties.Name="حفظ سريع">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconSave}" />
+        </Button>
         <Button x:Name="UndoButton" Classes="workspaceAction iconOnly" Command="{Binding UndoCommand}" IsEnabled="{Binding CanUndo}"
-                ToolTip.Tip="تراجع (Ctrl+Z)" AutomationProperties.Name="تراجع">
+                ToolTip.Tip="{Binding UndoToolTipText}" AutomationProperties.Name="تراجع">
           <PathIcon Classes="workspaceIcon" Data="{StaticResource IconUndo}" />
         </Button>
         <Button x:Name="RedoButton" Classes="workspaceAction iconOnly" Command="{Binding RedoCommand}" IsEnabled="{Binding CanRedo}"
-                ToolTip.Tip="إعادة (Ctrl+Y)" AutomationProperties.Name="إعادة">
+                ToolTip.Tip="{Binding RedoToolTipText}" AutomationProperties.Name="إعادة">
           <PathIcon Classes="workspaceIcon" Data="{StaticResource IconRedo}" />
         </Button>
         <Border Classes="workspaceDivider" />
         <Button x:Name="TemplatesMenuButton" Classes="workspaceAction"
-                ToolTip.Tip="قوالب البدء السريع" AutomationProperties.Name="قوالب البدء السريع" Content="قوالب">
+                ToolTip.Tip="قوالب البدء السريع" AutomationProperties.Name="قوالب البدء السريع">
+          <StackPanel Classes="workspaceActionLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconTemplates}" />
+            <TextBlock Text="قوالب" />
+          </StackPanel>
           <Button.Flyout>
             <Flyout>
               <StackPanel Spacing="4">
@@ -44,6 +54,10 @@
                         ToolTip.Tip="بدء سريع: شيت صور هوية 4×6 (Alt+1)" AutomationProperties.Name="شيت صور هوية" Content="شيت هوية" />
                 <Button x:Name="QuickStartCardButton" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding StartBusinessCardCommand}"
                         ToolTip.Tip="بدء سريع: بطاقة عمل (Alt+2)" AutomationProperties.Name="بطاقة عمل" Content="بطاقة عمل" />
+                <Button x:Name="QuickStartStickerButton" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding StartStickerSheetCommand}"
+                        ToolTip.Tip="بدء سريع: شيت ملصقات بارامتري (Alt+3)" AutomationProperties.Name="شيت ملصقات" Content="شيت ملصقات" />
+                <Button x:Name="QuickStartBlankA4Button" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding StartFreeformSheetCommand}"
+                        ToolTip.Tip="صفحة تصميم حرة A4 (Alt+4)" AutomationProperties.Name="صفحة حرة A4" Content="صفحة حرة A4" />
                 <Button x:Name="TransferToCollageButton" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding TransferFreeformToCollageCommand}"
                         ToolTip.Tip="نقل التصميم الحر إلى شيت الكولاج" AutomationProperties.Name="نقل إلى الكولاج">
                   <StackPanel Classes="workspaceActionLabel">
@@ -75,6 +89,10 @@
                 ToolTip.Tip="تكبير المعاينة" AutomationProperties.Name="تكبير المعاينة">
           <PathIcon Classes="workspaceIcon" Data="{StaticResource IconPlus}" />
         </Button>
+        <Button x:Name="FitPageButton" Classes="workspaceAction iconOnly" Command="{Binding FitPageCommand}"
+                ToolTip.Tip="ملاءمة الصفحة (Ctrl+0)" AutomationProperties.Name="ملاءمة الصفحة">
+          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconFitPage}" />
+        </Button>
         <Button x:Name="ZenModeButton" Classes="workspaceAction iconOnly" Command="{Binding ToggleZenModeCommand}"
                 ToolTip.Tip="وضع التركيز الكامل (Ctrl+.)" AutomationProperties.Name="وضع التركيز">
           <PathIcon Classes="workspaceIcon" Data="{StaticResource IconFocus}" />
@@ -91,7 +109,7 @@
                 ToolTip.Tip="{Binding AccountHeaderBadgeText}" AutomationProperties.Name="الحساب والترخيص (Ctrl+Shift+A)">
           <StackPanel Classes="workspaceActionLabel">
             <PathIcon Classes="workspaceIcon" Data="{StaticResource IconAccount}" />
-            <TextBlock Text="{Binding AccountHeaderBadgeText}" MaxWidth="96" TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{Binding AccountHeaderBadgeText}" MaxWidth="82" TextTrimming="CharacterEllipsis" />
           </StackPanel>
         </Button>
         <Border Classes="workspaceDivider" />
@@ -111,7 +129,7 @@
         </Button>
       </StackPanel>
       <TextBlock x:Name="DocumentTitleLabel" Text="{Binding DocumentTitle}" ToolTip.Tip="{Binding DocumentTitle}"
-                 MaxWidth="240" TextTrimming="CharacterEllipsis" FontSize="{StaticResource WorkspaceTitleSize}"
+                 MaxWidth="200" TextTrimming="CharacterEllipsis" FontSize="{StaticResource WorkspaceTitleSize}"
                  FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
     </DockPanel>
   </Border>

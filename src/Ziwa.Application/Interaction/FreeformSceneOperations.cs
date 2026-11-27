@@ -5,6 +5,16 @@ using Ziwa.Domain.Primitives;
 
 namespace Ziwa.Application.Interaction;
 
+public enum PageAlignmentKind
+{
+    Left,
+    CenterH,
+    Right,
+    Top,
+    CenterV,
+    Bottom,
+}
+
 public static class FreeformSceneOperations
 {
     public static ZiwaDocument AddNode(ZiwaDocument doc, SceneNode node)
@@ -287,6 +297,69 @@ public static class FreeformSceneOperations
         return remaining.Length == page.Nodes.Length ? doc : ReplaceActivePageNodes(doc, remaining);
     }
 
+    public static ZiwaDocument DuplicateSelection(
+        ZiwaDocument doc,
+        ImmutableArray<NodeId> selectedIds,
+        out ImmutableArray<NodeId> createdIds,
+        double offsetMm = 8.0)
+    {
+        if (selectedIds.IsDefaultOrEmpty)
+        {
+            createdIds = [];
+            return doc;
+        }
+
+        PageModel page = doc.ActivePage;
+        HashSet<NodeId> idSet = selectedIds.ToHashSet();
+        var nextNodes = ImmutableArray.CreateBuilder<SceneNode>(page.Nodes.Length + idSet.Count);
+        nextNodes.AddRange(page.Nodes);
+
+        var createdBuilder = ImmutableArray.CreateBuilder<NodeId>();
+        foreach (SceneNode node in page.Nodes)
+        {
+            if (!idSet.Contains(node.Id) || node.IsLocked)
+            {
+                continue;
+            }
+
+            SceneNode clone = CloneNodeWithNewIds(node, offsetMm, isRoot: true);
+            nextNodes.Add(clone);
+            createdBuilder.Add(clone.Id);
+        }
+
+        createdIds = createdBuilder.ToImmutable();
+        return createdIds.IsEmpty ? doc : ReplaceActivePageNodes(doc, nextNodes.ToImmutable());
+    }
+
+    private static SceneNode CloneNodeWithNewIds(SceneNode node, double offsetMm, bool isRoot)
+    {
+        RectMm shiftedBounds = node.BoundsMm with
+        {
+            X = node.BoundsMm.X + offsetMm,
+            Y = node.BoundsMm.Y + offsetMm,
+        };
+        string clonedName = isRoot && !node.Name.EndsWith(" (نسخة)", StringComparison.Ordinal)
+            ? $"{node.Name} (نسخة)"
+            : node.Name;
+
+        SceneNode baseClone = node with
+        {
+            Id = NodeId.New(),
+            Name = clonedName,
+            BoundsMm = shiftedBounds,
+        };
+
+        if (baseClone is GroupNode group)
+        {
+            ImmutableArray<SceneNode> clonedChildren = group.Children
+                .Select(c => CloneNodeWithNewIds(c, offsetMm, isRoot: false))
+                .ToImmutableArray();
+            return group with { Children = clonedChildren };
+        }
+
+        return baseClone;
+    }
+
     public static ZiwaDocument UpdateImageCrop(ZiwaDocument doc, NodeId imageNodeId, CropSpec newCrop)
     {
         SceneNode? node = doc.ActivePage.Nodes.FirstOrDefault(n => n.Id == imageNodeId);
@@ -405,6 +478,219 @@ public static class FreeformSceneOperations
         }
 
         return ReplaceNode(doc, text.Id, text with { Text = newText });
+    }
+
+    public static ZiwaDocument UpdateTextNodeStyle(
+        ZiwaDocument doc,
+        NodeId textNodeId,
+        ColorRgba? color = null,
+        double? fontSizePt = null,
+        string? fontFamily = null,
+        TextAlignmentKind? alignment = null,
+        int? fontWeight = null,
+        double? letterSpacingEm = null,
+        TextDirectionMode? direction = null,
+        TextCurveKind? curveKind = null,
+        double? curveBendFactor = null,
+        TextEffectSpec? effects = null,
+        bool updateEffects = false)
+    {
+        SceneNode? node = doc.ActivePage.Nodes.FirstOrDefault(n => n.Id == textNodeId);
+        if (node is not TextNode text || text.IsLocked)
+        {
+            return doc;
+        }
+
+        double clampedSize = fontSizePt is { } fs && double.IsFinite(fs)
+            ? Math.Clamp(fs, 6.0, 240.0)
+            : text.FontSizePt;
+
+        int clampedWeight = fontWeight is { } fw
+            ? Math.Clamp(fw, 100, 900)
+            : text.FontWeight;
+
+        double clampedSpacing = letterSpacingEm is { } ls && double.IsFinite(ls)
+            ? Math.Clamp(ls, -0.1, 0.5)
+            : text.LetterSpacingEm;
+
+        TextCurveSpec? nextCurve = text.Curve;
+        if (curveKind is { } kind)
+        {
+            nextCurve = kind == TextCurveKind.None
+                ? null
+                : new TextCurveSpec(
+                    kind,
+                    Math.Clamp(curveBendFactor ?? text.Curve?.BendFactor ?? 0.65, 0.2, 1.0));
+        }
+        else if (curveBendFactor is { } bend && double.IsFinite(bend) && text.Curve is { Kind: not TextCurveKind.None } existingCurve)
+        {
+            nextCurve = existingCurve with { BendFactor = Math.Clamp(bend, 0.2, 1.0) };
+        }
+
+        TextEffectSpec? nextEffects = updateEffects ? effects : text.Effects;
+
+        return ReplaceNode(doc, text.Id, text with
+        {
+            Color = color ?? text.Color,
+            FontSizePt = clampedSize,
+            FontFamily = string.IsNullOrWhiteSpace(fontFamily) ? text.FontFamily : fontFamily.Trim(),
+            Alignment = alignment ?? text.Alignment,
+            FontWeight = clampedWeight,
+            LetterSpacingEm = clampedSpacing,
+            Direction = direction ?? text.Direction,
+            Curve = nextCurve,
+            Effects = nextEffects,
+        });
+    }
+
+    public static ZiwaDocument UpdateShapeNodeStyle(
+        ZiwaDocument doc,
+        NodeId shapeNodeId,
+        ColorRgba? fillColor = null,
+        ColorRgba? strokeColor = null,
+        double? opacity = null,
+        double? strokeWidthMm = null)
+    {
+        SceneNode? node = doc.ActivePage.Nodes.FirstOrDefault(n => n.Id == shapeNodeId);
+        if (node is not ShapeNode shape || shape.IsLocked)
+        {
+            return doc;
+        }
+
+        ShapeFill nextFill = fillColor is { } fc
+            ? new SolidShapeFill(fc)
+            : shape.Fill;
+
+        StrokeSpec? nextStroke = shape.Stroke;
+        if (strokeWidthMm is { } sw && double.IsFinite(sw))
+        {
+            double clampedW = Math.Clamp(sw, 0.0, 20.0);
+            if (clampedW <= 0.001 && shape.Kind != ShapeKind.Line)
+            {
+                nextStroke = null;
+            }
+            else
+            {
+                ColorRgba col = strokeColor ?? shape.Stroke?.Color ?? ColorRgba.Black;
+                nextStroke = new StrokeSpec(col, Math.Max(0.1, clampedW));
+            }
+        }
+        else if (strokeColor is { } sc)
+        {
+            nextStroke = shape.Stroke is { } existing ? existing with { Color = sc } : new StrokeSpec(sc, 1.0);
+        }
+
+        double nextOpacity = opacity is { } op && double.IsFinite(op)
+            ? Math.Clamp(op, 0.05, 1.0)
+            : shape.Opacity;
+
+        return ReplaceNode(doc, shape.Id, shape with
+        {
+            Fill = nextFill,
+            Stroke = nextStroke,
+            Opacity = nextOpacity,
+        });
+    }
+
+    public static ZiwaDocument SetNodeTransform(
+        ZiwaDocument doc,
+        NodeId nodeId,
+        RectMm? boundsMm = null,
+        double? rotationDeg = null,
+        double? opacity = null,
+        double minSizeMm = 2.0)
+    {
+        SceneNode? node = doc.ActivePage.Nodes.FirstOrDefault(n => n.Id == nodeId);
+        if (node is null || node.IsLocked)
+        {
+            return doc;
+        }
+
+        SceneNode updated = node;
+        if (boundsMm is { } nextRect &&
+            double.IsFinite(nextRect.X) &&
+            double.IsFinite(nextRect.Y) &&
+            double.IsFinite(nextRect.Width) &&
+            double.IsFinite(nextRect.Height))
+        {
+            var clamped = new RectMm(
+                nextRect.X,
+                nextRect.Y,
+                Math.Max(minSizeMm, nextRect.Width),
+                Math.Max(minSizeMm, nextRect.Height));
+            updated = ResizeSingleNodeRecursive(updated, clamped);
+        }
+
+        if (rotationDeg is { } rot && double.IsFinite(rot))
+        {
+            double normalized = ((rot % 360.0) + 360.0) % 360.0;
+            updated = updated with { RotationDeg = normalized };
+        }
+
+        if (opacity is { } op && double.IsFinite(op))
+        {
+            updated = updated with { Opacity = Math.Clamp(op, 0.05, 1.0) };
+        }
+
+        return Equals(node, updated) ? doc : ReplaceNode(doc, node.Id, updated);
+    }
+
+    public static ZiwaDocument AlignSelectionToPage(
+        ZiwaDocument doc,
+        ImmutableArray<NodeId> selectedIds,
+        PageAlignmentKind alignment)
+    {
+        if (selectedIds.IsDefaultOrEmpty)
+        {
+            return doc;
+        }
+
+        PageModel page = doc.ActivePage;
+        SelectionBoundsInfo selInfo = HitTestEngine.ComputeSelectionBounds(page, selectedIds);
+        if (!selInfo.HasSelection)
+        {
+            return doc;
+        }
+
+        RectMm box = HitTestEngine.ComputeRotatedAabb(selInfo.BoundsMm, selInfo.RotationDeg);
+        double dx = 0.0;
+        double dy = 0.0;
+
+        switch (alignment)
+        {
+            case PageAlignmentKind.Left:
+                dx = -box.X;
+                break;
+            case PageAlignmentKind.CenterH:
+                dx = (page.WidthMm * 0.5) - box.CenterX;
+                break;
+            case PageAlignmentKind.Right:
+                dx = page.WidthMm - box.Right;
+                break;
+            case PageAlignmentKind.Top:
+                dy = -box.Y;
+                break;
+            case PageAlignmentKind.CenterV:
+                dy = (page.HeightMm * 0.5) - box.CenterY;
+                break;
+            case PageAlignmentKind.Bottom:
+                dy = page.HeightMm - box.Bottom;
+                break;
+        }
+
+        return TranslateNodes(doc, selectedIds.ToHashSet(), dx, dy);
+    }
+
+    public static ZiwaDocument ToggleNodeVisibility(ZiwaDocument doc, NodeId nodeId)
+    {
+        SceneNode? node = doc.ActivePage.Nodes.FirstOrDefault(n => n.Id == nodeId);
+        return node is null ? doc : ReplaceNode(doc, node.Id, node with { IsVisible = !node.IsVisible });
+    }
+
+    public static ZiwaDocument ToggleNodeLock(ZiwaDocument doc, NodeId nodeId)
+    {
+        SceneNode? node = doc.ActivePage.Nodes.FirstOrDefault(n => n.Id == nodeId);
+        return node is null ? doc : ReplaceNode(doc, node.Id, node with { IsLocked = !node.IsLocked });
     }
 
     public static ZiwaDocument ApplyImageFilters(ZiwaDocument doc, NodeId imageNodeId, ImageFilterSpec filters)

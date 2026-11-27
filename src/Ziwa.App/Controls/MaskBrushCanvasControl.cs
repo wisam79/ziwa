@@ -42,7 +42,8 @@ public sealed class MaskBrushCanvasControl : Control
     public static readonly StyledProperty<double> BrushRadiusPxProperty =
         AvaloniaProperty.Register<MaskBrushCanvasControl, double>(
             nameof(BrushRadiusPx),
-            defaultValue: 28.0);
+            defaultValue: 28.0,
+            defaultBindingMode: BindingMode.TwoWay);
 
     public static readonly StyledProperty<double> BrushSoftnessProperty =
         AvaloniaProperty.Register<MaskBrushCanvasControl, double>(
@@ -323,6 +324,29 @@ public sealed class MaskBrushCanvasControl : Control
         base.OnPointerExited(e);
         _cursorDip = null;
         InvalidateVisual();
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+
+        if (e.Key == Key.OemOpenBrackets)
+        {
+            SetCurrentValue(BrushRadiusPxProperty, Math.Clamp(BrushRadiusPx - 6.0, 4.0, 160.0));
+            InvalidateVisual();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.OemCloseBrackets)
+        {
+            SetCurrentValue(BrushRadiusPxProperty, Math.Clamp(BrushRadiusPx + 6.0, 4.0, 160.0));
+            InvalidateVisual();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.R && e.KeyModifiers == KeyModifiers.None)
+        {
+            ResetView();
+            e.Handled = true;
+        }
     }
 
     private void ApplyBrushDab(Point p0, Point p1)

@@ -45,6 +45,7 @@ public interface IProjectLibrary
 {
     Task<IReadOnlyList<ProjectLibraryEntry>> ListAsync(CancellationToken cancellationToken = default);
     Task RecordAsync(ProjectLibraryEntry entry, CancellationToken cancellationToken = default);
+    Task RemoveAsync(string path, CancellationToken cancellationToken = default);
     Task ExportBackupAsync(string path, CancellationToken cancellationToken = default);
     Task<int> ImportBackupAsync(string path, CancellationToken cancellationToken = default);
 }
@@ -78,4 +79,7 @@ public interface IProjectDialogs
     Task<string?> PickSaveBackupAsync(CancellationToken cancellationToken = default);
     Task<UnsavedChangesChoice> ConfirmUnsavedChangesAsync(CancellationToken cancellationToken = default);
     Task<string?> PickOpenImageAsync(CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
+    Task<string?> PickSaveSupportLogsAsync(CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
+    bool CanPickExportSavePath => false;
+    Task<string?> PickSaveExportAsync(string suggestedFileName, string extension, string fileTypeLabel, CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
 }

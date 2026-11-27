@@ -75,6 +75,20 @@ public static class ParametricStickerCatalog
         ],
         DefaultPalette: OklchPaletteGenerator.GenerateHarmoniousPalette(210.0, 0.13));
 
+    public static readonly StickerTemplateDefinition OvalOfficialStamp = new(
+        Id: "oval-official-stamp",
+        TitleAr: "ختم رسمي بيضاوي",
+        CategoryAr: "أختام",
+        DefaultWidthMm: 70.0,
+        DefaultHeightMm: 46.0,
+        Fields:
+        [
+            new("org", "الجهة / الاستوديو", "استوديو زِيوا للتصوير"),
+            new("department", "القسم", "قسم الوثائق والهويات"),
+            new("year", "السنة / الرقم", "2026 · معتمد"),
+        ],
+        DefaultPalette: OklchPaletteGenerator.GenerateHarmoniousPalette(160.0, 0.14));
+
     public static ImmutableArray<StickerTemplateDefinition> All { get; } =
     [
         CommercialSeal,
@@ -83,8 +97,17 @@ public static class ParametricStickerCatalog
         BusinessCard,
     ];
 
+    public static ImmutableArray<StickerTemplateDefinition> ExtendedAll { get; } =
+    [
+        CommercialSeal,
+        WarrantyBadge,
+        DiscountTag,
+        BusinessCard,
+        OvalOfficialStamp,
+    ];
+
     public static StickerTemplateDefinition ResolveTemplate(string? templateId) =>
-        All.FirstOrDefault(t => string.Equals(t.Id, templateId, StringComparison.OrdinalIgnoreCase))
+        ExtendedAll.FirstOrDefault(t => string.Equals(t.Id, templateId, StringComparison.OrdinalIgnoreCase))
         ?? CommercialSeal;
 
     public static string BuildSvgXml(StickerNode node)
@@ -148,6 +171,19 @@ public static class ParametricStickerCatalog
                     CreateText(svgNs, 210, 42, 22, onPrimary, Field("name", "استوديو زِيوا"), bold: true),
                     CreateText(svgNs, 180, 122, 18, onSurface, Field("role", "طباعة وتصوير احترافي"), bold: true),
                     CreateText(svgNs, 180, 166, 16, onSurface, Field("phone", "0770 000 0000")));
+                break;
+
+            case "oval-official-stamp":
+                root = new XElement(
+                    svgNs + "svg",
+                    new XAttribute("xmlns", svgNs.NamespaceName),
+                    new XAttribute("viewBox", "0 0 280 184"),
+                    new XElement(svgNs + "ellipse", new XAttribute("cx", "140"), new XAttribute("cy", "92"), new XAttribute("rx", "134"), new XAttribute("ry", "86"), new XAttribute("fill", surface), new XAttribute("stroke", primary), new XAttribute("stroke-width", "6")),
+                    new XElement(svgNs + "ellipse", new XAttribute("cx", "140"), new XAttribute("cy", "92"), new XAttribute("rx", "122"), new XAttribute("ry", "74"), new XAttribute("fill", "none"), new XAttribute("stroke", accent), new XAttribute("stroke-width", "2.5"), new XAttribute("stroke-dasharray", "6 4")),
+                    new XElement(svgNs + "rect", new XAttribute("x", "22"), new XAttribute("y", "70"), new XAttribute("width", "236"), new XAttribute("height", "44"), new XAttribute("rx", "22"), new XAttribute("fill", primary)),
+                    CreateText(svgNs, 140, 50, 15, onSurface, Field("department", "قسم الوثائق والهويات"), bold: true),
+                    CreateText(svgNs, 140, 98, 18, onPrimary, Field("org", "استوديو زِيوا للتصوير"), bold: true),
+                    CreateText(svgNs, 140, 144, 14, onSurface, Field("year", "2026 · معتمد"), bold: true));
                 break;
 
             default: // commercial-seal

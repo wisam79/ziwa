@@ -111,7 +111,7 @@ public sealed class Phase4OfflineAiHeadlessTests
         Directory.CreateDirectory(tempRoot);
         try
         {
-            var aiOptions = new OfflineAiOptions(Path.Combine(tempRoot, "Models"), InferenceStepDelayMs: 500);
+            var aiOptions = new OfflineAiOptions(Path.Combine(tempRoot, "Models"), InferenceStepDelayMs: 2500);
             using ServiceProvider sp = Bootstrapper.BuildServiceProvider(
                 new ProjectStorageOptions(tempRoot),
                 new TestDialogs(null),

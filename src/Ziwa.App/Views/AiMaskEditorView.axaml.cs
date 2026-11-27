@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Ziwa.App.ViewModels;
 
 namespace Ziwa.App.Views;
@@ -17,4 +18,7 @@ public partial class AiMaskEditorView : UserControl
             vm.NotifyMaskEditorModified();
         }
     }
+
+    private void OnResetMaskViewClick(object? sender, RoutedEventArgs e) =>
+        MaskBrushCanvas.ResetView();
 }

@@ -9,19 +9,39 @@
           BorderThickness="0,0,1,0">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
       <StackPanel Spacing="5" Margin="0,8" HorizontalAlignment="Center">
-        <Border Classes="currentTool" ToolTip.Tip="أداة التحديد والتحريك نشطة"
-                AutomationProperties.Name="الأداة النشطة: التحديد والتحريك">
+        <Button x:Name="SelectToolButton"
+                Classes="workspaceAction railTool"
+                Classes.active="{Binding IsSelectToolActive}"
+                Command="{Binding ActivateSelectToolCommand}"
+                ToolTip.Tip="أداة التحديد والتحريك (Esc للخروج من القص أو النص)"
+                AutomationProperties.Name="أداة التحديد والتحريك">
           <StackPanel Classes="workspaceRailLabel" VerticalAlignment="Center">
             <PathIcon Classes="workspaceIcon" Data="{StaticResource IconCursor}" />
             <TextBlock Text="تحديد" FontWeight="Bold" />
           </StackPanel>
-        </Border>
-        <Button x:Name="TextToolButton" Classes="workspaceAction railTool" Command="{Binding AddHeadingTextCommand}"
-                ToolTip.Tip="إدراج نص عربي" AutomationProperties.Name="إدراج نص عربي">
+        </Button>
+        <Button x:Name="TextToolButton" Classes="workspaceAction railTool"
+                ToolTip.Tip="إدراج نص عربي أو شارة أو ختم منحنٍ" AutomationProperties.Name="إدراج نص عربي">
           <StackPanel Classes="workspaceRailLabel">
             <PathIcon Classes="workspaceIcon" Data="{StaticResource IconText}" />
             <TextBlock Text="نص" />
           </StackPanel>
+          <Button.Flyout>
+            <Flyout Placement="LeftEdgeAlignedTop">
+              <StackPanel Spacing="4">
+                <Button x:Name="InsertHeadingTextButton" Classes="workspaceAction" Click="OnTextMenuItemClick" Command="{Binding AddHeadingTextCommand}"
+                        ToolTip.Tip="إدراج عنوان عربي بارز" AutomationProperties.Name="عنوان رئيسي" Content="عنوان رئيسي" />
+                <Button x:Name="InsertSubheadingTextButton" Classes="workspaceAction" Click="OnTextMenuItemClick" Command="{Binding AddSubheadingTextCommand}"
+                        ToolTip.Tip="إدراج نص فرعي للتفاصيل" AutomationProperties.Name="نص فرعي" Content="نص فرعي" />
+                <Button x:Name="InsertCapsuleBadgeButton" Classes="workspaceAction" Click="OnTextMenuItemClick" Command="{Binding AddCapsuleBadgeCommand}"
+                        ToolTip.Tip="إدراج شارة نصية كبسولة" AutomationProperties.Name="شارة كبسولة" Content="شارة كبسولة" />
+                <Button x:Name="InsertCurvedSealMenuButton" Classes="workspaceAction" Click="OnTextMenuItemClick" Command="{Binding AddCurvedSealCommand}"
+                        ToolTip.Tip="إدراج ختم نصي عربي منحنٍ" AutomationProperties.Name="ختم عربي منحنٍ" Content="ختم منحنٍ" />
+                <Button x:Name="InsertWatermarkMenuButton" Classes="workspaceAction" Click="OnTextMenuItemClick" Command="{Binding AddWatermarkTextCommand}"
+                        ToolTip.Tip="إدراج علامة مائية شفافة مائلة" AutomationProperties.Name="علامة مائية" Content="علامة مائية" />
+              </StackPanel>
+            </Flyout>
+          </Button.Flyout>
         </Button>
         <Button x:Name="CurvedSealToolButton" Classes="workspaceAction railTool" Command="{Binding AddCurvedSealCommand}"
                 ToolTip.Tip="إدراج ختم عربي منحنٍ" AutomationProperties.Name="إدراج ختم عربي منحنٍ">
@@ -30,12 +50,26 @@
             <TextBlock Text="ختم" />
           </StackPanel>
         </Button>
-        <Button x:Name="ShapeToolButton" Classes="workspaceAction railTool" Command="{Binding AddStarShapeCommand}"
-                ToolTip.Tip="إدراج نجمة هندسية" AutomationProperties.Name="إدراج نجمة هندسية">
+        <Button x:Name="ShapeToolButton" Classes="workspaceAction railTool"
+                ToolTip.Tip="إدراج شكل هندسي (مستطيل، دائرة، نجمة، خط)" AutomationProperties.Name="إدراج شكل هندسي">
           <StackPanel Classes="workspaceRailLabel">
             <PathIcon Classes="workspaceIcon" Data="{StaticResource IconShape}" />
             <TextBlock Text="شكل" />
           </StackPanel>
+          <Button.Flyout>
+            <Flyout Placement="LeftEdgeAlignedTop">
+              <StackPanel Spacing="4">
+                <Button x:Name="InsertRectangleButton" Classes="workspaceAction" Click="OnShapeMenuItemClick" Command="{Binding AddRectangleShapeCommand}"
+                        ToolTip.Tip="إدراج مستطيل" AutomationProperties.Name="إدراج مستطيل" Content="مستطيل" />
+                <Button x:Name="InsertEllipseButton" Classes="workspaceAction" Click="OnShapeMenuItemClick" Command="{Binding AddEllipseShapeCommand}"
+                        ToolTip.Tip="إدراج دائرة أو شكل بيضاوي" AutomationProperties.Name="إدراج دائرة" Content="دائرة" />
+                <Button x:Name="InsertStarButton" Classes="workspaceAction" Click="OnShapeMenuItemClick" Command="{Binding AddStarShapeCommand}"
+                        ToolTip.Tip="إدراج نجمة خماسية" AutomationProperties.Name="إدراج نجمة خماسية" Content="نجمة خماسية" />
+                <Button x:Name="InsertLineButton" Classes="workspaceAction" Click="OnShapeMenuItemClick" Command="{Binding AddLineShapeCommand}"
+                        ToolTip.Tip="إدراج خط فاصل" AutomationProperties.Name="إدراج خط فاصل" Content="خط فاصل" />
+              </StackPanel>
+            </Flyout>
+          </Button.Flyout>
         </Button>
         <Button x:Name="StickerStudioToolButton" Classes="workspaceAction railTool" Command="{Binding OpenStickerStudioCommand}"
                 ToolTip.Tip="استوديو الملصقات والبطاقات البارامتري" AutomationProperties.Name="استوديو الملصقات">
@@ -64,6 +98,13 @@
           <StackPanel Classes="workspaceRailLabel">
             <PathIcon Classes="workspaceIcon" Data="{StaticResource IconScanner}" />
             <TextBlock Text="ماسح" />
+          </StackPanel>
+        </Button>
+        <Button x:Name="PhoneBridgeToolButton" Classes="workspaceAction railTool" Command="{Binding OpenPhoneBridgeDialogCommand}"
+                ToolTip.Tip="جسر كاميرا الهاتف الفوري عبر QR (Ctrl+Shift+P)" AutomationProperties.Name="جسر كاميرا الهاتف">
+          <StackPanel Classes="workspaceRailLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconPhoneBridge}" />
+            <TextBlock Text="هاتف" />
           </StackPanel>
         </Button>
       </StackPanel>

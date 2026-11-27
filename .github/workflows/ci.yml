@@ -1,0 +1,99 @@
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs-and-policy-gate:
+    name: Docs & Release Policy Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify Docs & Changelog Fragments
+        run: node scripts/docs-gate.mjs --strict-refs
+
+      - name: Verify Version Consistency
+        run: node scripts/release.mjs --check
+
+      - name: Verify Installer User-Data Preservation Policy
+        run: node scripts/installer-policy-check.mjs
+
+  build-and-test-linux:
+    name: Build, Format & Headless Tests (Linux)
+    runs-on: ubuntu-latest
+    needs: [docs-and-policy-gate]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore Solution
+        run: dotnet restore Ziwa.sln
+
+      - name: Verify Formatting
+        run: dotnet format Ziwa.sln --verify-no-changes --no-restore
+
+      - name: Build Solution (Release)
+        run: dotnet build Ziwa.sln -c Release --no-restore
+
+      - name: Run Domain Tests
+        run: dotnet test tests/Ziwa.Domain.Tests/Ziwa.Domain.Tests.csproj -c Release --no-build --verbosity normal
+
+      - name: Run Rendering & Verify.Xunit Tests
+        run: dotnet test tests/Ziwa.Rendering.Tests/Ziwa.Rendering.Tests.csproj -c Release --no-build --verbosity normal
+
+      - name: Run Application Tests
+        run: dotnet test tests/Ziwa.Application.Tests/Ziwa.Application.Tests.csproj -c Release --no-build --verbosity normal
+
+      - name: Run Infrastructure Tests (Cross-Platform)
+        run: dotnet test tests/Ziwa.Infrastructure.Tests/Ziwa.Infrastructure.Tests.csproj -c Release --no-build --filter "FullyQualifiedName!~OpenCvScanner" --verbosity normal
+
+      - name: Run Avalonia.Headless Tests (Cross-Platform)
+        run: dotnet test tests/Ziwa.App.Tests/Ziwa.App.Tests.csproj -c Release --no-build --filter "FullyQualifiedName!~DocumentScannerHeadless" --verbosity normal
+
+  build-and-test-windows:
+    name: Full Suite & Windows Integration Tests (Windows)
+    runs-on: windows-latest
+    needs: [docs-and-policy-gate]
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore Solution
+        run: dotnet restore Ziwa.sln
+
+      - name: Build Solution (Release)
+        run: dotnet build Ziwa.sln -c Release --no-restore
+
+      - name: Run All Test Suites (Domain, Rendering, Application, Infrastructure, App.Headless)
+        run: dotnet test Ziwa.sln -c Release --no-build --verbosity normal

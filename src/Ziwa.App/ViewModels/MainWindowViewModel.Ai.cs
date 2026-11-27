@@ -94,6 +94,8 @@ public sealed partial class MainWindowViewModel
     public bool IsPhotoAiTargetVisible => (IsImageSelected || IsCollageSlotWithImageSelected) && !IsStickerSelected;
     public bool CanRestoreOriginalTarget => IsImageSelected || IsCollageSlotWithImageSelected;
 
+    public bool IsEraseBrushActive => SelectedMaskBrushMode == MaskBrushMode.Erase;
+    public bool IsRestoreBrushActive => SelectedMaskBrushMode == MaskBrushMode.Restore;
     public bool CanUndoMaskStroke => _activeMaskSession?.CanUndo == true;
     public bool CanRedoMaskStroke => _activeMaskSession?.CanRedo == true;
     public bool IsSplitMaskPreview => SelectedMaskPreviewMode == MaskPreviewMode.SplitBeforeAfter;
@@ -191,8 +193,12 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    partial void OnSelectedMaskBrushModeChanged(MaskBrushMode value) =>
+    partial void OnSelectedMaskBrushModeChanged(MaskBrushMode value)
+    {
         OnPropertyChanged(nameof(MaskEditorBrushSummary));
+        OnPropertyChanged(nameof(IsEraseBrushActive));
+        OnPropertyChanged(nameof(IsRestoreBrushActive));
+    }
 
     partial void OnMaskBrushRadiusPxChanged(double value) =>
         OnPropertyChanged(nameof(MaskBrushRadiusText));
@@ -313,6 +319,26 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
+    private void InvertMask()
+    {
+        if (_activeMaskSession is null || _maskEditorOriginalBitmap is null || _maskEditorCutoutBitmap is null)
+        {
+            return;
+        }
+
+        if (_activeMaskSession.InvertAll() is { } dirty && !dirty.IsEmpty)
+        {
+            AlphaMaskCompositor.ApplyAlphaToBitmapInPlace(
+                _maskEditorCutoutBitmap,
+                _maskEditorOriginalBitmap,
+                _activeMaskSession.AlphaSpan,
+                dirty);
+            RefreshMaskEditorBindings();
+            StatusMessage = "تم عكس مناطق الإظهار والإخفاء في القناع";
+        }
+    }
+
+    [RelayCommand]
     private async Task ApplyMaskEditorAsync(CancellationToken ct)
     {
         if (_aiCoordinator is null || _preparedMaskContext is null || _activeMaskSession is null)
@@ -335,6 +361,10 @@ public sealed partial class MainWindowViewModel
             alphaCopy,
             ct);
         StatusMessage = outcome.MessageAr;
+        if (outcome.Succeeded)
+        {
+            ShowToast("محرر القناع", outcome.MessageAr, global::Avalonia.Controls.Notifications.NotificationType.Success);
+        }
     }
 
     [RelayCommand]

@@ -36,6 +36,15 @@
   - رمز جلسة مقترن عشوائي عالي الإنتروبيا لكل جلسة جسر هاتف (`BridgeSessionToken`) ومهل انتهاء صلاحية.
 - عارض الصور المحلي يحفظ قواعد أمان المحتوى (`Content-Security-Policy: default-src 'none'; sandbox;`, `X-Content-Type-Options: nosniff`).
 
+### تنفيذ `P5-02` — جسر الهاتف المحلي والسحابي (`KestrelPhoneBridgeService`)
+- **الخادم المحلي وعزل التوكن (`Kestrel`):** يولّد `KestrelPhoneBridgeService` رمز جلسة `32` محرفاً عشوائياً عبر `RandomNumberGenerator` ويقارنه بالوقت الثابت (`PhoneBridgeTokenValidator.FixedTimeEquals`) عبر `X-Bridge-Token` أو `?token=`، ويرفض الطلبات غير المصرح بها بـ `401`، ويفرض سقف `MaxUploadBytes` (`50 MiB`) قبل التجميع بإرجاع `413`، ويفحص التوقيع السحري + `SKCodec` بإرجاع `415`/`400` للملفات غير الصورية، مع تقديم صفحة الكاميرا الخلفية على `/cam` و`/` بترويسة `X-Content-Type-Options: nosniff` ودون تسجيل التوكن في السجلات.
+- **المزامنة السحابية عبر نطاق `grido` وحارس الجيل:** عند وجود جلسة مصادقة نشطة في `ICloudAuthSessionProvider` يولّد الجسر رابط `https://grido.cloud-ip.cc/cam#session=<uid>/<token>`، ويتصل بقناة `realtime:phone-bridge:<token>` وبحاوية `phone-bridge` باستخدام JWT المستخدم وحارس المسار `IsSafeCloudObjectPath` وحارس الجيل (`_generation`) لمنع التزام أي صورة بعد الإيقاف وعدم حذف الأصل السحابي عند الانقطاع العابر.
+
+### تنفيذ `P5-03` — السجلات المنقّاة، المحدّث الآمن، والمثيل الواحد
+- **السجلات الدوّارة والتنقية (`SerilogAppLogger` + `SensitiveLogRedactor`):** يكتب السجل اليومي الدوّار في `%LocalAppData%/ZiwaStudio/Logs` بعد تنقية كل رسالة واستثناء من توكنات `Bearer` ومفاتيح `apikey` وجلسات `#session=` و`X-Bridge-Token`، ويُنشئ أرشيف `.zip` للدعم الفني عبر `IAtomicFileWriter` مع إعادة تنقية السطور عند التصدير.
+- **المحدّث الآمن (`SecureAppUpdaterService` — Fail-Closed):** يفرض `https://` على مصدر الإصدار والتنزيل وجميع إعادات التوجيه (يرفض أي هبوط إلى `http://`)، ويرفض أي حزمة بلا بصمة `SHA-256` صالحة من `64` خانة أو غير مطابقة، ويحذف الملف المؤقت فوراً عند الفشل أو عند فحص TOCTOU قبيل إطلاق المثبّت.
+- **إفلات الصور واقتران `.ziwa` والمثيل الواحد:** يصفّي `FallbackDropFileFilter` الملفات المسحوبة عبر التوقيع السحري (`PNG / JPEG / WebP / BMP`)، ويربط `WindowsSingleInstanceCoordinator` المثيل الواحد عبر `Mutex` و`NamedPipeServerStream` مع اقتران امتداد `.ziwa` للمستخدم في `HKCU\Software\Classes`.
+
 ---
 
 ## 3. خط الذكاء الاصطناعي الهجين (`Offline AI + Cloud Modal`)

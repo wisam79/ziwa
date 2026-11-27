@@ -59,6 +59,27 @@ public sealed class SqliteProjectRepo : IProjectLibrary, IDisposable, IAsyncDisp
         }
     }
 
+    public async Task RemoveAsync(string path, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        string fullPath = Path.GetFullPath(path);
+        string key = OperatingSystem.IsWindows() ? fullPath.ToUpperInvariant() : fullPath;
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            await using SqliteConnection connection = await OpenAsync(cancellationToken).ConfigureAwait(false);
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM Projects WHERE PathKey = $key;";
+            command.Parameters.AddWithValue("$key", key);
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     public async Task ExportBackupAsync(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);

@@ -260,6 +260,20 @@ public sealed class EditableAlphaMask
         return bounds;
     }
 
+    public SKRectI? InvertAll()
+    {
+        var bounds = new SKRectI(0, 0, Width, Height);
+        byte[] beforeFull = (byte[])_alpha.Clone();
+        for (int i = 0; i < _alpha.Length; i++)
+        {
+            _alpha[i] = (byte)(255 - _alpha[i]);
+        }
+
+        MaskPatchDelta delta = CapturePatchDelta(bounds, beforeFull, _alpha);
+        PushUndoDelta(delta);
+        return bounds;
+    }
+
     private void PushUndoDelta(MaskPatchDelta delta)
     {
         if (_undoStack.Count >= MaxUndoSteps)

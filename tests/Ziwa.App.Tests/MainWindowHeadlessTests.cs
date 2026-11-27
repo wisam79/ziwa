@@ -59,7 +59,7 @@ public sealed partial class MainWindowHeadlessTests
             string? autoName = AutomationProperties.GetName(btn);
             object? tip = ToolTip.GetTip(btn);
             Assert.False(string.IsNullOrWhiteSpace(autoName), $"Button '{btn.Name}' is missing AutomationProperties.Name.");
-            Assert.NotNull(tip);
+            Assert.True(tip is not null, $"Button '{btn.GetType().Name}:{btn.Name}' (TemplatedParent={btn.TemplatedParent?.GetType().Name}) is missing ToolTip.Tip.");
         }
 
         window.Close();

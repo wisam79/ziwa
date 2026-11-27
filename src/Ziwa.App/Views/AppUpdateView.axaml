@@ -1,0 +1,126 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             x:Class="Ziwa.App.Views.AppUpdateView"
+             x:DataType="vm:MainWindowViewModel"
+             FlowDirection="RightToLeft">
+  <Border Background="{DynamicResource ZiwaCardBrush}"
+          Padding="24">
+    <Border Width="490"
+            MaxHeight="700"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="{DynamicResource ZiwaSurfaceBrush}"
+            BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+            BorderThickness="{StaticResource HairlineBorderThickness}"
+            CornerRadius="{StaticResource DialogCornerRadius}"
+            BoxShadow="{StaticResource ZiwaSheetShadow}"
+            Padding="{StaticResource InspectorPadding}">
+      <StackPanel Spacing="12">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Grid.Column="0"
+                     Text="التحديث الآمن والدعم الفني"
+                     FontSize="16"
+                     FontWeight="Bold"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+          <Button x:Name="CloseUpdateDialogButton"
+                  Grid.Column="1"
+                  Command="{Binding CloseUpdateDialogCommand}"
+                  IsEnabled="{Binding IsUpdateIdle}"
+                  MinWidth="{StaticResource CompactButtonSize}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  ToolTip.Tip="إغلاق نافذة التحديثات (Esc)"
+                  AutomationProperties.Name="إغلاق نافذة التحديثات"
+                  Content="✕" />
+        </Grid>
+
+        <Border Background="{DynamicResource ZiwaCardBrush}"
+                BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                BorderThickness="{StaticResource HairlineBorderThickness}"
+                CornerRadius="{StaticResource OverlayCornerRadius}"
+                Padding="{StaticResource CardPadding}">
+          <StackPanel Spacing="6">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Grid.Column="0" Text="الإصدار الحالي:" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <TextBlock Grid.Column="1" Text="{Binding UpdateCurrentVersionText}" FlowDirection="LeftToRight" FontWeight="SemiBold" Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Grid.Column="0" Text="أحدث إصدار متاح:" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <TextBlock Grid.Column="1" Text="{Binding UpdateLatestVersionText}" FlowDirection="LeftToRight" FontWeight="Bold" Foreground="{DynamicResource ZiwaInfoBrush}" />
+            </Grid>
+            <TextBlock Text="بصمة SHA-256 المتوقعة (Fail-Closed):" FontSize="11" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+            <TextBlock Text="{Binding UpdateChecksumPreviewText}" FlowDirection="LeftToRight" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+            <ScrollViewer MaxHeight="90" IsVisible="{Binding HasUpdateReleaseNotes}">
+              <TextBlock x:Name="UpdateReleaseNotesTextBlock"
+                         Text="{Binding UpdateReleaseNotesText}"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+            </ScrollViewer>
+            <TextBlock Text="{Binding UpdateStatusMessage}" FontSize="12" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" IsVisible="{Binding IsUpdateBusy}">
+              <ProgressBar Grid.Column="0" Minimum="0" Maximum="100" Value="{Binding UpdateDownloadPercent}" VerticalAlignment="Center" />
+              <Button x:Name="CancelUpdateOperationButton"
+                      Grid.Column="1"
+                      Command="{Binding CancelUpdateOperationCommand}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
+                      ToolTip.Tip="إلغاء فحص أو تنزيل التحديث الجاري"
+                      AutomationProperties.Name="إلغاء عملية التحديث"
+                      Content="إلغاء" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button x:Name="CheckUpdatesButton"
+                  Command="{Binding CheckForUpdatesCommand}"
+                  IsEnabled="{Binding IsUpdateIdle}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaSubtleFillBrush}"
+                  Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                  ToolTip.Tip="فحص أحدث إصدار متاح عبر HTTPS"
+                  AutomationProperties.Name="فحص التحديثات"
+                  Content="فحص التحديثات" />
+          <Button x:Name="DownloadVerifyUpdateButton"
+                  Command="{Binding DownloadAndVerifyUpdateCommand}"
+                  IsEnabled="{Binding CanDownloadAvailableUpdate}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                  Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                  ToolTip.Tip="تنزيل التحديث مع إلزامية التحقق من SHA-256"
+                  AutomationProperties.Name="تنزيل وتحقق التحديث"
+                  Content="تنزيل وتحقق (SHA-256)" />
+          <Button x:Name="LaunchVerifiedUpdateButton"
+                  Command="{Binding LaunchVerifiedUpdateCommand}"
+                  IsVisible="{Binding HasVerifiedUpdateReadyToInstall}"
+                  MinHeight="{StaticResource CompactButtonSize}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                  Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                  ToolTip.Tip="تشغيل مثبّت التحديث المُتحقَّق من بصمته"
+                  AutomationProperties.Name="تثبيت التحديث"
+                  Content="تثبيت الآن" />
+        </StackPanel>
+
+        <Button x:Name="ExportSupportLogsDialogButton"
+                Command="{Binding ExportSupportLogsCommand}"
+                MinHeight="{StaticResource CompactButtonSize}"
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                Background="{DynamicResource ZiwaSubtleFillBrush}"
+                Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                ToolTip.Tip="تصدير أرشيف سجلات Serilog المنقّاة من أي توكنات"
+                AutomationProperties.Name="تصدير سجلات الدعم الفني"
+                Content="تصدير سجلات الدعم الفني (.zip)" />
+      </StackPanel>
+    </Border>
+  </Border>
+</UserControl>

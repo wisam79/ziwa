@@ -78,6 +78,12 @@
                 Content="+ إضافة إطار"
                 ToolTip.Tip="إضافة إطار قص مستند جديد يدوياً"
                 AutomationProperties.Name="إضافة إطار مسح" />
+        <Button x:Name="ResetFullQuadButton"
+                Margin="0,0,6,6"
+                Command="{Binding ResetSelectedScanRegionToFullImageCommand}"
+                Content="كامل الصورة"
+                ToolTip.Tip="ضبط زوايا الإطار المحدد لتشمل كامل الصورة"
+                AutomationProperties.Name="ضبط الإطار لكامل الصورة" />
         <Button x:Name="RemoveScanRegionButton"
                 Margin="0,0,12,6"
                 Command="{Binding RemoveSelectedScanRegionCommand}"

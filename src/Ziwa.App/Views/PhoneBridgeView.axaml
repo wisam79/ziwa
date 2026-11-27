@@ -1,0 +1,213 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             xmlns:controls="using:Ziwa.App.Controls"
+             x:Class="Ziwa.App.Views.PhoneBridgeView"
+             x:DataType="vm:MainWindowViewModel"
+             FlowDirection="RightToLeft">
+  <Border Background="{DynamicResource ZiwaCardBrush}"
+          Padding="24">
+    <Border Width="490"
+            MaxHeight="740"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="{DynamicResource ZiwaSurfaceBrush}"
+            BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+            BorderThickness="{StaticResource HairlineBorderThickness}"
+            CornerRadius="{StaticResource DialogCornerRadius}"
+            BoxShadow="{StaticResource ZiwaSheetShadow}"
+            Padding="{StaticResource InspectorPadding}">
+      <ScrollViewer>
+        <StackPanel Spacing="12">
+          <!-- العنوان وزر الإغلاق (الإغلاق يُبقي الجسر متصلاً) -->
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Grid.Column="0" Spacing="2">
+              <TextBlock Text="جسر كاميرا الهاتف (QR)"
+                         FontSize="16"
+                         FontWeight="Bold"
+                         Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+              <TextBlock Text="امسح الرمز بكاميرا الهاتف لإرسال الصور مباشرة إلى الورقة أو خانة الكولاج"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+            </StackPanel>
+            <Button x:Name="ClosePhoneBridgeDialogButton"
+                    Grid.Column="1"
+                    Command="{Binding ClosePhoneBridgeDialogCommand}"
+                    MinWidth="{StaticResource CompactButtonSize}"
+                    MinHeight="{StaticResource CompactButtonSize}"
+                    VerticalAlignment="Top"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Background="{DynamicResource ZiwaSubtleFillBrush}"
+                    Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                    ToolTip.Tip="إغلاق النافذة مع إبقاء الجسر متصلاً في الخلفية (Esc)"
+                    AutomationProperties.Name="إغلاق نافذة جسر الهاتف"
+                    Content="✕" />
+          </Grid>
+
+          <!-- تنبيه أو رسالة خطأ -->
+          <Border x:Name="PhoneBridgeErrorBanner"
+                  IsVisible="{Binding HasPhoneBridgeError}"
+                  Background="{DynamicResource ZiwaCardBrush}"
+                  BorderBrush="{DynamicResource ZiwaFocusStrokeBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  Padding="{StaticResource ControlPadding}">
+            <TextBlock x:Name="PhoneBridgeErrorTextBlock"
+                       Text="{Binding PhoneBridgeErrorText}"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       Foreground="{DynamicResource ZiwaInfoBrush}" />
+          </Border>
+
+          <!-- حالة انتظار التشغيل / التوقف -->
+          <Border x:Name="PhoneBridgeStoppedCard"
+                  IsVisible="{Binding IsPhoneBridgeStopped}"
+                  Background="{DynamicResource ZiwaCardBrush}"
+                  BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  CornerRadius="{StaticResource OverlayCornerRadius}"
+                  Padding="{StaticResource CardPadding}">
+            <StackPanel Spacing="10" HorizontalAlignment="Center">
+              <TextBlock Text="الجسر متوقف حالياً"
+                         FontSize="14"
+                         FontWeight="SemiBold"
+                         HorizontalAlignment="Center"
+                         Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+              <Button x:Name="StartPhoneBridgeButton"
+                      Command="{Binding StartPhoneBridgeCommand}"
+                      IsEnabled="{Binding IsPhoneBridgeIdle}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      HorizontalAlignment="Center"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                      ToolTip.Tip="تشغيل خادم جسر الهاتف وتوليد رمز QR"
+                      AutomationProperties.Name="تشغيل جسر الهاتف"
+                      Content="تشغيل الجسر وتوليد QR" />
+            </StackPanel>
+          </Border>
+
+          <!-- حالة التشغيل ورمز QR -->
+          <StackPanel Spacing="10" IsVisible="{Binding IsPhoneBridgeRunning}">
+            <!-- مبدّل الوضع: عبر الإنترنت (السحابة) مقابل الشبكة المحلية (LAN) -->
+            <Grid ColumnDefinitions="*,8,*">
+              <Button x:Name="SelectCloudModeButton"
+                      Grid.Column="0"
+                      Classes="workspaceAction"
+                      Classes.active="{Binding IsPhoneBridgeCloudMode}"
+                      Command="{Binding SelectPhoneBridgeCloudModeCommand}"
+                      IsEnabled="{Binding CanUsePhoneBridgeCloud}"
+                      HorizontalAlignment="Stretch"
+                      ToolTip.Tip="الاقتران عبر السحابة (grido.cloud-ip.cc/cam) — يتطلب تسجيل الدخول"
+                      AutomationProperties.Name="وضع السحابة"
+                      Content="عبر الإنترنت (السحابة)" />
+              <Button x:Name="SelectLocalModeButton"
+                      Grid.Column="2"
+                      Classes="workspaceAction"
+                      Classes.active="{Binding IsPhoneBridgeLocalMode}"
+                      Command="{Binding SelectPhoneBridgeLocalModeCommand}"
+                      HorizontalAlignment="Stretch"
+                      ToolTip.Tip="الاقتران المباشر على نفس شبكة Wi-Fi المحلية"
+                      AutomationProperties.Name="وضع الشبكة المحلية"
+                      Content="الشبكة المحلية (LAN)" />
+            </Grid>
+
+            <!-- بطاقة رمز QR -->
+            <Border Background="{DynamicResource ZiwaCardBrush}"
+                    BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                    BorderThickness="{StaticResource HairlineBorderThickness}"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                    Padding="16"
+                    HorizontalAlignment="Center">
+              <StackPanel Spacing="10" HorizontalAlignment="Center">
+                <Border Width="228"
+                        Height="228"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                        BorderThickness="{StaticResource HairlineBorderThickness}"
+                        ClipToBounds="True">
+                  <controls:SkiaBitmapPreviewControl x:Name="PhoneBridgeQrPreview"
+                                                     PreviewBitmap="{Binding PhoneBridgeQrBitmap}"
+                                                     PasteboardBrush="{DynamicResource ZiwaCardBrush}" />
+                </Border>
+                <TextBlock x:Name="PhoneBridgeStatusSummaryTextBlock"
+                           Text="{Binding PhoneBridgeStatusSummaryText}"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource ZiwaSuccessBrush}" />
+                <TextBlock x:Name="PhoneBridgeLastReceivedTextBlock"
+                           IsVisible="{Binding HasPhoneBridgeReceivedPhotos}"
+                           Text="{Binding PhoneBridgeLastReceivedText, StringFormat='آخر صورة مستلمة: {0}'}"
+                           FontSize="11"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              </StackPanel>
+            </Border>
+
+            <!-- رابط الاقتران المباشر وزر النسخ -->
+            <Grid ColumnDefinitions="*,8,Auto">
+              <TextBox x:Name="PhoneBridgeUrlTextBox"
+                       Grid.Column="0"
+                       IsReadOnly="True"
+                       FlowDirection="LeftToRight"
+                       Text="{Binding PhoneBridgeActiveUrl, Mode=OneWay}"
+                       ToolTip.Tip="رابط الكاميرا المباشر للهاتف"
+                       AutomationProperties.Name="رابط جسر الهاتف" />
+              <Button x:Name="CopyPhoneBridgeUrlButton"
+                      Grid.Column="2"
+                      Command="{Binding CopyPhoneBridgeUrlCommand}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                      ToolTip.Tip="نسخ رابط جسر الهاتف إلى الحافظة"
+                      AutomationProperties.Name="نسخ الرابط"
+                      Content="نسخ الرابط" />
+            </Grid>
+
+            <!-- أزرار التحكم بالجلسة -->
+            <Grid ColumnDefinitions="*,8,*,8,*">
+              <Button x:Name="RestartPhoneBridgeButton"
+                      Grid.Column="0"
+                      Command="{Binding RestartPhoneBridgeCommand}"
+                      IsEnabled="{Binding IsPhoneBridgeIdle}"
+                      HorizontalAlignment="Stretch"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                      ToolTip.Tip="إعادة توليد رمز جلسة جديد وإعادة تشغيل الخادم"
+                      AutomationProperties.Name="إعادة تشغيل الجسر"
+                      Content="إعادة تشغيل" />
+              <Button x:Name="StopPhoneBridgeButton"
+                      Grid.Column="2"
+                      Command="{Binding StopPhoneBridgeCommand}"
+                      IsEnabled="{Binding IsPhoneBridgeIdle}"
+                      HorizontalAlignment="Stretch"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
+                      ToolTip.Tip="إيقاف جسر الهاتف ومسح الجلسة المؤقتة"
+                      AutomationProperties.Name="إيقاف الجسر"
+                      Content="إيقاف الجسر" />
+              <Button x:Name="KeepRunningCloseButton"
+                      Grid.Column="4"
+                      Command="{Binding ClosePhoneBridgeDialogCommand}"
+                      HorizontalAlignment="Stretch"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
+                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
+                      ToolTip.Tip="إغلاق النافذة وإبقاء الجسر متصلاً بالخلفية"
+                      AutomationProperties.Name="متابعة العمل"
+                      Content="إخفاء (متصل)" />
+            </Grid>
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+  </Border>
+</UserControl>

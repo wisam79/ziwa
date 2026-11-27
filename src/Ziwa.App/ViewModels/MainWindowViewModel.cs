@@ -1,11 +1,16 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SkiaSharp;
 using Ziwa.Application.Abstractions;
 using Ziwa.Application.Ai;
 using Ziwa.Application.Auth;
+using Ziwa.Application.Bridge;
 using Ziwa.Application.Collage;
 using Ziwa.Application.Commands;
 using Ziwa.Application.Interaction;
@@ -60,6 +65,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private bool _autoOpenedInspector;
     private int _paletteSeed = 42;
     private NodeId? _editingStickerTargetId;
+    private bool _isSyncingStickerStudio;
+    private SKBitmap? _stickerPreviewBitmap;
 
     [ObservableProperty]
     private ViewportTransform _viewport = new(1.0, 32.0, 32.0, 1.0);
@@ -96,6 +103,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private StickerPalette _currentStickerPalette = ParametricStickerCatalog.CommercialSeal.DefaultPalette;
+
+    [ObservableProperty]
+    private Color _stickerCustomPrimaryColor = Color.FromRgb(27, 83, 148);
+
+    public SKBitmap? StickerPreviewBitmap => _stickerPreviewBitmap;
 
     [ObservableProperty]
     private double _filterBrightness;
@@ -171,7 +183,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
         IProjectDialogs? dialogs = null,
         DocumentScannerCoordinator? scannerCoordinator = null,
         CloudAiCoordinator? cloudAiCoordinator = null,
-        AccountSessionCoordinator? accountCoordinator = null)
+        AccountSessionCoordinator? accountCoordinator = null,
+        PhoneBridgeCoordinator? phoneBridgeCoordinator = null,
+        IStructuredAppLogger? appLogger = null,
+        IAppUpdaterService? appUpdater = null,
+        IDropFileFilter? dropFileFilter = null)
     {
         _session = session;
         _commandRegistry = commandRegistry;
@@ -191,6 +207,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         InitializeAiIntegration(aiCoordinator, imageImporter, assetStore, dialogs, cloudAiCoordinator);
         InitializeAccountIntegration(accountCoordinator);
         InitializeScannerIntegration(scannerCoordinator);
+        InitializePhoneBridgeIntegration(phoneBridgeCoordinator);
+        InitializeDiagnosticsAndUpdateIntegration(appLogger, appUpdater, dropFileFilter);
         LoadStickerStudioFromTemplate(ParametricStickerCatalog.CommercialSeal, existingFields: null, palette: null);
         RefreshPrinters();
         RefreshFromSession();
@@ -211,7 +229,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     public IReadOnlyList<MaskShapeKind> AvailableMasks { get; } = Enum.GetValues<MaskShapeKind>();
     public IReadOnlyList<PhotoFilterPreset> AvailableFilterPresets { get; } = Enum.GetValues<PhotoFilterPreset>();
-    public IReadOnlyList<StickerTemplateDefinition> StickerTemplates { get; } = ParametricStickerCatalog.All;
+    public IReadOnlyList<StickerTemplateDefinition> StickerTemplates { get; } = ParametricStickerCatalog.ExtendedAll;
     public IReadOnlyList<PrintOrientationKind> AvailableOrientations { get; } = Enum.GetValues<PrintOrientationKind>();
     public IReadOnlyList<CmykProfileKind> AvailableCmykProfiles { get; } = Enum.GetValues<CmykProfileKind>();
 
@@ -488,16 +506,58 @@ public sealed partial class MainWindowViewModel : ObservableObject
             }));
 
         _commandRegistry.Register(new CommandDefinition(
-            new CommandId("insert.curvedSeal"),
-            "إدراج ختم عربي منحنٍ",
+        new CommandId("insert.curvedSeal"),
+        "إدراج ختم عربي منحنٍ",
+        string.Empty,
+        "إدراج",
+        () => true,
+        _ =>
+        {
+            TextNode seal = TypographyPresets.CreateCurvedSeal();
+            _session.ApplyCommand("إدراج ختم منحنٍ", doc => FreeformSceneOperations.AddNode(doc, seal));
+            _session.SetSelection([seal.Id]);
+            return Task.CompletedTask;
+        }));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("insert.subheadingText"),
+            "إدراج نص فرعي",
             string.Empty,
             "إدراج",
             () => true,
             _ =>
             {
-                TextNode seal = TypographyPresets.CreateCurvedSeal();
-                _session.ApplyCommand("إدراج ختم منحنٍ", doc => FreeformSceneOperations.AddNode(doc, seal));
-                _session.SetSelection([seal.Id]);
+                TextNode sub = TypographyPresets.CreateSubheading();
+                _session.ApplyCommand("إدراج نص فرعي", doc => FreeformSceneOperations.AddNode(doc, sub));
+                _session.SetSelection([sub.Id]);
+                return Task.CompletedTask;
+            }));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("insert.capsuleBadge"),
+            "إدراج شارة نصية كبسولة",
+            string.Empty,
+            "إدراج",
+            () => true,
+            _ =>
+            {
+                TextNode badge = TypographyPresets.CreateCapsuleBadge();
+                _session.ApplyCommand("إدراج شارة كبسولة", doc => FreeformSceneOperations.AddNode(doc, badge));
+                _session.SetSelection([badge.Id]);
+                return Task.CompletedTask;
+            }));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("insert.watermark"),
+            "إدراج علامة مائية مائلة",
+            string.Empty,
+            "إدراج",
+            () => true,
+            _ =>
+            {
+                TextNode wm = TypographyPresets.CreateWatermark();
+                _session.ApplyCommand("إدراج علامة مائية", doc => FreeformSceneOperations.AddNode(doc, wm));
+                _session.SetSelection([wm.Id]);
                 return Task.CompletedTask;
             }));
 
@@ -507,21 +567,53 @@ public sealed partial class MainWindowViewModel : ObservableObject
             string.Empty,
             "إدراج",
             () => true,
-            _ =>
-            {
-                var star = new ShapeNode(
-                    Id: NodeId.New(),
-                    Name: "نجمة خماسية",
-                    BoundsMm: new RectMm(54.0, 95.0, 40.0, 40.0),
-                    Kind: ShapeKind.Star,
-                    Fill: new SolidShapeFill(new ColorRgba(242, 204, 96, 255)),
-                    Stroke: new StrokeSpec(new ColorRgba(138, 75, 0, 255), 0.6),
-                    PolygonSides: 5,
-                    InnerRadiusRatio: 0.44);
-                _session.ApplyCommand("إدراج نجمة", doc => FreeformSceneOperations.AddNode(doc, star));
-                _session.SetSelection([star.Id]);
-                return Task.CompletedTask;
-            }));
+            _ => InsertDefaultShape(
+                ShapeKind.Star,
+                "نجمة خماسية",
+                new RectMm(54.0, 95.0, 40.0, 40.0),
+                new SolidShapeFill(new ColorRgba(242, 204, 96, 255)),
+                new StrokeSpec(new ColorRgba(138, 75, 0, 255), 0.6),
+                polygonSides: 5,
+                innerRatio: 0.44)));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("insert.rectangleShape"),
+            "إدراج مستطيل",
+            string.Empty,
+            "إدراج",
+            () => true,
+            _ => InsertDefaultShape(
+                ShapeKind.Rectangle,
+                "مستطيل",
+                new RectMm(48.0, 88.0, 56.0, 36.0),
+                new SolidShapeFill(new ColorRgba(11, 92, 171, 255)),
+                new StrokeSpec(new ColorRgba(8, 56, 108, 255), 0.4))));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("insert.ellipseShape"),
+            "إدراج دائرة / بيضاوي",
+            string.Empty,
+            "إدراج",
+            () => true,
+            _ => InsertDefaultShape(
+                ShapeKind.Ellipse,
+                "دائرة",
+                new RectMm(54.0, 88.0, 42.0, 42.0),
+                new SolidShapeFill(new ColorRgba(16, 148, 120, 255)),
+                new StrokeSpec(new ColorRgba(10, 96, 76, 255), 0.4))));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("insert.lineShape"),
+            "إدراج خط مستقيم",
+            string.Empty,
+            "إدراج",
+            () => true,
+            _ => InsertDefaultShape(
+                ShapeKind.Line,
+                "خط فاصل",
+                new RectMm(40.0, 110.0, 70.0, 4.0),
+                new SolidShapeFill(ColorRgba.Transparent),
+                new StrokeSpec(new ColorRgba(30, 41, 59, 255), 1.0))));
 
         _commandRegistry.Register(new CommandDefinition(
             new CommandId("sticker.openStudio"),
@@ -626,6 +718,26 @@ public sealed partial class MainWindowViewModel : ObservableObject
             }));
 
         _commandRegistry.Register(new CommandDefinition(
+            new CommandId("collage.insertIntoSelectedSlot"),
+            "إدراج صورة في الخانة المحددة",
+            string.Empty,
+            "كولاج",
+            () => IsCollageSlotSelected,
+            ImportImageCoreAsync));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("collage.clearAllSlots"),
+            "تفريغ كل خانات الكولاج",
+            string.Empty,
+            "كولاج",
+            () => IsCollageMode,
+            _ =>
+            {
+                ClearAllCollageSlots();
+                return Task.CompletedTask;
+            }));
+
+        _commandRegistry.Register(new CommandDefinition(
             new CommandId("brand.insertLogo"),
             "إدراج شعار الاستوديو (هويتي)",
             string.Empty,
@@ -705,13 +817,96 @@ public sealed partial class MainWindowViewModel : ObservableObject
         _commandRegistry.Register(new CommandDefinition(
             new CommandId("view.resetZoom"),
             "إعادة التكبير 100%",
-            string.Empty,
+            "Ctrl+1",
             "عرض",
             () => true,
             _ =>
             {
                 Viewport = new ViewportTransform(1.0, 32.0, 32.0, Viewport.DpiScale);
                 StatusMessage = "تمت إعادة تعيين المعاينة إلى 100%";
+                return Task.CompletedTask;
+            }));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("view.fitPage"),
+            "ملاءمة الصفحة",
+            "Ctrl+0",
+            "عرض",
+            () => true,
+            _ =>
+            {
+                ViewportFitRequested?.Invoke();
+                StatusMessage = $"ملاءمة الصفحة ({ZoomPercentText})";
+                return Task.CompletedTask;
+            }));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("edit.duplicate"),
+            "تكرار التحديد",
+            "Ctrl+D",
+            "تحرير",
+            () => HasSelection,
+            _ =>
+            {
+                ImmutableArray<NodeId> ids = _session.SelectedNodeIds;
+                ImmutableArray<NodeId> created = [];
+                if (_session.ApplyCommand("تكرار التحديد", doc => FreeformSceneOperations.DuplicateSelection(doc, ids, out created)))
+                {
+                    _session.SetSelection(created);
+                    StatusMessage = $"تم تكرار {created.Length} عنصر";
+                }
+
+                return Task.CompletedTask;
+            }));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("edit.selectAll"),
+            "تحديد الكل",
+            "Ctrl+A",
+            "تحرير",
+            () => ActivePage.Nodes.Any(n => n.IsVisible && !n.IsLocked),
+            _ =>
+            {
+                ImmutableArray<NodeId> allIds = ActivePage.Nodes
+                    .Where(n => n.IsVisible && !n.IsLocked)
+                    .Select(n => n.Id)
+                    .ToImmutableArray();
+                _session.SetSelection(allIds);
+                StatusMessage = $"تم تحديد {allIds.Length} عنصر";
+                return Task.CompletedTask;
+            }));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("arrange.bringForward"),
+            "إحضار للأمام",
+            "Ctrl+]",
+            "ترتيب",
+            () => HasSelection,
+            _ =>
+            {
+                ImmutableArray<NodeId> ids = _session.SelectedNodeIds;
+                if (_session.ApplyCommand("إحضار للأمام", doc => FreeformSceneOperations.BringForward(doc, ids)))
+                {
+                    StatusMessage = "تم تقديم التحديد للأمام";
+                }
+
+                return Task.CompletedTask;
+            }));
+
+        _commandRegistry.Register(new CommandDefinition(
+            new CommandId("arrange.sendBackward"),
+            "إرسال للخلف",
+            "Ctrl+[",
+            "ترتيب",
+            () => HasSelection,
+            _ =>
+            {
+                ImmutableArray<NodeId> ids = _session.SelectedNodeIds;
+                if (_session.ApplyCommand("إرسال للخلف", doc => FreeformSceneOperations.SendBackward(doc, ids)))
+                {
+                    StatusMessage = "تم إرسال التحديد للخلف";
+                }
+
                 return Task.CompletedTask;
             }));
 
@@ -736,11 +931,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
             () => true,
             async ct =>
             {
-                string exportDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "ZiwaStudio",
-                    "Exports");
-                string outputPath = Path.Combine(exportDir, "ziwa-vertical-slice-300dpi.png");
+                string? outputPath = await ResolveExportDestinationAsync(
+                    "ziwa-vertical-slice-300dpi.png",
+                    Document.Title,
+                    "png",
+                    "صورة PNG",
+                    ct);
+                if (outputPath is null)
+                {
+                    return;
+                }
 
                 ExportArtifactResult result = await _exportService.ExportActivePageAsync(
                     outputPath,
@@ -749,6 +949,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
                     ct);
 
                 StatusMessage = $"تم التصدير ذرياً: {result.PixelWidth}×{result.PixelHeight} px @ {result.Dpi:0} DPI";
+                ShowToast("التصدير السريع", StatusMessage, global::Avalonia.Controls.Notifications.NotificationType.Success);
             }));
 
         _commandRegistry.Register(new CommandDefinition(
@@ -828,6 +1029,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
             "ملف",
             () => true,
             ct => ExportCmykTiffCoreAsync(ct)));
+
+        RegisterRasterExportCommands();
     }
 
     private void OnSessionChanged()
@@ -887,6 +1090,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
         else if (IsCollageSlotSelected && SelectedCollageSlot is { } slot)
         {
+            SelectedImageMask = slot.Mask;
             SyncFilterFields(slot.EffectiveFilters);
         }
 
@@ -927,9 +1131,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
             RecomputePrintCalibration();
         }
 
+        EditableDocumentTitle = Document.Title;
         OnPropertyChanged(nameof(ActivePage));
         OnPropertyChanged(nameof(Document));
         OnPropertyChanged(nameof(DocumentTitle));
+        OnPropertyChanged(nameof(ProjectWindowTitle));
         OnPropertyChanged(nameof(PageName));
         OnPropertyChanged(nameof(PageWidthMm));
         OnPropertyChanged(nameof(PageHeightMm));
@@ -960,6 +1166,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(IsQuickBarVisible));
         OnPropertyChanged(nameof(CanMaskImageWithShape));
         OnPropertyChanged(nameof(SelectionSummary));
+        SyncInspectorPolishFields();
+        SyncCanvasInteractionFields();
+        SyncPrintExportOptions();
     }
 
     private void SyncFilterFields(ImageFilterSpec filters)
@@ -982,16 +1191,43 @@ public sealed partial class MainWindowViewModel : ObservableObject
         IReadOnlyDictionary<string, string>? existingFields,
         StickerPalette? palette)
     {
-        SelectedStickerTemplate = template;
-        CurrentStickerPalette = palette ?? template.DefaultPalette;
-        StickerFieldItems.Clear();
-
-        foreach (StickerFieldSpec spec in template.Fields)
+        bool prevSync = _isSyncingStickerStudio;
+        _isSyncingStickerStudio = true;
+        try
         {
-            string val = existingFields is not null && existingFields.TryGetValue(spec.Key, out string? existing)
-                ? existing
-                : spec.DefaultValue;
-            StickerFieldItems.Add(new StickerFieldViewModel(spec.Key, spec.LabelAr, val));
+            SelectedStickerTemplate = template;
+            CurrentStickerPalette = palette ?? template.DefaultPalette;
+            StickerCustomPrimaryColor = ToAvaloniaColor(CurrentStickerPalette.Primary);
+
+            foreach (StickerFieldViewModel item in StickerFieldItems)
+            {
+                item.PropertyChanged -= OnStickerFieldChanged;
+            }
+
+            StickerFieldItems.Clear();
+            foreach (StickerFieldSpec spec in template.Fields)
+            {
+                string val = existingFields is not null && existingFields.TryGetValue(spec.Key, out string? existing)
+                    ? existing
+                    : spec.DefaultValue;
+                var fieldVm = new StickerFieldViewModel(spec.Key, spec.LabelAr, val);
+                fieldVm.PropertyChanged += OnStickerFieldChanged;
+                StickerFieldItems.Add(fieldVm);
+            }
+        }
+        finally
+        {
+            _isSyncingStickerStudio = prevSync;
+        }
+
+        RefreshStickerPreview();
+    }
+
+    private void OnStickerFieldChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (!_isSyncingStickerStudio && e.PropertyName == nameof(StickerFieldViewModel.Value))
+        {
+            RefreshStickerPreview();
         }
     }
 
@@ -1051,9 +1287,113 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     partial void OnSelectedStickerTemplateChanged(StickerTemplateDefinition value)
     {
-        if (_editingStickerTargetId is null)
+        if (!_isSyncingStickerStudio)
         {
             LoadStickerStudioFromTemplate(value, null, null);
+        }
+    }
+
+    partial void OnCurrentStickerPaletteChanged(StickerPalette value)
+    {
+        OnPropertyChanged(nameof(StudioPrimaryBrush));
+        OnPropertyChanged(nameof(StudioSecondaryBrush));
+        OnPropertyChanged(nameof(StudioAccentBrush));
+        OnPropertyChanged(nameof(StudioSurfaceBrush));
+        if (!_isSyncingStickerStudio)
+        {
+            _isSyncingStickerStudio = true;
+            try
+            {
+                StickerCustomPrimaryColor = ToAvaloniaColor(value.Primary);
+            }
+            finally
+            {
+                _isSyncingStickerStudio = false;
+            }
+
+            RefreshStickerPreview();
+        }
+    }
+
+    partial void OnStickerCustomPrimaryColorChanged(Color value)
+    {
+        if (_isSyncingStickerStudio)
+        {
+            return;
+        }
+
+        _isSyncingStickerStudio = true;
+        try
+        {
+            CurrentStickerPalette = OklchPaletteGenerator.GeneratePaletteFromPrimaryColor(ToColorRgba(value));
+        }
+        finally
+        {
+            _isSyncingStickerStudio = false;
+        }
+
+        RefreshStickerPreview();
+    }
+
+    private void RefreshStickerPreview()
+    {
+        StickerTemplateDefinition template = SelectedStickerTemplate;
+        ImmutableDictionary<string, string> fields = StickerFieldItems
+            .ToImmutableDictionary(f => f.Key, f => f.Value);
+        var previewNode = new StickerNode(
+            Id: NodeId.New(),
+            Name: template.TitleAr,
+            BoundsMm: new RectMm(0.0, 0.0, template.DefaultWidthMm, template.DefaultHeightMm),
+            TemplateId: template.Id,
+            Fields: fields,
+            Palette: CurrentStickerPalette);
+
+        var previewPage = new PageModel(
+            PageId.New(),
+            "معاينة الملصق",
+            template.DefaultWidthMm,
+            template.DefaultHeightMm,
+            0.0,
+            0.0,
+            new TransparentBackground(),
+            [previewNode]);
+
+        const int bmpW = 320;
+        const int bmpH = 180;
+        var nextBmp = new SKBitmap(bmpW, bmpH, SKColorType.Rgba8888, SKAlphaType.Premul);
+        using (var canvas = new SKCanvas(nextBmp))
+        {
+            canvas.Clear(SKColors.Transparent);
+            double pad = 8.0;
+            double scale = Math.Min(
+                (bmpW - (pad * 2.0)) / Math.Max(1.0, template.DefaultWidthMm),
+                (bmpH - (pad * 2.0)) / Math.Max(1.0, template.DefaultHeightMm));
+            float ox = (float)((bmpW - (template.DefaultWidthMm * scale)) * 0.5);
+            float oy = (float)((bmpH - (template.DefaultHeightMm * scale)) * 0.5);
+            canvas.Translate(ox, oy);
+            canvas.Scale((float)scale, (float)scale);
+            SceneRenderer.RenderPage(
+                canvas,
+                previewPage,
+                new global::Ziwa.Rendering.RenderOptions(
+                    Dpi: 96.0,
+                    QualityMode: RenderQualityMode.InteractivePreview,
+                    IsPreScaledToMillimeters: true));
+        }
+
+        SKBitmap? oldBmp = _stickerPreviewBitmap;
+        _stickerPreviewBitmap = nextBmp;
+        OnPropertyChanged(nameof(StickerPreviewBitmap));
+        if (oldBmp is not null)
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.Post(() => oldBmp.Dispose(), DispatcherPriority.Background);
+            }
+            else
+            {
+                oldBmp.Dispose();
+            }
         }
     }
 
@@ -1062,6 +1402,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
         if (SelectedNodes.Count == 1 && SelectedNodes[0] is ImageNode img && img.Mask != value)
         {
             _session.ApplyCommand("تغيير قناع الصورة", doc => FreeformSceneOperations.SetImageMask(doc, img.Id, value));
+        }
+        else if (IsCollageSlotSelected &&
+                 _session.SelectedCollageSlotId is { } sid &&
+                 SelectedCollageSlot is { } slot &&
+                 slot.Mask != value)
+        {
+            _session.ApplyCommand("تغيير قناع الخانة", doc => CollageOperations.SetSlotMask(doc, sid, value));
         }
     }
 
@@ -1287,7 +1634,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private Task AddHeadingTextAsync(CancellationToken ct) => _commandRegistry.TryExecuteAsync(new CommandId("insert.headingText"), ct);
 
     [RelayCommand]
+    private Task AddSubheadingTextAsync(CancellationToken ct) => _commandRegistry.TryExecuteAsync(new CommandId("insert.subheadingText"), ct);
+
+    [RelayCommand]
+    private Task AddCapsuleBadgeAsync(CancellationToken ct) => _commandRegistry.TryExecuteAsync(new CommandId("insert.capsuleBadge"), ct);
+
+    [RelayCommand]
     private Task AddCurvedSealAsync(CancellationToken ct) => _commandRegistry.TryExecuteAsync(new CommandId("insert.curvedSeal"), ct);
+
+    [RelayCommand]
+    private Task AddWatermarkTextAsync(CancellationToken ct) => _commandRegistry.TryExecuteAsync(new CommandId("insert.watermark"), ct);
 
     [RelayCommand]
     private Task AddStarShapeAsync(CancellationToken ct) => _commandRegistry.TryExecuteAsync(new CommandId("insert.starShape"), ct);
@@ -1587,15 +1943,21 @@ public sealed partial class MainWindowViewModel : ObservableObject
         LastSpoolPrinterName = result.PrinterName;
         LastSpoolJobId = result.SpoolJobId;
         StatusMessage = $"تم إرسال مهمة الطباعة #{result.SpoolJobId} ({result.PagesPrinted} صفحة) إلى {result.PrinterName}";
+        ShowToast("الطباعة المباشرة", StatusMessage, global::Avalonia.Controls.Notifications.NotificationType.Success);
     }
 
     private async Task ExportVectorPdfCoreAsync(CancellationToken ct)
     {
-        string exportDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "ZiwaStudio",
-            "Exports");
-        string outputPath = Path.Combine(exportDir, "ziwa-export.pdf");
+        string? outputPath = await ResolveExportDestinationAsync(
+            "ziwa-export.pdf",
+            Document.Title,
+            "pdf",
+            "مستند PDF متجه",
+            ct);
+        if (outputPath is null)
+        {
+            return;
+        }
 
         ExportPageRangeKind range = PrintAllPages ? ExportPageRangeKind.AllPages : ExportPageRangeKind.ActivePageOnly;
         ExportArtifactResult result = await _exportService.ExportVectorPdfAsync(
@@ -1609,15 +1971,21 @@ public sealed partial class MainWindowViewModel : ObservableObject
             cancellationToken: ct);
 
         StatusMessage = $"تم تصدير Vector PDF ذرياً ({result.ByteLength} بايت): {result.FilePath}";
+        ShowToast("تصدير PDF", StatusMessage, global::Avalonia.Controls.Notifications.NotificationType.Success);
     }
 
     private async Task ExportCmykTiffCoreAsync(CancellationToken ct)
     {
-        string exportDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "ZiwaStudio",
-            "Exports");
-        string outputPath = Path.Combine(exportDir, "ziwa-export-cmyk.tiff");
+        string? outputPath = await ResolveExportDestinationAsync(
+            "ziwa-export-cmyk.tiff",
+            Document.Title,
+            "tiff",
+            "صورة طباعية CMYK TIFF",
+            ct);
+        if (outputPath is null)
+        {
+            return;
+        }
 
         ExportArtifactResult result = await _exportService.ExportActivePageCmykTiffAsync(
             outputPath,
@@ -1630,5 +1998,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
             cancellationToken: ct);
 
         StatusMessage = $"تم تصدير CMYK TIFF ذرياً ({result.PixelWidth}×{result.PixelHeight} px): {result.FilePath}";
+        ShowToast("تصدير CMYK TIFF", StatusMessage, global::Avalonia.Controls.Notifications.NotificationType.Success);
     }
 }

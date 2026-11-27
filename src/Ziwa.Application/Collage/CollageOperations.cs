@@ -138,6 +138,18 @@ public static class CollageOperations
             return doc;
         }
 
+        if (layout.AutoRepeatMode)
+        {
+            ZiwaDocument repeated = SetAutoRepeatMode(doc, enabled: true, seedAsset: assetId);
+            if (repeated.ActivePage.CollageLayout is { PendingAssets.IsDefault: false } repLayout &&
+                repLayout.PendingAssets.Contains(assetId))
+            {
+                return ReplaceCollageLayout(repeated, repLayout with { PendingAssets = repLayout.PendingAssets.Remove(assetId) });
+            }
+
+            return repeated;
+        }
+
         ImmutableArray<CollageSlot> updated = layout.Slots
             .Select(s => s.Id == slotId
                 ? s with { AssignedAssetId = assetId, OriginalAssetId = assetId, Crop = CropSpec.Identity }
@@ -324,6 +336,78 @@ public static class CollageOperations
 
     public static ZiwaDocument ResetSlotFilters(ZiwaDocument doc, SlotId slotId) =>
         ApplyFiltersToSlot(doc, slotId, ImageFilterSpec.None);
+
+    public static ZiwaDocument SetSlotMask(
+        ZiwaDocument doc,
+        SlotId slotId,
+        MaskShapeKind mask,
+        double? cornerRadiusMm = null,
+        bool applyToAllSlots = false)
+    {
+        if (doc.ActivePage.CollageLayout is not { } layout || !Enum.IsDefined(mask))
+        {
+            return doc;
+        }
+
+        double? sanitizedRadius = cornerRadiusMm is { } radius && double.IsFinite(radius)
+            ? DomainMath.Clamp(radius, 0.0, 50.0)
+            : null;
+
+        ImmutableArray<CollageSlot> next = layout.Slots.Select(s =>
+            applyToAllSlots || s.Id == slotId
+                ? s with
+                {
+                    Mask = mask,
+                    CornerRadiusMm = sanitizedRadius ?? s.CornerRadiusMm,
+                }
+                : s).ToImmutableArray();
+
+        return ReplaceCollageLayout(doc, layout with { Slots = next });
+    }
+
+    public static ZiwaDocument SetSlotBorder(
+        ZiwaDocument doc,
+        SlotId slotId,
+        StrokeSpec? border,
+        bool applyToAllSlots = false)
+    {
+        if (doc.ActivePage.CollageLayout is not { } layout)
+        {
+            return doc;
+        }
+
+        StrokeSpec? normalized = border is { } b && double.IsFinite(b.WidthMm) && b.WidthMm > 0.0
+            ? new StrokeSpec(b.Color, DomainMath.Clamp(b.WidthMm, 0.1, 10.0))
+            : null;
+
+        ImmutableArray<CollageSlot> next = layout.Slots.Select(s =>
+            applyToAllSlots || s.Id == slotId
+                ? s with { Border = normalized }
+                : s).ToImmutableArray();
+
+        return ReplaceCollageLayout(doc, layout with { Slots = next });
+    }
+
+    public static ZiwaDocument ResetSlotTransformAndCrop(ZiwaDocument doc, SlotId slotId)
+    {
+        if (doc.ActivePage.CollageLayout is not { } layout)
+        {
+            return doc;
+        }
+
+        ImmutableArray<CollageSlot> next = layout.Slots.Select(s =>
+            s.Id == slotId
+                ? s with
+                {
+                    Crop = CropSpec.Identity,
+                    QuarterTurns = 0,
+                    FlipHorizontal = false,
+                    FlipVertical = false,
+                }
+                : s).ToImmutableArray();
+
+        return ReplaceCollageLayout(doc, layout with { Slots = next });
+    }
 
     public static ZiwaDocument ApplyProcessedSlotAsset(
         ZiwaDocument doc,

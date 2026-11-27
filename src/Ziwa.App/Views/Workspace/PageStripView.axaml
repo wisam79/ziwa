@@ -39,7 +39,8 @@
       </StackPanel>
 
       <ScrollViewer x:Name="PageTabsScroller" Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
-                    AllowAutoHide="False" AutomationProperties.Name="صفحات المستند">
+                    AllowAutoHide="False" AutomationProperties.Name="صفحات المستند"
+                    PointerWheelChanged="OnPageTabsPointerWheelChanged">
         <ItemsControl ItemsSource="{Binding PageTabs}">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
@@ -51,6 +52,14 @@
               <Button Classes="workspaceAction pageTab" Classes.active="{Binding IsActive}"
                       Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).SelectPageByIndexCommand}"
                       CommandParameter="{Binding Index}" ToolTip.Tip="{Binding Name}" AutomationProperties.Name="{Binding AccessibleLabel}">
+                <Button.ContextMenu>
+                  <ContextMenu FlowDirection="RightToLeft">
+                    <MenuItem Header="تكرار الصفحة النشطة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).DuplicateActivePageCommand}" />
+                    <MenuItem Header="تقديم الصفحة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).MovePageEarlierCommand}" />
+                    <MenuItem Header="تأخير الصفحة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).MovePageLaterCommand}" />
+                    <MenuItem Header="حذف الصفحة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).DeleteActivePageCommand}" />
+                  </ContextMenu>
+                </Button.ContextMenu>
                 <StackPanel Classes="workspaceActionLabel">
                   <Ellipse Classes="pageTabMarker" Width="6" Height="6" VerticalAlignment="Center"
                            Fill="{DynamicResource ZiwaFocusStrokeBrush}" />
@@ -62,7 +71,7 @@
         </ItemsControl>
       </ScrollViewer>
 
-      <TextBlock Grid.Column="2" MaxWidth="140" TextTrimming="CharacterEllipsis"
+      <TextBlock Grid.Column="2" Width="150" TextTrimming="CharacterEllipsis"
                  Text="{Binding ActivePageDisplayText}" ToolTip.Tip="{Binding ActivePageDisplayText}"
                  Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" FontSize="12" />
     </Grid>

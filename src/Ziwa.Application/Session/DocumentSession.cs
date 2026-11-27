@@ -32,6 +32,8 @@ public sealed class DocumentSession
     public bool IsInteracting => InteractionPreview is not null;
     public bool CanUndo => _history.CanUndo;
     public bool CanRedo => _history.CanRedo;
+    public string? NextUndoDescription => _history.NextUndoDescription;
+    public string? NextRedoDescription => _history.NextRedoDescription;
     public int UndoCount => _history.UndoCount;
     public int RedoCount => _history.RedoCount;
     public long Generation { get; private set; }
@@ -438,19 +440,22 @@ public sealed class DocumentSession
 
     private void PruneSelection()
     {
-        HashSet<NodeId> existingIds = EffectiveDocument.ActivePage.Nodes.Select(n => n.Id).ToHashSet();
-        SelectedNodeIds = SelectedNodeIds.Where(existingIds.Contains).ToImmutableArray();
-        if (ActiveCropNodeId is { } cropId && !existingIds.Contains(cropId))
+        HashSet<NodeId> selectableIds = EffectiveDocument.ActivePage.Nodes
+            .Where(n => n.IsVisible && !n.IsLocked)
+            .Select(n => n.Id)
+            .ToHashSet();
+        SelectedNodeIds = SelectedNodeIds.Where(selectableIds.Contains).ToImmutableArray();
+        if (ActiveCropNodeId is { } cropId && !selectableIds.Contains(cropId))
         {
             ActiveCropNodeId = null;
         }
 
-        if (ActiveTextEditNodeId is { } textId && !existingIds.Contains(textId))
+        if (ActiveTextEditNodeId is { } textId && !selectableIds.Contains(textId))
         {
             ActiveTextEditNodeId = null;
         }
 
-        if (EditingStickerNodeId is { } stickerId && !existingIds.Contains(stickerId))
+        if (EditingStickerNodeId is { } stickerId && !selectableIds.Contains(stickerId))
         {
             EditingStickerNodeId = null;
         }

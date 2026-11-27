@@ -27,6 +27,8 @@ public sealed class UndoRedoStack
     public int RedoCount => _redo.Count;
     public bool CanUndo => _undo.Count > 0;
     public bool CanRedo => _redo.Count > 0;
+    public string? NextUndoDescription => _undo.Count > 0 ? _undo[^1].DescriptionAr : null;
+    public string? NextRedoDescription => _redo.Count > 0 ? _redo[^1].DescriptionAr : null;
 
     public void Push(
         string descriptionAr,

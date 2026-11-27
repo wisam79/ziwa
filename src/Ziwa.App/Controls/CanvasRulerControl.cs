@@ -32,6 +32,15 @@ public sealed class CanvasRulerControl : Control
     public static readonly StyledProperty<IBrush?> OriginBrushProperty =
         AvaloniaProperty.Register<CanvasRulerControl, IBrush?>(nameof(OriginBrush));
 
+    public static readonly StyledProperty<double?> PointerPositionMmProperty =
+        AvaloniaProperty.Register<CanvasRulerControl, double?>(nameof(PointerPositionMm));
+
+    public static readonly StyledProperty<double?> SelectionStartMmProperty =
+        AvaloniaProperty.Register<CanvasRulerControl, double?>(nameof(SelectionStartMm));
+
+    public static readonly StyledProperty<double?> SelectionEndMmProperty =
+        AvaloniaProperty.Register<CanvasRulerControl, double?>(nameof(SelectionEndMm));
+
     private static readonly double[] StepCandidatesMm = [1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0];
 
     static CanvasRulerControl()
@@ -43,7 +52,10 @@ public sealed class CanvasRulerControl : Control
             BackgroundBrushProperty,
             TickBrushProperty,
             PaperHighlightBrushProperty,
-            OriginBrushProperty);
+            OriginBrushProperty,
+            PointerPositionMmProperty,
+            SelectionStartMmProperty,
+            SelectionEndMmProperty);
     }
 
     public CanvasRulerControl()
@@ -93,6 +105,24 @@ public sealed class CanvasRulerControl : Control
         set => SetValue(OriginBrushProperty, value);
     }
 
+    public double? PointerPositionMm
+    {
+        get => GetValue(PointerPositionMmProperty);
+        set => SetValue(PointerPositionMmProperty, value);
+    }
+
+    public double? SelectionStartMm
+    {
+        get => GetValue(SelectionStartMmProperty);
+        set => SetValue(SelectionStartMmProperty, value);
+    }
+
+    public double? SelectionEndMm
+    {
+        get => GetValue(SelectionEndMmProperty);
+        set => SetValue(SelectionEndMmProperty, value);
+    }
+
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -129,6 +159,30 @@ public sealed class CanvasRulerControl : Control
                 ? new Rect(clampedStart, 0, clampedEnd - clampedStart, Bounds.Height)
                 : new Rect(0, clampedStart, Bounds.Width, clampedEnd - clampedStart);
             context.FillRectangle(highlightBrush, highlightRect);
+        }
+
+        if (SelectionStartMm is { } selStartMm &&
+            SelectionEndMm is { } selEndMm &&
+            selEndMm > selStartMm)
+        {
+            double selStartDip = Math.Max(0, panDip + (selStartMm * scale));
+            double selEndDip = Math.Min(controlSpanDip, panDip + (selEndMm * scale));
+            if (selEndDip > selStartDip)
+            {
+                Color accentColor = originBrush is ISolidColorBrush solidOrigin
+                    ? solidOrigin.Color
+                    : Colors.DodgerBlue;
+                var bandBrush = new SolidColorBrush(Color.FromArgb(40, accentColor.R, accentColor.G, accentColor.B));
+                Rect bandRect = isHorizontal
+                    ? new Rect(selStartDip, 0, selEndDip - selStartDip, Bounds.Height)
+                    : new Rect(0, selStartDip, Bounds.Width, selEndDip - selStartDip);
+                context.FillRectangle(bandBrush, bandRect);
+
+                Rect edgeStrip = isHorizontal
+                    ? new Rect(selStartDip, Bounds.Height - 2.0, selEndDip - selStartDip, 2.0)
+                    : new Rect(Bounds.Width - 2.0, selStartDip, 2.0, selEndDip - selStartDip);
+                context.FillRectangle(originBrush, edgeStrip);
+            }
         }
 
         double majorStepMm = ChooseMajorStepMm(scale);
@@ -173,6 +227,23 @@ public sealed class CanvasRulerControl : Control
                     string label = ((int)Math.Round(snappedMajor)).ToString(CultureInfo.InvariantCulture);
                     var ft = new FormattedText(label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 9.5, isOriginOrEnd ? originBrush : tickBrush);
                     context.DrawText(ft, new Point(2.0, posDip + 1.0));
+                }
+            }
+        }
+
+        if (PointerPositionMm is { } ptrMm && double.IsFinite(ptrMm))
+        {
+            double ptrDip = panDip + (ptrMm * scale);
+            if (ptrDip >= 0.0 && ptrDip <= controlSpanDip)
+            {
+                var trackerPen = new Pen(originBrush, 1.25);
+                if (isHorizontal)
+                {
+                    context.DrawLine(trackerPen, new Point(ptrDip, 0), new Point(ptrDip, Bounds.Height));
+                }
+                else
+                {
+                    context.DrawLine(trackerPen, new Point(0, ptrDip), new Point(Bounds.Width, ptrDip));
                 }
             }
         }

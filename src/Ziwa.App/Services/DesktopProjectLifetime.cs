@@ -13,12 +13,23 @@ public sealed class DesktopProjectLifetime
     private bool _approved;
     private bool _shutdownRequested;
 
-    public DesktopProjectLifetime(Window window, MainWindowViewModel viewModel, IClassicDesktopStyleApplicationLifetime desktop)
+    public DesktopProjectLifetime(
+        Window window,
+        MainWindowViewModel viewModel,
+        IClassicDesktopStyleApplicationLifetime desktop,
+        string? startupProjectPath = null)
     {
         _window = window;
         _viewModel = viewModel;
         _desktop = desktop;
-        window.Opened += async (_, _) => await viewModel.InitializeProjectsAsync();
+        window.Opened += async (_, _) =>
+        {
+            await viewModel.InitializeProjectsAsync();
+            if (!string.IsNullOrWhiteSpace(startupProjectPath))
+            {
+                await viewModel.OpenExternalProjectFileAsync(startupProjectPath);
+            }
+        };
         window.Closing += OnClosing;
         desktop.ShutdownRequested += (_, args) =>
         {

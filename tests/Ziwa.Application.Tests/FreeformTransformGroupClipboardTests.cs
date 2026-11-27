@@ -143,4 +143,31 @@ public sealed class FreeformTransformGroupClipboardTests
         Assert.False(ClipboardPayloadSerializer.TryDeserializeAndClone(tampered, out _));
         Assert.False(ClipboardPayloadSerializer.TryDeserializeAndClone("{not-json", out _));
     }
+
+    [Fact]
+    public void DuplicateSelection_ClonesUnlockedNodesAndResetsGroupIds()
+    {
+        ZiwaDocument doc = CreateSceneDoc(out NodeId imageId, out NodeId shapeId, out NodeId lockedId);
+        NodeId groupId = NodeId.Empty;
+        doc = FreeformSceneOperations.GroupNodes(doc, [imageId, shapeId], out groupId);
+
+        doc = FreeformSceneOperations.DuplicateSelection(
+            doc,
+            [groupId, lockedId],
+            out ImmutableArray<NodeId> createdIds,
+            offsetMm: 10.0);
+
+        Assert.Single(createdIds);
+        Assert.NotEqual(groupId, createdIds[0]);
+
+        GroupNode originalGroup = Assert.IsType<GroupNode>(doc.ActivePage.Nodes.First(n => n.Id == groupId));
+        GroupNode clonedGroup = Assert.IsType<GroupNode>(doc.ActivePage.Nodes.First(n => n.Id == createdIds[0]));
+
+        Assert.Equal(originalGroup.BoundsMm.X + 10.0, clonedGroup.BoundsMm.X, precision: 6);
+        Assert.Equal(originalGroup.BoundsMm.Y + 10.0, clonedGroup.BoundsMm.Y, precision: 6);
+        Assert.Equal(2, clonedGroup.Children.Length);
+        Assert.NotEqual(originalGroup.Children[0].Id, clonedGroup.Children[0].Id);
+        Assert.NotEqual(originalGroup.Children[1].Id, clonedGroup.Children[1].Id);
+        Assert.Equal(1, doc.ActivePage.Nodes.Count(n => n.Id == lockedId));
+    }
 }

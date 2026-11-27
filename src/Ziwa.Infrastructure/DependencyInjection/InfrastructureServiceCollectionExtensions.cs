@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Ziwa.Application.Abstractions;
 using Ziwa.Application.Ai;
 using Ziwa.Application.Auth;
+using Ziwa.Application.Bridge;
 using Ziwa.Application.Commands;
 using Ziwa.Application.Persistence;
 using Ziwa.Application.Printing;
@@ -14,13 +15,16 @@ using Ziwa.Domain.Primitives;
 using Ziwa.Infrastructure.Ai;
 using Ziwa.Infrastructure.Assets;
 using Ziwa.Infrastructure.Auth;
+using Ziwa.Infrastructure.Bridge;
 using Ziwa.Infrastructure.Collage;
+using Ziwa.Infrastructure.Diagnostics;
 using Ziwa.Infrastructure.Export;
 using Ziwa.Infrastructure.IO;
 using Ziwa.Infrastructure.Persistence;
 using Ziwa.Infrastructure.Platform;
 using Ziwa.Infrastructure.Printing;
 using Ziwa.Infrastructure.Scanner;
+using Ziwa.Infrastructure.Updates;
 using Ziwa.Rendering;
 using Ziwa.Rendering.Assets;
 using Ziwa.Rendering.Export;
@@ -44,7 +48,9 @@ public static class InfrastructureServiceCollectionExtensions
         DocumentScannerOptions? scannerOptions = null,
         CloudAiOptions? cloudAiOptions = null,
         SupabaseAuthOptions? authOptions = null,
-        IBrowserLauncher? browserLauncher = null)
+        IBrowserLauncher? browserLauncher = null,
+        PhoneBridgeOptions? phoneBridgeOptions = null,
+        AppUpdaterOptions? updaterOptions = null)
     {
         ProjectStorageOptions resolvedStorage = storageOptions ?? new ProjectStorageOptions(
             Environment.GetEnvironmentVariable("ZIWA_DATA_DIRECTORY") ?? Path.Combine(
@@ -54,12 +60,16 @@ public static class InfrastructureServiceCollectionExtensions
         DocumentScannerOptions resolvedScanner = scannerOptions ?? new DocumentScannerOptions();
         CloudAiOptions resolvedCloudAi = cloudAiOptions ?? CloudAiOptions.LoadFromAppDataAndEnvironment(resolvedStorage.RootDirectory);
         SupabaseAuthOptions resolvedAuth = authOptions ?? SupabaseAuthOptions.LoadFromAppDataAndEnvironment(resolvedStorage.RootDirectory, resolvedCloudAi);
+        PhoneBridgeOptions resolvedBridge = phoneBridgeOptions ?? new PhoneBridgeOptions();
+        AppUpdaterOptions resolvedUpdater = updaterOptions ?? AppUpdaterOptions.LoadFromAppDataAndEnvironment(resolvedStorage.RootDirectory);
 
         services.AddSingleton(resolvedStorage);
         services.AddSingleton(resolvedAi);
         services.AddSingleton(resolvedScanner);
         services.AddSingleton(resolvedCloudAi);
         services.AddSingleton(resolvedAuth);
+        services.AddSingleton(resolvedBridge);
+        services.AddSingleton(resolvedUpdater);
         services.AddSingleton<IProjectStore, ZiwaProjectStore>();
         services.AddSingleton<IProjectAssetStore, RenderingProjectAssetStore>();
         services.AddSingleton<IProjectLibrary, SqliteProjectRepo>();
@@ -80,6 +90,8 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IModalAiUpscaler, ModalAiUpscaler>();
         services.AddSingleton<CloudAiCoordinator>();
         services.AddSingleton<AccountSessionCoordinator>();
+        services.AddSingleton<IPhoneBridgeService, KestrelPhoneBridgeService>();
+        services.AddSingleton<PhoneBridgeCoordinator>();
         services.AddSingleton<IDocumentScannerService, OpenCvDocumentScanner>();
         services.AddSingleton<DocumentScannerCoordinator>();
         services.AddSingleton<FontRegistry>();
@@ -90,6 +102,11 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<VectorPdfExporter>();
         services.AddSingleton<CmykTiffExporter>();
         services.AddSingleton<IAtomicFileWriter, AtomicFileWriter>();
+        services.AddSingleton<IStructuredAppLogger, SerilogAppLogger>();
+        services.AddSingleton<IAppUpdaterService, SecureAppUpdaterService>();
+        services.AddSingleton<IDropFileFilter, FallbackDropFileFilter>();
+        services.AddSingleton<ISingleInstanceCoordinator, FallbackSingleInstanceCoordinator>();
+        services.AddSingleton<IFileAssociationService, FallbackFileAssociationService>();
         services.AddSingleton<IPageExportService, PageExportService>();
         services.AddSingleton<IFreeformToCollageService, FreeformToCollageService>();
         services.AddSingleton<IPlatformCapabilities, FallbackPlatformCapabilities>();

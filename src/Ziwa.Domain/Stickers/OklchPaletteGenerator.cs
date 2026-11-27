@@ -67,6 +67,37 @@ public static class OklchPaletteGenerator
         return GenerateHarmoniousPalette(hue, chroma);
     }
 
+    public static StickerPalette GeneratePaletteFromPrimaryColor(ColorRgba primary)
+    {
+        static double SrgbToLinear(byte ch)
+        {
+            double s = ch / 255.0;
+            return s <= 0.04045 ? s / 12.92 : System.Math.Pow((s + 0.055) / 1.055, 2.4);
+        }
+
+        double r = SrgbToLinear(primary.R);
+        double g = SrgbToLinear(primary.G);
+        double b = SrgbToLinear(primary.B);
+
+        double l_ = System.Math.Cbrt((0.4122214708 * r) + (0.5363325363 * g) + (0.0514459929 * b));
+        double m_ = System.Math.Cbrt((0.2119034982 * r) + (0.6806995451 * g) + (0.1073969566 * b));
+        double s_ = System.Math.Cbrt((0.0883024619 * r) + (0.2817188376 * g) + (0.6299787005 * b));
+
+        double a = (1.9779984951 * l_) - (2.4285922050 * m_) + (0.4505937099 * s_);
+        double okb = (0.0259040371 * l_) + (0.7827717662 * m_) - (0.8086757660 * s_);
+
+        double chroma = System.Math.Clamp(System.Math.Sqrt((a * a) + (okb * okb)), 0.06, 0.18);
+        double hueDeg = ((System.Math.Atan2(okb, a) * 180.0 / System.Math.PI) % 360.0 + 360.0) % 360.0;
+
+        ColorRgba opaquePrimary = new(primary.R, primary.G, primary.B, 255);
+        StickerPalette basePalette = GenerateHarmoniousPalette(hueDeg, chroma);
+        return basePalette with
+        {
+            Primary = opaquePrimary,
+            TextOnPrimary = PickHighContrastText(opaquePrimary),
+        };
+    }
+
     public static ColorRgba PickHighContrastText(ColorRgba background)
     {
         double darkRatio = ComputeContrastRatio(DarkInk, background);

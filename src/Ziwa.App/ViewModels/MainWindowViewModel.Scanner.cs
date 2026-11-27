@@ -212,6 +212,33 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
+    private void ResetSelectedScanRegionToFullImage()
+    {
+        if (!IsScannerToolsEnabled ||
+            SelectedScannerRegionIndex < 0 ||
+            SelectedScannerRegionIndex >= ScannerRegions.Count ||
+            _scannerSourceFullWidthPx <= 1 ||
+            _scannerSourceFullHeightPx <= 1)
+        {
+            return;
+        }
+
+        double maxW = _scannerSourceFullWidthPx - 1.0;
+        double maxH = _scannerSourceFullHeightPx - 1.0;
+        var fullQuad = new DocumentQuadPx(
+            new PointPx(0.0, 0.0),
+            new PointPx(maxW, 0.0),
+            new PointPx(maxW, maxH),
+            new PointPx(0.0, maxH));
+
+        DetectedDocumentRegion current = ScannerRegions[SelectedScannerRegionIndex];
+        ScannerRegions[SelectedScannerRegionIndex] = current with { Quad = fullQuad };
+        OnPropertyChanged(nameof(ScannerRegions));
+        RefreshScannerRectifiedPreview();
+        ScannerStatusText = "تم ضبط الإطار على كامل مساحة الصورة";
+    }
+
+    [RelayCommand]
     private async Task RedetectScanRegionsAsync(CancellationToken ct)
     {
         if (_scannerCoordinator is null || _scannerSourceAssetId.IsEmpty)
@@ -299,6 +326,7 @@ public sealed partial class MainWindowViewModel
         StatusMessage = outcome.MessageAr;
         if (outcome.Succeeded)
         {
+            ShowToast("الماسح الذكي", outcome.MessageAr, global::Avalonia.Controls.Notifications.NotificationType.Success);
             CloseDocumentScanner();
         }
     }
@@ -326,6 +354,7 @@ public sealed partial class MainWindowViewModel
         StatusMessage = outcome.MessageAr;
         if (outcome.Succeeded)
         {
+            ShowToast("الماسح الذكي", outcome.MessageAr, global::Avalonia.Controls.Notifications.NotificationType.Success);
             CloseDocumentScanner();
         }
     }

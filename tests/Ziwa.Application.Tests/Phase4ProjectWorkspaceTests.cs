@@ -209,6 +209,7 @@ public sealed class Phase4ProjectWorkspaceTests
         public bool Fail { get; set; }
         public Task<IReadOnlyList<ProjectLibraryEntry>> ListAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<ProjectLibraryEntry>>([]);
         public Task RecordAsync(ProjectLibraryEntry entry, CancellationToken cancellationToken = default) => Fail ? Task.FromException(new IOException("Index failure.")) : Task.CompletedTask;
+        public Task RemoveAsync(string path, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task ExportBackupAsync(string path, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<int> ImportBackupAsync(string path, CancellationToken cancellationToken = default) => Task.FromResult(0);
     }
