@@ -5,6 +5,7 @@ using SkiaSharp;
 using Svg.Skia;
 using Ziwa.Domain.Primitives;
 using Ziwa.Rendering.Svg;
+using Ziwa.Rendering.Typography;
 
 namespace Ziwa.Rendering.Assets;
 
@@ -45,11 +46,28 @@ public sealed class AssetStore : IRenderAssetProvider, IDisposable
     private readonly ConcurrentDictionary<AssetId, StoredAsset> _assets = new();
     private readonly ConcurrentDictionary<AssetId, StoredSvgAsset> _svgAssets = new();
     private readonly DisplayProxyCache _previewCache;
+    private readonly FontRegistry _fontRegistry;
+    private readonly HarfBuzzArabicShaper _shaper;
+    private readonly bool _ownsFontRegistry;
     private bool _disposed;
 
     public AssetStore(long previewCacheMaxBytes = 256L * 1024L * 1024L)
     {
         _previewCache = new DisplayProxyCache(previewCacheMaxBytes);
+        _fontRegistry = new FontRegistry();
+        _shaper = new HarfBuzzArabicShaper(_fontRegistry);
+        _ownsFontRegistry = true;
+    }
+
+    public AssetStore(
+        FontRegistry fontRegistry,
+        HarfBuzzArabicShaper shaper,
+        long previewCacheMaxBytes = 256L * 1024L * 1024L)
+    {
+        _previewCache = new DisplayProxyCache(previewCacheMaxBytes);
+        _fontRegistry = fontRegistry;
+        _shaper = shaper;
+        _ownsFontRegistry = false;
     }
 
     public int AssetCount => _assets.Count;
@@ -97,8 +115,7 @@ public sealed class AssetStore : IRenderAssetProvider, IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         string sanitized = SvgSanitizer.Sanitize(rawSvgXml);
-        byte[] utf8Bytes = Encoding.UTF8.GetBytes(sanitized);
-        byte[] hash = SHA256.HashData(utf8Bytes);
+        byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(sanitized));
         var id = new AssetId($"svg-{Convert.ToHexStringLower(hash)}");
 
         if (_svgAssets.ContainsKey(id))
@@ -106,8 +123,11 @@ public sealed class AssetStore : IRenderAssetProvider, IDisposable
             return id;
         }
 
+        string outlinedSvg = SvgArabicTextOutliner.OutlineTextElements(sanitized, _fontRegistry, _shaper);
+        byte[] renderBytes = Encoding.UTF8.GetBytes(outlinedSvg);
+
         var skSvg = new SKSvg();
-        using var stream = new MemoryStream(utf8Bytes, writable: false);
+        using var stream = new MemoryStream(renderBytes, writable: false);
         skSvg.Load(stream);
         if (skSvg.Picture is null)
         {
@@ -318,6 +338,11 @@ public sealed class AssetStore : IRenderAssetProvider, IDisposable
         }
 
         _svgAssets.Clear();
+
+        if (_ownsFontRegistry)
+        {
+            _fontRegistry.Dispose();
+        }
     }
 
     private sealed record StoredAsset(byte[] EncodedBytes, AssetMetadata Metadata);

@@ -1,0 +1,98 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             xmlns:stk="using:Ziwa.Domain.Stickers"
+             xmlns:controls="using:Ziwa.App.Controls"
+             x:Class="Ziwa.App.Views.Dialogs.StickerStudioView"
+             x:DataType="vm:MainWindowViewModel"
+             FlowDirection="RightToLeft">
+  <controls:StudioDialogShell Title="استوديو الملصقات البارامتري"
+                              Subtitle="اختر قالباً، عدّل النصوص، واضبط تناغم الألوان المتجه"
+                              CloseCommand="{Binding CloseStickerStudioCommand}"
+                              CloseToolTip="إغلاق استوديو الملصقات (Esc)"
+                              CloseAccessibleName="إغلاق استوديو الملصقات"
+                              DialogWidth="430"
+                              DialogMaxHeight="660"
+                              DialogHorizontalAlignment="Left"
+                              DialogVerticalAlignment="Top"
+                              UseScrim="False">
+    <StackPanel Spacing="10">
+      <Border Height="132"
+              Background="{DynamicResource ZiwaCanvasBackgroundBrush}"
+              BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+              BorderThickness="{StaticResource HairlineBorderThickness}"
+              CornerRadius="{StaticResource OverlayCornerRadius}"
+              ClipToBounds="True">
+        <controls:SkiaBitmapPreviewControl x:Name="StickerStudioPreviewControl"
+                                           PreviewBitmap="{Binding StickerPreviewBitmap}"
+                                           PasteboardBrush="{DynamicResource ZiwaCanvasBackgroundBrush}" />
+      </Border>
+
+      <StackPanel Spacing="4">
+        <TextBlock Text="القالب البارامتري"
+                   FontSize="12"
+                   Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+        <ComboBox x:Name="StickerTemplateComboBox"
+                  ItemsSource="{Binding StickerTemplates}"
+                  SelectedItem="{Binding SelectedStickerTemplate}"
+                  HorizontalAlignment="Stretch"
+                  ToolTip.Tip="اختيار قالب الملصق أو الختم البارامتري"
+                  AutomationProperties.Name="قالب الملصق">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="stk:StickerTemplateDefinition">
+              <TextBlock Text="{Binding TitleAr}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+
+      <ItemsControl ItemsSource="{Binding StickerFieldItems}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:StickerFieldViewModel">
+            <StackPanel Margin="0,0,0,6" Spacing="3">
+              <TextBlock Text="{Binding LabelAr}"
+                         FontSize="12"
+                         Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <TextBox Text="{Binding Value}" />
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <controls:StudioCard Header="لوحة الألوان والتناغم (OKLCH)">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <Border Width="20" Height="20" CornerRadius="4" Background="{Binding StudioPrimaryBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+            <Border Width="20" Height="20" CornerRadius="4" Background="{Binding StudioSecondaryBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+            <Border Width="20" Height="20" CornerRadius="4" Background="{Binding StudioAccentBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+            <Border Width="20" Height="20" CornerRadius="4" Background="{Binding StudioSurfaceBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+          </StackPanel>
+          <ColorPicker x:Name="StickerCustomPrimaryColorPicker"
+                       Grid.Column="1"
+                       Color="{Binding StickerCustomPrimaryColor}"
+                       ToolTip.Tip="تحديد اللون الأساسي لاشتقاق باقة ألوان متناغمة بتباين WCAG"
+                       AutomationProperties.Name="لون الملصق الأساسي" />
+        </Grid>
+      </controls:StudioCard>
+    </StackPanel>
+
+    <controls:StudioDialogShell.FooterContent>
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+        <Button x:Name="StudioRandomPaletteButton"
+                Grid.Column="0"
+                Classes="studioSubtle"
+                Command="{Binding RandomizeStickerPaletteCommand}"
+                ToolTip.Tip="توليفة ألوان OKLCH عشوائية ذكية"
+                AutomationProperties.Name="توليفة عشوائية"
+                Content="توليفة عشوائية ذكية" />
+        <Button x:Name="StudioApplyStickerButton"
+                Grid.Column="2"
+                Classes="studioPrimary"
+                Command="{Binding ApplyStickerStudioCommand}"
+                ToolTip.Tip="اعتماد وإدراج الملصق"
+                AutomationProperties.Name="اعتماد الملصق"
+                Content="اعتماد الملصق" />
+      </Grid>
+    </controls:StudioDialogShell.FooterContent>
+  </controls:StudioDialogShell>
+</UserControl>

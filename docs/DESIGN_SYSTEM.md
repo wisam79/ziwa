@@ -16,10 +16,10 @@
 
 | الفئة | أمثلة التوكنز في `Tokens.axaml` | الغرض |
 |---|---|---|
-| **الأسطح (`Surfaces`)** | `ZiwaCanvasBackgroundBrush`, `ZiwaSurfaceBrush`, `ZiwaCardBrush`, `ZiwaSubtleFillBrush` | تدرج اللوحات الداكنة والفاتحة بتباين Apple HIG هادئ (`systemBackground` / `systemGray`) |
+| **الأسطح (`Surfaces`)** | `ZiwaCanvasBackgroundBrush`, `ZiwaSurfaceBrush`, `ZiwaCardBrush`, `ZiwaSubtleFillBrush`, `ZiwaScrimBrush` | تدرج اللوحات الداكنة والفاتحة بتباين Apple HIG هادئ (`systemBackground` / `systemGray`) وتعتيم موحد للنوافذ المنبثقة |
 | **الحدود والفواصل (`Strokes`)** | `ZiwaHairlineBorderBrush`, `ZiwaFocusStrokeBrush`, `ZiwaControlBorderBrush` | حدود شعرية نظيفة لفصل صفوف المفتش والبطاقات |
 | **الإجراءات والحالات** | `ZiwaPrimaryActionBrush`, `ZiwaDestructiveActionBrush`, `ZiwaSuccessBrush`, `ZiwaWarningBrush`, `ZiwaInfoBrush` | ألوان نظام Apple HIG متوافقة مع تباين نصي `>= 4.5:1` في الثيمين الفاتح والداكن |
-| **الاستدارة (`CornerRadius`)** | `ControlCornerRadius` (`6px`), `OverlayCornerRadius` (`10px`), `DialogCornerRadius` (`12px`), `PillCornerRadius` (`999px`) | توحيد الاستدارة وفق سلم Apple HIG للحاويات والألواح العائمة |
+| **الاستدارة (`CornerRadius`)** | `ControlCornerRadius` (`6px`), `CheckBoxCornerRadius` (`3px`), `OverlayCornerRadius` (`10px`), `DialogCornerRadius` (`12px`), `PillCornerRadius` (`999px`) | توحيد الاستدارة وفق سلم Apple HIG للحاويات والألواح العائمة |
 | **الأبعاد والكثافة** | `ToolbarButtonHeight` (`30`), `CompactButtonSize` (`28`), `RailWidth` (`60`), `InspectorWidth` (`292`), `RulerThickness` (`20`) | ثبات محاور المحاذاة عبر كل الألواح وتنفس بصري مريح |
 
 ---
@@ -40,7 +40,7 @@
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **بلوكات مساحة العمل:** تجمع `MainWindow` شريط الأوامر وسكة الأدوات وشريط الصفحات وشريط الحالة من `Views/Workspace/`. تتشارك `WorkspaceStyles.axaml` للتنسيق و`Icons.axaml` لهندسة الأيقونات؛ لا يُنسخ المسار المتجهي أو تنسيق الزر في كل بلوك. تُحصر الأسماء المتغيرة داخل العرض المتاح مع تلميح كامل، وتُمرّر ألسنة الصفحات وحدها، بينما تظل الإجراءات ظاهرة.
+- **بلوكات مساحة العمل ومكونات الاستوديو:** تجمع `MainWindow` شريط الأوامر وسكة الأدوات وشريط الصفحات وشريط الحالة من `Views/Workspace/`، ولوح المفتش من `Views/Inspector/InspectorPanelView.axaml`، والنوافذ المنبثقة من `Views/` و`Views/Dialogs/`. تعتمد جميع الشاشات على مكونات `Ziwa` القياسية (`StudioDialogShell`، `StudioCard`، `StudioNumberField`، `StudioSliderRow`) وقوالب `Themes/StudioControlThemes.axaml` و`Themes/AppleHigStyles.axaml`، وتتشاطر `WorkspaceStyles.axaml` و`Icons.axaml` دون تكرار أنماط أزرار أو بطاقات داخل صفحات العرض. تُحصر الأسماء المتغيرة داخل العرض المتاح مع تلميح كامل، وتُمرّر ألسنة الصفحات وحدها، بينما تظل الإجراءات ظاهرة.
 - **اتجاه الورقة والمساطر:** واجهة المحرّر والألواح العائمة RTL، أما مساحة الرسم والمساطر ومعاينات الصور فلها محاور ثابتة: `+X` إلى اليمين و`+Y` إلى الأسفل. المسطرة الرأسية على يسار الورقة وتشارك المسطرة الأفقية ولوحة الرسم نفس `ViewportTransform`. هذا لا يغيّر تشكيل العربية داخل المستند أو مخرجاته.
 - **فتح المفتش السياقي:** تحديد عنصر أو خلية يفتح لوح الخصائص تلقائياً إذا كان مغلقاً ويعيد الحالة السابقة عند إلغاء التحديد (ما لم يثبّته المستخدم يدوياً).
 - **السياقية الذكية (درس `FF-05`):** تحديد ملصق بارامتري يُظهر بطاقة «تعديل الملصق / نسخ SVG» أولاً ويطوي أدوات الـ AI الفوتوغرافية تلقائياً لتفادي ازدحام المفتش.

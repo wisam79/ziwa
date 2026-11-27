@@ -7,6 +7,7 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Ziwa.App/Themes/Tokens.axaml" />
         <ResourceInclude Source="avares://Ziwa.App/Themes/Icons.axaml" />
+        <ResourceInclude Source="avares://Ziwa.App/Themes/StudioControlThemes.axaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>

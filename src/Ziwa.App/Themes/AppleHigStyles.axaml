@@ -23,10 +23,11 @@
   </Style>
 
   <Style Selector="Button:disabled">
-    <Setter Property="Opacity" Value="0.42" />
+    <Setter Property="Opacity" Value="0.55" />
   </Style>
 
   <Style Selector="TextBox">
+    <Setter Property="MinWidth" Value="0" />
     <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
     <Setter Property="Background" Value="{DynamicResource ZiwaSurfaceBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource ZiwaPrimaryTextBrush}" />
@@ -40,6 +41,7 @@
   </Style>
 
   <Style Selector="ComboBox">
+    <Setter Property="MinWidth" Value="0" />
     <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
     <Setter Property="Background" Value="{DynamicResource ZiwaSurfaceBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource ZiwaPrimaryTextBrush}" />
@@ -48,7 +50,81 @@
   </Style>
 
   <Style Selector="CheckBox">
+    <Style.Resources>
+      <CornerRadius x:Key="ControlCornerRadius">3</CornerRadius>
+    </Style.Resources>
     <Setter Property="Foreground" Value="{DynamicResource ZiwaPrimaryTextBrush}" />
     <Setter Property="FontSize" Value="12" />
+  </Style>
+
+  <Style Selector="CheckBox /template/ Border#NormalRectangle">
+    <Setter Property="CornerRadius" Value="{StaticResource CheckBoxCornerRadius}" />
+  </Style>
+
+  <Style Selector="NumericUpDown.compact">
+    <Setter Property="ShowButtonSpinner" Value="False" />
+    <Setter Property="Padding" Value="6,4" />
+  </Style>
+
+  <!-- Studio Semantic Button Classes -->
+  <Style Selector="Button.studioPrimary">
+    <Setter Property="MinHeight" Value="{StaticResource CompactButtonSize}" />
+    <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+    <Setter Property="Background" Value="{DynamicResource ZiwaPrimaryActionBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ZiwaOnPrimaryActionBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+
+  <Style Selector="Button.studioSubtle">
+    <Setter Property="MinHeight" Value="{StaticResource CompactButtonSize}" />
+    <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+    <Setter Property="Background" Value="{DynamicResource ZiwaSubtleFillBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ZiwaPrimaryTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ZiwaControlBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource HairlineBorderThickness}" />
+  </Style>
+  <Style Selector="Button.studioSubtle:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ZiwaHoverFillBrush}" />
+  </Style>
+
+  <Style Selector="Button.studioDestructive">
+    <Setter Property="MinHeight" Value="{StaticResource CompactButtonSize}" />
+    <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+    <Setter Property="Background" Value="{DynamicResource ZiwaSubtleFillBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ZiwaDestructiveActionBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ZiwaControlBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource HairlineBorderThickness}" />
+  </Style>
+
+  <Style Selector="Button.studioSegment">
+    <Setter Property="MinHeight" Value="{StaticResource CompactButtonSize}" />
+    <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+    <Setter Property="Padding" Value="8,4" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Background" Value="{DynamicResource ZiwaCardBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ZiwaPrimaryTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ZiwaHairlineBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource HairlineBorderThickness}" />
+  </Style>
+  <Style Selector="Button.studioSegment:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ZiwaSubtleFillBrush}" />
+  </Style>
+  <Style Selector="Button.studioSegment.active">
+    <Setter Property="Background" Value="{DynamicResource ZiwaPrimarySubtleBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ZiwaFocusStrokeBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="Border.shortcutBadge">
+    <Setter Property="Background" Value="{DynamicResource ZiwaSubtleFillBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ZiwaHairlineBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource HairlineBorderThickness}" />
+    <Setter Property="CornerRadius" Value="{StaticResource CheckBoxCornerRadius}" />
+    <Setter Property="Padding" Value="6,2" />
+  </Style>
+
+  <Style Selector="Border.studioDivider">
+    <Setter Property="Height" Value="1" />
+    <Setter Property="Background" Value="{DynamicResource ZiwaHairlineBorderBrush}" />
   </Style>
 </Styles>

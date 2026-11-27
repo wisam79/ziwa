@@ -54,7 +54,7 @@ public sealed partial class MainWindowViewModel
 
     public string AccountHeaderBadgeText => IsUserAuthenticated
         ? $"{AccountDisplayName} ({AccountPlanBadgeText})"
-        : "حسابي / الترخيص";
+        : "الحساب";
 
     public string AccountDisplayName =>
         !string.IsNullOrWhiteSpace(CurrentAccountProfile.DisplayName)
