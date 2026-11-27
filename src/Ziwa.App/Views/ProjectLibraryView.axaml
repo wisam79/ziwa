@@ -6,45 +6,80 @@
              x:Class="Ziwa.App.Views.ProjectLibraryView"
              x:DataType="vm:MainWindowViewModel"
              FlowDirection="RightToLeft">
-  <controls:StudioDialogShell Title="مكتبة المشاريع والبدء السريع"
+  <controls:StudioDialogShell Title="مكتبة المشاريع"
                               CloseCommand="{Binding CloseProjectLibraryCommand}"
                               CloseToolTip="إغلاق المكتبة دون حذف لقطات التعافي (Esc)"
                               CloseAccessibleName="إغلاق المكتبة والاحتفاظ بالتعافي"
-                              DialogWidth="780"
-                              DialogMaxHeight="720">
+                              DialogWidth="800"
+                              DialogMaxHeight="740">
     <StackPanel Spacing="12">
       <!-- البدء السريع من قالب -->
-      <controls:StudioCard Header="مشروع جديد من قالب جاهز:" IsEnabled="{Binding IsProjectEditable}">
-        <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="6">
+      <controls:StudioCard Header="مشروع جديد من قالب" IsEnabled="{Binding IsProjectEditable}">
+        <UniformGrid Columns="4" ColumnSpacing="8" Classes.presetsOpen="{Binding IsProjectLibraryOpen}">
+          <UniformGrid.Styles>
+            <!-- Button hotkeys register on the window; release them when the library closes. -->
+            <Style Selector="UniformGrid.presetsOpen > Button#LibraryQuickIdSheetButton">
+              <Setter Property="HotKey" Value="Alt+D1" />
+            </Style>
+            <Style Selector="UniformGrid.presetsOpen > Button#LibraryQuickBusinessCardButton">
+              <Setter Property="HotKey" Value="Alt+D2" />
+            </Style>
+            <Style Selector="UniformGrid.presetsOpen > Button#LibraryQuickStickerSheetButton">
+              <Setter Property="HotKey" Value="Alt+D3" />
+            </Style>
+            <Style Selector="UniformGrid.presetsOpen > Button#LibraryQuickBlankA4Button">
+              <Setter Property="HotKey" Value="Alt+D4" />
+            </Style>
+          </UniformGrid.Styles>
           <Button x:Name="LibraryQuickIdSheetButton"
                   Classes="studioPrimary"
-                  Command="{Binding StartQuickStartFromLibraryCommand}"
-                  CommandParameter="quickstart.idPhotoSheet"
-                  ToolTip.Tip="إنشاء شيت صور هوية 4×6 بوصة جاهز للطباعة (Alt+1)"
-                  AutomationProperties.Name="قالب شيت صور هوية 4×6"
-                  Content="شيت هوية 4×6" />
+                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,6"
+                  Command="{Binding StartQuickStartFromLibraryCommand}" CommandParameter="quickstart.idPhotoSheet"
+                  ToolTip.Tip="إنشاء ورقة صور هوية للطباعة (Alt+1)"
+                  AutomationProperties.Name="قالب صور هوية" AutomationProperties.AcceleratorKey="Alt+1">
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="6" RowSpacing="2">
+              <TextBlock Text="صور هوية" FontSize="13" FontWeight="SemiBold" />
+              <TextBlock Grid.Column="1" Text="Alt+1" FontSize="12" FlowDirection="LeftToRight" />
+              <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="&#x2066;4×6&#x2069; بوصة · صور &#x2066;40×60&#x2069; مم" FontSize="12" />
+            </Grid>
+          </Button>
           <Button x:Name="LibraryQuickBusinessCardButton"
                   Classes="studioSubtle"
-                  Command="{Binding StartQuickStartFromLibraryCommand}"
-                  CommandParameter="quickstart.businessCard"
-                  ToolTip.Tip="إنشاء مشروع بطاقة أعمال احترافية (Alt+2)"
-                  AutomationProperties.Name="قالب بطاقة عمل"
-                  Content="بطاقة عمل" />
+                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,6"
+                  Command="{Binding StartQuickStartFromLibraryCommand}" CommandParameter="quickstart.businessCard"
+                  ToolTip.Tip="إنشاء بطاقة عمل (Alt+2)"
+                  AutomationProperties.Name="قالب بطاقة عمل" AutomationProperties.AcceleratorKey="Alt+2">
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="6" RowSpacing="2">
+              <TextBlock Text="بطاقة عمل" FontSize="13" FontWeight="SemiBold" />
+              <TextBlock Grid.Column="1" Text="Alt+2" FontSize="12" FlowDirection="LeftToRight" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="&#x2066;90×55&#x2069; مم · وجه أمامي" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+            </Grid>
+          </Button>
           <Button x:Name="LibraryQuickStickerSheetButton"
                   Classes="studioSubtle"
-                  Command="{Binding StartQuickStartFromLibraryCommand}"
-                  CommandParameter="quickstart.stickerSheet"
-                  ToolTip.Tip="إنشاء شيت ملصقات بارامتري A5 (Alt+3)"
-                  AutomationProperties.Name="قالب شيت ملصقات"
-                  Content="شيت ملصقات" />
+                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,6"
+                  Command="{Binding StartQuickStartFromLibraryCommand}" CommandParameter="quickstart.stickerSheet"
+                  ToolTip.Tip="إنشاء ورقة ملصقات A5 (Alt+3)"
+                  AutomationProperties.Name="قالب ورقة ملصقات" AutomationProperties.AcceleratorKey="Alt+3">
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="6" RowSpacing="2">
+              <TextBlock Text="ورقة ملصقات" FontSize="13" FontWeight="SemiBold" />
+              <TextBlock Grid.Column="1" Text="Alt+3" FontSize="12" FlowDirection="LeftToRight" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="A5 · أختام وشارات" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+            </Grid>
+          </Button>
           <Button x:Name="LibraryQuickBlankA4Button"
                   Classes="studioSubtle"
-                  Command="{Binding StartQuickStartFromLibraryCommand}"
-                  CommandParameter="quickstart.blankA4"
-                  ToolTip.Tip="إنشاء صفحة تصميم حرة مقاس A4 (Alt+4)"
-                  AutomationProperties.Name="قالب صفحة حرة A4"
-                  Content="صفحة حرة A4" />
-        </WrapPanel>
+                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,6"
+                  Command="{Binding StartQuickStartFromLibraryCommand}" CommandParameter="quickstart.blankA4"
+                  ToolTip.Tip="إنشاء صفحة حرة A4 (Alt+4)"
+                  AutomationProperties.Name="قالب صفحة حرة A4" AutomationProperties.AcceleratorKey="Alt+4">
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="6" RowSpacing="2">
+              <TextBlock Text="صفحة حرة A4" FontSize="13" FontWeight="SemiBold" />
+              <TextBlock Grid.Column="1" Text="Alt+4" FontSize="12" FlowDirection="LeftToRight" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="&#x2066;210×297&#x2069; مم" FontSize="12" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+            </Grid>
+          </Button>
+        </UniformGrid>
       </controls:StudioCard>
 
       <controls:StudioCard Header="عمل قابل للتعافي بعد إغلاق غير طبيعي"
@@ -55,8 +90,8 @@
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="persist:RecoveryEntry">
                 <StackPanel Orientation="Horizontal" Spacing="12">
-                  <TextBlock Text="{Binding Title}" />
-                  <TextBlock Text="{Binding CapturedAtUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                  <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding CapturedAtUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" FlowDirection="LeftToRight" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
                 </StackPanel>
               </DataTemplate>
             </ListBox.ItemTemplate>
@@ -70,7 +105,7 @@
         </StackPanel>
       </controls:StudioCard>
 
-      <Grid ColumnDefinitions="*,240" ColumnSpacing="10">
+      <Grid ColumnDefinitions="*,250" ColumnSpacing="10">
         <TextBlock Grid.Column="0" Text="{Binding ProjectLibraryCountText}" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
         <TextBox x:Name="ProjectLibrarySearchBox"
                  Grid.Column="1"
@@ -86,18 +121,18 @@
                  SelectedItem="{Binding SelectedProject}"
                  DoubleTapped="OnProjectListDoubleTapped"
                  MinHeight="110"
-                 MaxHeight="230">
+                 MaxHeight="220">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="persist:ProjectLibraryEntry">
-              <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="2">
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Title}" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="2">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Title}" ToolTip.Tip="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                 <TextBlock Grid.Row="0" Grid.Column="1"
                            Text="{Binding SavedAtUtc, StringFormat='حُفظ: {0:yyyy-MM-dd HH:mm}'}"
                            FlowDirection="LeftToRight"
                            FontSize="11"
                            Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
-                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                           Text="{Binding Path}"
+                <TextBlock Grid.Row="1" Grid.ColumnSpan="2"
+                           Text="{Binding Path}" ToolTip.Tip="{Binding Path}"
                            TextTrimming="CharacterEllipsis"
                            FontSize="11"
                            Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />

@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Ziwa.App.Views.Workspace;
 
@@ -63,6 +64,11 @@ public partial class WindowTitleBarView : UserControl
 
     private void OnTitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        if (e.Source is Visual visual && visual.FindAncestorOfType<Button>() is not null)
+        {
+            return;
+        }
+
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             HostWindow?.BeginMoveDrag(e);

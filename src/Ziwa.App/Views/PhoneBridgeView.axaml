@@ -16,7 +16,7 @@
       <!-- تنبيه أو رسالة خطأ -->
       <controls:StudioCard x:Name="PhoneBridgeErrorBanner"
                            IsVisible="{Binding HasPhoneBridgeError}"
-                           AccentKind="Focus">
+                           AccentKind="Info">
         <TextBlock x:Name="PhoneBridgeErrorTextBlock"
                    Text="{Binding PhoneBridgeErrorText}"
                    TextWrapping="Wrap"
@@ -26,7 +26,18 @@
 
       <!-- حالة انتظار التشغيل / التوقف -->
       <controls:StudioCard x:Name="PhoneBridgeStoppedCard" IsVisible="{Binding IsPhoneBridgeStopped}">
-        <StackPanel Spacing="10" HorizontalAlignment="Center">
+        <StackPanel Spacing="12" HorizontalAlignment="Center" Margin="0,8">
+          <Border Width="48"
+                  Height="48"
+                  CornerRadius="{StaticResource OverlayCornerRadius}"
+                  Background="{DynamicResource ZiwaPrimarySubtleBrush}"
+                  HorizontalAlignment="Center">
+            <PathIcon Data="{StaticResource IconPhoneBridge}"
+                      Width="24"
+                      Height="24"
+                      Foreground="{DynamicResource ZiwaPrimaryActionBrush}"
+                      IsHitTestVisible="False" />
+          </Border>
           <TextBlock Text="الجسر متوقف حالياً"
                      FontSize="14"
                      FontWeight="SemiBold"
@@ -69,15 +80,17 @@
         <!-- بطاقة رمز QR -->
         <controls:StudioCard HorizontalAlignment="Center">
           <StackPanel Spacing="10" HorizontalAlignment="Center">
-            <Border Width="228"
-                    Height="228"
-                    CornerRadius="{StaticResource ControlCornerRadius}"
+            <Border Width="236"
+                    Height="236"
+                    Padding="8"
+                    Background="{DynamicResource ZiwaQrSurfaceBrush}"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
                     BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
                     BorderThickness="{StaticResource HairlineBorderThickness}"
                     ClipToBounds="True">
               <controls:SkiaBitmapPreviewControl x:Name="PhoneBridgeQrPreview"
                                                  PreviewBitmap="{Binding PhoneBridgeQrBitmap}"
-                                                 PasteboardBrush="{DynamicResource ZiwaCardBrush}" />
+                                                 PasteboardBrush="{DynamicResource ZiwaQrSurfaceBrush}" />
             </Border>
             <TextBlock x:Name="PhoneBridgeStatusSummaryTextBlock"
                        Text="{Binding PhoneBridgeStatusSummaryText}"

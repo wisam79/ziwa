@@ -67,7 +67,18 @@ public sealed class Phase4OfflineAiHeadlessTests
             Assert.NotNull(vm.MaskEditorOriginalBitmap);
             Assert.NotNull(vm.MaskEditorCutoutBitmap);
 
+            window.UpdateLayout();
+            var instruction = Assert.IsType<TextBlock>(maskEditor.FindControl<TextBlock>("MaskBrushInstruction"));
+            Assert.Contains("إخفاء", instruction.Text);
+            var restore = Assert.IsType<Button>(maskEditor.FindControl<Button>("RestoreBrushModeButton"));
+            Assert.True(restore.Focus());
+            window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+            window.KeyReleaseQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+            Assert.True(vm.IsRestoreBrushActive);
+            Assert.Contains("استعادة", instruction.Text);
+
             vm.SetEraseMaskBrushCommand.Execute(null);
+            Assert.Contains("إخفاء", instruction.Text);
             vm.ActiveMaskSession!.BeginStroke();
             vm.ActiveMaskSession.ApplyBrushSegment(100f, 100f, 108f, 108f, 12f, 0.5f, MaskBrushMode.Erase);
             vm.ActiveMaskSession.EndStroke();

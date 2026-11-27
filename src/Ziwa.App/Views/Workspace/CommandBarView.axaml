@@ -8,22 +8,53 @@
           BorderThickness="0,0,0,1"
           Padding="{StaticResource ToolbarPadding}">
     <DockPanel>
-      <StackPanel DockPanel.Dock="Left" Margin="0,0,10,0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+      <StackPanel DockPanel.Dock="Left" Margin="0,0,8,0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
         <Button x:Name="ProjectFileMenuButton" Classes="workspaceAction"
                 ToolTip.Tip="فتح وحفظ المشاريع ومكتبة المشاريع" AutomationProperties.Name="ملف المشروع">
           <StackPanel Classes="workspaceActionLabel">
             <PathIcon Classes="workspaceIcon" Data="{StaticResource IconFolder}" />
             <TextBlock Text="ملف" />
+            <PathIcon Data="{StaticResource IconChevronDown}" Width="10" Height="10" IsHitTestVisible="False"
+                      Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
           </StackPanel>
           <Button.Flyout>
             <Flyout>
-              <StackPanel Spacing="4">
-                <Button Classes="workspaceAction" Content="فتح مشروع…" Click="OnProjectMenuItemClick" Command="{Binding OpenProjectCommand}" ToolTip.Tip="فتح مشروع (Ctrl+O)" AutomationProperties.Name="فتح مشروع" />
-                <Button Classes="workspaceAction" Content="حفظ" Click="OnProjectMenuItemClick" Command="{Binding SaveProjectCommand}" ToolTip.Tip="حفظ المشروع (Ctrl+S)" AutomationProperties.Name="حفظ المشروع" />
-                <Button Classes="workspaceAction" Content="حفظ باسم…" Click="OnProjectMenuItemClick" Command="{Binding SaveProjectAsCommand}" ToolTip.Tip="حفظ باسم (Ctrl+Shift+S)" AutomationProperties.Name="حفظ المشروع باسم" />
-                <Button Classes="workspaceAction" Content="مكتبة المشاريع والتعافي" Click="OnProjectMenuItemClick" Command="{Binding OpenProjectLibraryCommand}" ToolTip.Tip="عرض المشاريع الحديثة والتعافي" AutomationProperties.Name="مكتبة المشاريع والتعافي" />
-                <Button Classes="workspaceAction" Content="تصدير سجلات الدعم الفني…" Click="OnProjectMenuItemClick" Command="{Binding ExportSupportLogsCommand}" ToolTip.Tip="تصدير أرشيف سجلات الدعم المنقّاة من البيانات الحساسة" AutomationProperties.Name="تصدير سجلات الدعم الفني" />
-                <Button Classes="workspaceAction" Content="التحقق من وجود تحديثات…" Click="OnProjectMenuItemClick" Command="{Binding OpenUpdateDialogCommand}" ToolTip.Tip="فحص التحديثات والتحقق عبر HTTPS وSHA-256" AutomationProperties.Name="التحقق من وجود تحديثات" />
+              <StackPanel MinWidth="235" Spacing="2">
+                <Button Classes="studioMenuItem" Click="OnProjectMenuItemClick" Command="{Binding OpenProjectCommand}"
+                        ToolTip.Tip="فتح مشروع (Ctrl+O)" AutomationProperties.Name="فتح مشروع">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <TextBlock Grid.Column="0" Text="فتح مشروع…" VerticalAlignment="Center" />
+                    <Border Grid.Column="1" Classes="shortcutBadge">
+                      <TextBlock Text="Ctrl+O" FontSize="10.5" FlowDirection="LeftToRight" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                    </Border>
+                  </Grid>
+                </Button>
+                <Button Classes="studioMenuItem" Click="OnProjectMenuItemClick" Command="{Binding SaveProjectCommand}"
+                        ToolTip.Tip="حفظ المشروع (Ctrl+S)" AutomationProperties.Name="حفظ المشروع">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <TextBlock Grid.Column="0" Text="حفظ" VerticalAlignment="Center" />
+                    <Border Grid.Column="1" Classes="shortcutBadge">
+                      <TextBlock Text="Ctrl+S" FontSize="10.5" FlowDirection="LeftToRight" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                    </Border>
+                  </Grid>
+                </Button>
+                <Button Classes="studioMenuItem" Click="OnProjectMenuItemClick" Command="{Binding SaveProjectAsCommand}"
+                        ToolTip.Tip="حفظ باسم (Ctrl+Shift+S)" AutomationProperties.Name="حفظ المشروع باسم">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <TextBlock Grid.Column="0" Text="حفظ باسم…" VerticalAlignment="Center" />
+                    <Border Grid.Column="1" Classes="shortcutBadge">
+                      <TextBlock Text="Ctrl+Shift+S" FontSize="10.5" FlowDirection="LeftToRight" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                    </Border>
+                  </Grid>
+                </Button>
+                <Border Classes="studioDivider" Margin="4,3" />
+                <Button Classes="studioMenuItem" Content="مكتبة المشاريع والتعافي" Click="OnProjectMenuItemClick" Command="{Binding OpenProjectLibraryCommand}"
+                        ToolTip.Tip="عرض المشاريع الحديثة والتعافي" AutomationProperties.Name="مكتبة المشاريع والتعافي" />
+                <Border Classes="studioDivider" Margin="4,3" />
+                <Button Classes="studioMenuItem" Content="تصدير سجلات الدعم الفني…" Click="OnProjectMenuItemClick" Command="{Binding ExportSupportLogsCommand}"
+                        ToolTip.Tip="تصدير أرشيف سجلات الدعم المنقّاة من البيانات الحساسة" AutomationProperties.Name="تصدير سجلات الدعم الفني" />
+                <Button Classes="studioMenuItem" Content="التحقق من وجود تحديثات…" Click="OnProjectMenuItemClick" Command="{Binding OpenUpdateDialogCommand}"
+                        ToolTip.Tip="فحص التحديثات والتحقق عبر HTTPS وSHA-256" AutomationProperties.Name="التحقق من وجود تحديثات" />
               </StackPanel>
             </Flyout>
           </Button.Flyout>
@@ -46,23 +77,54 @@
           <StackPanel Classes="workspaceActionLabel">
             <PathIcon Classes="workspaceIcon" Data="{StaticResource IconTemplates}" />
             <TextBlock Text="قوالب" />
+            <PathIcon Data="{StaticResource IconChevronDown}" Width="10" Height="10" IsHitTestVisible="False"
+                      Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
           </StackPanel>
           <Button.Flyout>
             <Flyout>
-              <StackPanel Spacing="4">
-                <Button x:Name="QuickStartIdButton" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding StartIdPhotoSheetCommand}"
-                        ToolTip.Tip="بدء سريع: شيت صور هوية 4×6 (Alt+1)" AutomationProperties.Name="شيت صور هوية" Content="شيت هوية" />
-                <Button x:Name="QuickStartCardButton" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding StartBusinessCardCommand}"
-                        ToolTip.Tip="بدء سريع: بطاقة عمل (Alt+2)" AutomationProperties.Name="بطاقة عمل" Content="بطاقة عمل" />
-                <Button x:Name="QuickStartStickerButton" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding StartStickerSheetCommand}"
-                        ToolTip.Tip="بدء سريع: شيت ملصقات بارامتري (Alt+3)" AutomationProperties.Name="شيت ملصقات" Content="شيت ملصقات" />
-                <Button x:Name="QuickStartBlankA4Button" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding StartFreeformSheetCommand}"
-                        ToolTip.Tip="صفحة تصميم حرة A4 (Alt+4)" AutomationProperties.Name="صفحة حرة A4" Content="صفحة حرة A4" />
-                <Button x:Name="TransferToCollageButton" Classes="workspaceAction" Click="OnTemplateMenuItemClick" Command="{Binding TransferFreeformToCollageCommand}"
+              <StackPanel MinWidth="220" Spacing="2">
+                <Button x:Name="QuickStartIdButton" Classes="studioMenuItem" Click="OnTemplateMenuItemClick" Command="{Binding StartIdPhotoSheetCommand}"
+                        ToolTip.Tip="بدء سريع: شيت صور هوية 4×6 (Alt+1)" AutomationProperties.Name="شيت صور هوية">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <TextBlock Grid.Column="0" Text="شيت هوية 4×6" VerticalAlignment="Center" />
+                    <Border Grid.Column="1" Classes="shortcutBadge">
+                      <TextBlock Text="Alt+1" FontSize="10.5" FlowDirection="LeftToRight" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                    </Border>
+                  </Grid>
+                </Button>
+                <Button x:Name="QuickStartCardButton" Classes="studioMenuItem" Click="OnTemplateMenuItemClick" Command="{Binding StartBusinessCardCommand}"
+                        ToolTip.Tip="بدء سريع: بطاقة عمل (Alt+2)" AutomationProperties.Name="بطاقة عمل">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <TextBlock Grid.Column="0" Text="بطاقة عمل" VerticalAlignment="Center" />
+                    <Border Grid.Column="1" Classes="shortcutBadge">
+                      <TextBlock Text="Alt+2" FontSize="10.5" FlowDirection="LeftToRight" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                    </Border>
+                  </Grid>
+                </Button>
+                <Button x:Name="QuickStartStickerButton" Classes="studioMenuItem" Click="OnTemplateMenuItemClick" Command="{Binding StartStickerSheetCommand}"
+                        ToolTip.Tip="بدء سريع: شيت ملصقات بارامتري (Alt+3)" AutomationProperties.Name="شيت ملصقات">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <TextBlock Grid.Column="0" Text="شيت ملصقات" VerticalAlignment="Center" />
+                    <Border Grid.Column="1" Classes="shortcutBadge">
+                      <TextBlock Text="Alt+3" FontSize="10.5" FlowDirection="LeftToRight" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                    </Border>
+                  </Grid>
+                </Button>
+                <Button x:Name="QuickStartBlankA4Button" Classes="studioMenuItem" Click="OnTemplateMenuItemClick" Command="{Binding StartFreeformSheetCommand}"
+                        ToolTip.Tip="صفحة تصميم حرة A4 (Alt+4)" AutomationProperties.Name="صفحة حرة A4">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <TextBlock Grid.Column="0" Text="صفحة حرة A4" VerticalAlignment="Center" />
+                    <Border Grid.Column="1" Classes="shortcutBadge">
+                      <TextBlock Text="Alt+4" FontSize="10.5" FlowDirection="LeftToRight" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                    </Border>
+                  </Grid>
+                </Button>
+                <Border Classes="studioDivider" Margin="4,3" />
+                <Button x:Name="TransferToCollageButton" Classes="studioMenuItem" Click="OnTemplateMenuItemClick" Command="{Binding TransferFreeformToCollageCommand}"
                         ToolTip.Tip="نقل التصميم الحر إلى شيت الكولاج" AutomationProperties.Name="نقل إلى الكولاج">
                   <StackPanel Classes="workspaceActionLabel">
                     <PathIcon Classes="workspaceIcon" Data="{StaticResource IconCollage}" />
-                    <TextBlock Text="نقل للكولاج" />
+                    <TextBlock Text="نقل للكولاج" VerticalAlignment="Center" />
                   </StackPanel>
                 </Button>
               </StackPanel>
@@ -71,24 +133,31 @@
         </Button>
       </StackPanel>
 
-      <StackPanel DockPanel.Dock="Right" Margin="10,0,0,0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+      <StackPanel DockPanel.Dock="Right" Margin="8,0,0,0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
         <Button x:Name="CommandPaletteButton" Classes="workspaceAction iconOnly" Command="{Binding ToggleCommandPaletteCommand}"
                 ToolTip.Tip="البحث عن الأوامر (Ctrl+K)" AutomationProperties.Name="لوحة الأوامر">
           <PathIcon Classes="workspaceIcon" Data="{StaticResource IconSearch}" />
         </Button>
         <Border Classes="workspaceDivider" />
-        <Button x:Name="ZoomOutButton" Classes="workspaceAction iconOnly" Command="{Binding ZoomOutCommand}"
-                ToolTip.Tip="تصغير المعاينة" AutomationProperties.Name="تصغير المعاينة">
-          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconMinus}" />
-        </Button>
-        <Button x:Name="ResetZoomButton" Classes="workspaceAction zoomReadout" Command="{Binding ResetZoomCommand}"
-                ToolTip.Tip="إعادة التكبير إلى 100%" AutomationProperties.Name="إعادة التكبير إلى 100%">
-          <TextBlock Text="{Binding ZoomPercentText}" FlowDirection="LeftToRight" />
-        </Button>
-        <Button x:Name="ZoomInButton" Classes="workspaceAction iconOnly" Command="{Binding ZoomInCommand}"
-                ToolTip.Tip="تكبير المعاينة" AutomationProperties.Name="تكبير المعاينة">
-          <PathIcon Classes="workspaceIcon" Data="{StaticResource IconPlus}" />
-        </Button>
+        <Border Background="{DynamicResource ZiwaSurfaceBrush}"
+                BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                BorderThickness="{StaticResource HairlineBorderThickness}"
+                CornerRadius="{StaticResource ControlCornerRadius}">
+          <StackPanel Orientation="Horizontal" Spacing="0">
+            <Button x:Name="ZoomOutButton" Classes="workspaceAction iconOnly" Command="{Binding ZoomOutCommand}"
+                    ToolTip.Tip="تصغير المعاينة" AutomationProperties.Name="تصغير المعاينة">
+              <PathIcon Classes="workspaceIcon" Data="{StaticResource IconMinus}" />
+            </Button>
+            <Button x:Name="ResetZoomButton" Classes="workspaceAction zoomReadout" Command="{Binding ResetZoomCommand}"
+                    ToolTip.Tip="إعادة التكبير إلى 100% (Ctrl+1)" AutomationProperties.Name="إعادة التكبير إلى 100%">
+              <TextBlock Text="{Binding ZoomPercentText}" FlowDirection="LeftToRight" FontSize="12" FontWeight="SemiBold" />
+            </Button>
+            <Button x:Name="ZoomInButton" Classes="workspaceAction iconOnly" Command="{Binding ZoomInCommand}"
+                    ToolTip.Tip="تكبير المعاينة" AutomationProperties.Name="تكبير المعاينة">
+              <PathIcon Classes="workspaceIcon" Data="{StaticResource IconPlus}" />
+            </Button>
+          </StackPanel>
+        </Border>
         <Button x:Name="FitPageButton" Classes="workspaceAction iconOnly" Command="{Binding FitPageCommand}"
                 ToolTip.Tip="ملاءمة الصفحة (Ctrl+0)" AutomationProperties.Name="ملاءمة الصفحة">
           <PathIcon Classes="workspaceIcon" Data="{StaticResource IconFitPage}" />
@@ -109,7 +178,7 @@
                 ToolTip.Tip="{Binding AccountHeaderBadgeText}" AutomationProperties.Name="الحساب والترخيص (Ctrl+Shift+A)">
           <StackPanel Classes="workspaceActionLabel">
             <PathIcon Classes="workspaceIcon" Data="{StaticResource IconAccount}" />
-            <TextBlock Text="{Binding AccountHeaderBadgeText}" MaxWidth="82" TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{Binding AccountHeaderBadgeText}" MaxWidth="78" TextTrimming="CharacterEllipsis" />
           </StackPanel>
         </Button>
         <Border Classes="workspaceDivider" />
@@ -121,7 +190,7 @@
           </StackPanel>
         </Button>
         <Button x:Name="Export300DpiButton" Classes="workspaceAction primary" Command="{Binding ExportSample300DpiCommand}"
-                ToolTip.Tip="تصدير الورقة النشطة بدقة 300 DPI" AutomationProperties.Name="تصدير الورقة النشطة بدقة 300 DPI">
+                ToolTip.Tip="تصدير الورقة النشطة بدقة 300 DPI (Ctrl+E)" AutomationProperties.Name="تصدير الورقة النشطة بدقة 300 DPI">
           <StackPanel Classes="workspaceActionLabel">
             <PathIcon Classes="workspaceIcon" Data="{StaticResource IconExport}" />
             <TextBlock Text="تصدير 300 DPI" />

@@ -1,6 +1,6 @@
 # Ziwa Studio — دستور وقواعد الوكلاء (Master Project Constitution)
 
-> وثيقة حاكمة مقتضبة لوكلاء **Ziwa Studio**. صُممت لتمنح الوكيل أقصى وضوح وأقل ثقل ممكن، مستفيدةً من دروس **Grido Studio**. التفاصيل العملية تعيش في `5` مهارات مركّزة تحت `.agents/skills/`.
+> وثيقة حاكمة مقتضبة لوكلاء **Ziwa Studio**. صُممت لتمنح الوكيل أقصى وضوح وأقل ثقل ممكن، مستفيدةً من دروس **Grido Studio**. التفاصيل العملية تعيش في `8` مهارات مركّزة تحت `.agents/skills/`.
 
 ---
 
@@ -35,9 +35,16 @@
 | [`.agents/rules/platform-ai-and-security.md`](rules/platform-ai-and-security.md) | `glob` (`Infrastructure`, `Platform`, `*.sql`) | الحفظ الذري، GDI، جسر الهاتف `127.0.0.1`، AI 180s، Supabase RLS |
 | [`.agents/rules/quality-and-release.md`](rules/quality-and-release.md) | `glob` (`ci/scripts/*.csproj`) | `TreatWarningsAsErrors`، `Verify.Xunit`، التحقق بـ `docs-gate` والإصدارات |
 
-### المهارات المركّزة (5 مهارات فقط في `.agents/skills/`)
+### المهارات المركّزة (`8` مهارات في `.agents/skills/`)
+
+**مهارات Avalonia UI 11.3 المتخصصة (4 مهارات):**
+- [`avalonia-fluent-ui`](skills/avalonia-fluent-ui/SKILL.md): التنسيق (`Style`/`ControlTheme`)، `ThemeDictionaries`/`ThemeVariantScope`، `ContainerQuery`، `CompiledBindings`، `DataTemplates`، RTL، و`Tokens.axaml`.
+- [`avalonia-controls-and-rendering`](skills/avalonia-controls-and-rendering/SKILL.md): `TemplatedControl`/`Control`/`Panel`، `StyledProperty`/`DirectProperty`، منع تسرب الذاكرة، و`ICustomDrawOperation` + `ISkiaSharpApiLeaseFeature`.
+- [`avalonia-input-desktop-and-a11y`](skills/avalonia-input-desktop-and-a11y/SKILL.md): أحداث `Tunnel`/`Bubble`، `Pointer.Capture`، `DragDrop`، خدمات `TopLevel` (`StorageProvider`/`Clipboard`)، الكروم المخصص، الألواح، و`AutomationProperties`.
+- [`avalonia-headless-testing`](skills/avalonia-headless-testing/SKILL.md): اختبارات `Avalonia.Headless.XUnit`، `RunJobs()`، محاكاة الإدخال، فحص RTL/الثيم، و`CaptureRenderedFrame()`.
+
+**مهارات المعمارية والمحرك والمنصة والجودة (4 مهارات):**
 - [`ziwa-architecture-map`](skills/ziwa-architecture-map/SKILL.md): خريطة `Ziwa.sln`، الإحداثيات بالمليمتر، Command/Undo، وسجل الأوامر الموحد.
-- [`avalonia-fluent-ui`](skills/avalonia-fluent-ui/SKILL.md): `Tokens.axaml`، ثيم Fluent 2 RTL، `CompiledBindings`، وربط `SkiaViewportHost`.
 - [`skia-print-pipeline`](skills/skia-print-pipeline/SKILL.md): `SceneRenderer`، `HarfBuzzSharp`، الأقنعة الثمانية، `CropZoom/Pan`، CMYK TIFF، PDF المتجه، وGDI.
 - [`dotnet-platform-ai`](skills/dotnet-platform-ai/SKILL.md): الحفظ الذري وSQLite، `OnnxRuntime`/`OpenCvSharp`، Modal 180s، جسر الهاتف، وSupabase RLS.
 - [`ziwa-qa-and-release`](skills/ziwa-qa-and-release/SKILL.md): اختبارات التطابق البصري (`Verify.Xunit`)، `Avalonia.Headless`، الحزم، وCI.
@@ -46,5 +53,5 @@
 
 ## 4. بروتوكول التوثيق المختصر (`Fragment-First`)
 1. **عند بدء أي جلسة:** اقرأ «مؤشر الاستئناف الحي» في [`docs/DEVELOPMENT_PLAN.md`](../docs/DEVELOPMENT_PLAN.md) والتزم بالمرحلة النشطة؛ لا تقفز لميزات لاحقة أو مؤجلة دون إذن المالك.
-2. **قبل الالتزام:** لأي تعديل كود، أنشئ **fragment واحداً** في `changelog/fragments/YYYYMMDD-<scope>-<slug>.md` وفق [`changelog/README.md`](../changelog/README.md) (لا تعدّل `CHANGELOG.md` يدوياً)، ثم مرّر `node scripts/docs-gate.mjs --strict-refs` + `dotnet format Ziwa.sln --verify-no-changes`.
+2. **قبل الالتزام:** لأي تعديل كود، أنشئ **fragment واحداً** في `changelog/fragments/YYYYMMDD-<scope>-<slug>.md` وفق [`changelog/README.md`](../changelog/README.md) (لا تعدّل `CHANGELOG.md` يدوياً)، ثم مرّر `node scripts/docs-gate.mjs --strict-refs` + `node scripts/avalonia-audit.mjs` (عند تعديل الواجهة) + `dotnet format Ziwa.sln --verify-no-changes`.
 3. **بعد الدفع (بإذن المالك):** راقب `gh run list --limit 3` و`gh run watch` حتى نجاح `100%`.

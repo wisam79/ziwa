@@ -5,7 +5,7 @@
              x:Class="Ziwa.App.Views.AiMaskEditorView"
              x:DataType="vm:MainWindowViewModel"
              FlowDirection="RightToLeft">
-  <controls:StudioDialogShell Title="تعديل قناع العزل بالفرشاة (معاينة قبل/بعد)"
+  <controls:StudioDialogShell Title="تعديل قناع العزل"
                               Subtitle="{Binding MaskEditorTargetTitle}"
                               CloseCommand="{Binding CloseMaskEditorCommand}"
                               CloseToolTip="إغلاق محرر القناع دون اعتماد التغييرات (Esc)"
@@ -15,11 +15,10 @@
                               DialogMaxHeight="720"
                               ScrollableBody="False">
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
-      <WrapPanel Grid.Row="0" Orientation="Horizontal">
+      <WrapPanel Grid.Row="0" Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
         <Button x:Name="EraseBrushModeButton"
                 Classes="studioSegment"
                 Classes.active="{Binding IsEraseBrushActive}"
-                Margin="0,0,6,6"
                 Command="{Binding SetEraseMaskBrushCommand}"
                 Content="فرشاة المسح"
                 ToolTip.Tip="مسح أجزاء من الخلفية"
@@ -27,50 +26,46 @@
         <Button x:Name="RestoreBrushModeButton"
                 Classes="studioSegment"
                 Classes.active="{Binding IsRestoreBrushActive}"
-                Margin="0,0,6,6"
                 Command="{Binding SetRestoreMaskBrushCommand}"
                 Content="فرشاة الاستعادة"
                 ToolTip.Tip="استعادة أجزاء من الصورة الأصلية"
                 AutomationProperties.Name="فرشاة الاستعادة" />
+        <Border Classes="workspaceDivider" VerticalAlignment="Center" />
         <Button x:Name="MaskStrokeUndoButton"
                 Classes="studioSubtle"
-                Margin="0,0,6,6"
                 Command="{Binding UndoMaskStrokeCommand}"
                 IsEnabled="{Binding CanUndoMaskStroke}"
-                Content="تراجع عن الضربة"
+                Content="تراجع"
                 ToolTip.Tip="تراجع عن آخر ضربة فرشاة"
                 AutomationProperties.Name="تراجع عن ضربة الفرشاة" />
         <Button x:Name="MaskStrokeRedoButton"
                 Classes="studioSubtle"
-                Margin="0,0,6,6"
                 Command="{Binding RedoMaskStrokeCommand}"
                 IsEnabled="{Binding CanRedoMaskStroke}"
-                Content="إعادة الضربة"
+                Content="إعادة"
                 ToolTip.Tip="إعادة ضربة الفرشاة"
                 AutomationProperties.Name="إعادة ضربة الفرشاة" />
+        <Border Classes="workspaceDivider" VerticalAlignment="Center" />
         <Button x:Name="InvertMaskButton"
                 Classes="studioSubtle"
-                Margin="0,0,6,6"
                 Command="{Binding InvertMaskCommand}"
                 Content="عكس القناع"
                 ToolTip.Tip="عكس مناطق الإظهار والإخفاء في القناع"
                 AutomationProperties.Name="عكس القناع" />
         <Button x:Name="ResetAutoMaskButton"
                 Classes="studioSubtle"
-                Margin="0,0,6,6"
                 Command="{Binding ResetMaskToAutoCommand}"
-                Content="إعادة لقناع الذكاء"
-                ToolTip.Tip="إعادة القناع إلى النتيجة التلقائية لـ ONNX"
+                Content="استعادة القناع التلقائي"
+                ToolTip.Tip="استعادة القناع الناتج عن العزل التلقائي"
                 AutomationProperties.Name="إعادة القناع التلقائي" />
         <Button x:Name="ResetMaskViewButton"
                 Classes="studioSubtle"
-                Margin="0,0,12,6"
                 Click="OnResetMaskViewClick"
-                Content="ملاءمة 100%"
+                Content="ملاءمة الصورة"
                 ToolTip.Tip="إعادة التكبير والموضع للعرض الكامل (R)"
                 AutomationProperties.Name="إعادة ضبط عرض القناع" />
         <ComboBox x:Name="MaskPreviewModeComboBox"
-                  Width="210"
+                  Width="206"
                   ItemsSource="{Binding AvailableMaskPreviewModes}"
                   SelectedItem="{Binding SelectedMaskPreviewModeOption}"
                   ToolTip.Tip="وضع معاينة قبل وبعد"
@@ -125,8 +120,9 @@
 
     <controls:StudioDialogShell.FooterContent>
       <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Grid.Column="0"
-                   Text="{Binding MaskEditorBrushSummary}"
+        <TextBlock x:Name="MaskBrushInstruction" Grid.Column="0"
+                   Text="{Binding MaskEditorBrushSummary}" TextWrapping="Wrap"
+                   AutomationProperties.LiveSetting="Polite"
                    VerticalAlignment="Center"
                    Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">

@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Ziwa.App.Controls"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             x:Class="Ziwa.App.Views.Inspector.InspectorLayersView"
+             x:DataType="vm:MainWindowViewModel"
+             FlowDirection="RightToLeft">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <controls:StudioCard Header="طبقات الصفحة" Margin="{StaticResource InspectorPadding}">
+      <controls:StudioCard.HeaderBadge>
+        <Border Classes="statusPill">
+          <TextBlock Text="{Binding LayerCountBadgeText}" FontSize="11" FontWeight="SemiBold" />
+        </Border>
+      </controls:StudioCard.HeaderBadge>
+      <StackPanel>
+        <TextBlock IsVisible="{Binding HasNoFreeformLayers}"
+                   Text="لا توجد طبقات. أضف صورة أو نصًا إلى الصفحة ليظهر هنا."
+                   TextWrapping="Wrap" FontSize="12" Margin="0,4"
+                   Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+        <ItemsControl x:Name="LayersListControl" ItemsSource="{Binding LayerItems}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:SceneLayerItemViewModel">
+              <Border Padding="0,2" BorderThickness="0,0,0,1"
+                      BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="3">
+                  <Border Background="{DynamicResource ZiwaTransparentBrush}" ToolTip.Tip="{Binding Name}">
+                    <Button Classes="workspaceAction statusAction" Classes.active="{Binding IsSelected}"
+                            MinHeight="32" MinWidth="28" Padding="4,1"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                            IsEnabled="{Binding CanSelectOnCanvas}"
+                            Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).SelectLayerCommand}"
+                            CommandParameter="{Binding}" ToolTip.Tip="{Binding Name}"
+                            AutomationProperties.Name="{Binding SelectAccessibleName}"
+                            AutomationProperties.HelpText="{Binding LayerTip}">
+                      <StackPanel>
+                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontSize="12" />
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                          <TextBlock Text="{Binding KindBadgeAr}" FontSize="11"
+                                     Foreground="{DynamicResource ZiwaInfoBrush}" />
+                          <TextBlock Grid.Column="1" Text="{Binding DimensionsText}" FontSize="11"
+                                     FlowDirection="LeftToRight" HorizontalAlignment="Right"
+                                     Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                        </Grid>
+                      </StackPanel>
+                    </Button>
+                  </Border>
+                  <Button Grid.Column="1" Classes="workspaceAction iconOnly statusAction" Classes.active="{Binding !IsVisible}"
+                          Width="30" Height="30" VerticalAlignment="Center"
+                          Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ToggleLayerVisibilityCommand}"
+                          CommandParameter="{Binding}" ToolTip.Tip="{Binding VisibilityAccessibleName}"
+                          AutomationProperties.Name="{Binding VisibilityAccessibleName}">
+                    <Grid>
+                      <PathIcon Data="{StaticResource IconEye}" Width="14" Height="14" IsVisible="{Binding IsVisible}" />
+                      <PathIcon Data="{StaticResource IconEyeOff}" Width="14" Height="14" IsVisible="{Binding !IsVisible}" />
+                    </Grid>
+                  </Button>
+                  <Button Grid.Column="2" Classes="workspaceAction iconOnly statusAction" Classes.active="{Binding IsLocked}"
+                          Width="30" Height="30" VerticalAlignment="Center"
+                          Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ToggleLayerLockCommand}"
+                          CommandParameter="{Binding}" ToolTip.Tip="{Binding LockAccessibleName}"
+                          AutomationProperties.Name="{Binding LockAccessibleName}">
+                    <Grid>
+                      <PathIcon Data="{StaticResource IconLock}" Width="14" Height="14" IsVisible="{Binding IsLocked}" />
+                      <PathIcon Data="{StaticResource IconUnlock}" Width="14" Height="14" IsVisible="{Binding !IsLocked}" />
+                    </Grid>
+                  </Button>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </controls:StudioCard>
+  </ScrollViewer>
+</UserControl>

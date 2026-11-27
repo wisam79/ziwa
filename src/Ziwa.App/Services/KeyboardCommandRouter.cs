@@ -31,7 +31,7 @@ public static class KeyboardCommandRouter
             Key.F when shift => "Ctrl+Shift+F",
             Key.U when shift => "Ctrl+Shift+U",
             Key.A when shift => "Ctrl+Shift+A",
-            Key.I when shift => "Ctrl+Shift+I",
+            Key.I => shift ? "Ctrl+Shift+I" : "Ctrl+I",
             Key.D when shift => "Ctrl+Shift+D",
             Key.K => "Ctrl+K",
             Key.OemPeriod or Key.Decimal => "Ctrl+.",

@@ -18,7 +18,6 @@
         ExtendClientAreaTitleBarHeightHint="32"
         DragDrop.AllowDrop="True"
         FlowDirection="RightToLeft"
-        FontFamily="{StaticResource ZiwaCairoFont}"
         Background="{DynamicResource ZiwaSurfaceBrush}"
         Foreground="{DynamicResource ZiwaPrimaryTextBrush}">
   <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
@@ -35,7 +34,8 @@
       <workspace:WorkspaceRailView x:Name="WorkspaceRailRegion" Grid.Column="0" IsVisible="{Binding IsChromeVisible}" />
 
       <!-- إطار الورقة يطابق إحداثيات الطباعة؛ الألواح العائمة تبقى RTL. -->
-      <Grid x:Name="CanvasWorkspaceRegion" Grid.Column="1" FlowDirection="LeftToRight">
+      <Grid x:Name="CanvasWorkspaceRegion" Grid.Column="1" FlowDirection="LeftToRight"
+            Container.Name="QuickBarViewport" Container.Sizing="Width">
         <Grid.RowDefinitions>
           <RowDefinition Height="{StaticResource RulerGridLength}" />
           <RowDefinition Height="*" />
@@ -113,16 +113,20 @@
               <MenuItem Header="قلب أفقي للخانة" Command="{Binding FlipSelectedSlotCommand}" IsVisible="{Binding IsCollageSlotSelected}" />
               <MenuItem Header="إعادة ضبط تأطير الخانة" Command="{Binding ResetSelectedSlotTransformCommand}" IsVisible="{Binding IsCollageSlotWithImageSelected}" />
               <MenuItem Header="تفريغ الخانة (Delete)" Command="{Binding ClearSelectedSlotCommand}" IsVisible="{Binding IsCollageSlotWithImageSelected}" />
+              <Separator IsVisible="{Binding IsCollageSlotSelected}" />
               <MenuItem Header="قص الصورة" Command="{Binding EnterSelectedCropModeCommand}" IsVisible="{Binding IsImageSelected}" />
               <MenuItem Header="تحرير النص" Command="{Binding EnterSelectedTextEditCommand}" IsVisible="{Binding IsTextSelected}" />
               <MenuItem Header="تعديل الملصق" Command="{Binding EditSelectedStickerCommand}" IsVisible="{Binding IsStickerSelected}" />
               <MenuItem Header="تكرار (Ctrl+D)" Command="{Binding DuplicateSelectionCommand}" IsEnabled="{Binding HasSelection}" />
+              <Separator />
               <MenuItem Header="إحضار للأمام (Ctrl+])" Command="{Binding BringForwardSelectionCommand}" IsEnabled="{Binding HasSelection}" />
               <MenuItem Header="إرسال للخلف (Ctrl+[)" Command="{Binding SendBackwardSelectionCommand}" IsEnabled="{Binding HasSelection}" />
               <MenuItem Header="تجميع (Ctrl+G)" Command="{Binding GroupCommand}" IsVisible="{Binding CanGroup}" />
               <MenuItem Header="فك التجميع (Ctrl+Shift+G)" Command="{Binding UngroupCommand}" IsVisible="{Binding CanUngroup}" />
+              <Separator />
               <MenuItem Header="تحديد الكل (Ctrl+A)" Command="{Binding SelectAllNodesCommand}" />
               <MenuItem Header="ملاءمة الصفحة (Ctrl+0)" Command="{Binding FitPageCommand}" />
+              <Separator />
               <MenuItem Header="حذف المحدد (Delete)" Command="{Binding DeleteSelectionCommand}" IsEnabled="{Binding HasAnySelection}" />
             </ContextMenu>
           </controls:SkiaViewportHost.ContextMenu>
@@ -137,15 +141,27 @@
                   FlowDirection="RightToLeft"
                   Canvas.Left="24"
                   Canvas.Top="24"
-                  MinWidth="240"
-                  MaxWidth="380"
-                  Padding="10"
-                  Background="{DynamicResource ZiwaCardBrush}"
-                  BorderBrush="{DynamicResource ZiwaPrimaryActionBrush}"
-                  BorderThickness="2"
+                  MinWidth="260"
+                  MaxWidth="390"
+                  Padding="12"
+                  Background="{DynamicResource ZiwaElevatedCardBrush}"
+                  BorderBrush="{DynamicResource ZiwaFocusStrokeBrush}"
+                  BorderThickness="1.5"
                   CornerRadius="{StaticResource OverlayCornerRadius}"
                   BoxShadow="{StaticResource ZiwaFloatingShadow}">
             <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="تحرير النص السريع"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+                <TextBlock Grid.Column="1"
+                           Text="Enter للحفظ · Esc للإلغاء"
+                           FontSize="10.5"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              </Grid>
               <TextBox x:Name="InlineCanvasTextBox"
                        Text="{Binding InlineTextEditDraft}"
                        AcceptsReturn="True"
@@ -154,24 +170,18 @@
                        Watermark="اكتب النص واضغط Enter للحفظ أو Esc للإلغاء"
                        AutomationProperties.Name="محرر النص الموضعي" />
               <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
-                <Button x:Name="InlineTextSaveButton"
-                        Command="{Binding CommitInlineTextEditCommand}"
-                        MinHeight="{StaticResource CompactButtonSize}"
-                        CornerRadius="{StaticResource ControlCornerRadius}"
-                        Background="{DynamicResource ZiwaPrimaryActionBrush}"
-                        Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
-                        ToolTip.Tip="اعتماد النص المعدّل (Enter)"
-                        AutomationProperties.Name="اعتماد النص"
-                        Content="حفظ" />
                 <Button x:Name="InlineTextCancelButton"
+                        Classes="studioSubtle"
                         Command="{Binding CancelInlineTextEditCommand}"
-                        MinHeight="{StaticResource CompactButtonSize}"
-                        CornerRadius="{StaticResource ControlCornerRadius}"
-                        Background="{DynamicResource ZiwaSubtleFillBrush}"
-                        Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
                         ToolTip.Tip="إلغاء تحرير النص (Esc)"
                         AutomationProperties.Name="إلغاء تحرير النص"
                         Content="إلغاء" />
+                <Button x:Name="InlineTextSaveButton"
+                        Classes="studioPrimary"
+                        Command="{Binding CommitInlineTextEditCommand}"
+                        ToolTip.Tip="اعتماد النص المعدّل (Enter)"
+                        AutomationProperties.Name="اعتماد النص"
+                        Content="حفظ النص" />
               </StackPanel>
             </StackPanel>
           </Border>
@@ -187,285 +197,203 @@
                 VerticalAlignment="Top"
                 Margin="14"
                 Padding="10,6"
-                Background="{DynamicResource ZiwaCardBrush}"
+                Background="{DynamicResource ZiwaElevatedCardBrush}"
                 BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
                 BorderThickness="{StaticResource HairlineBorderThickness}"
-                CornerRadius="{StaticResource PillCornerRadius}"
+                CornerRadius="{StaticResource OverlayCornerRadius}"
                 BoxShadow="{StaticResource ZiwaFloatingShadow}">
-          <StackPanel Orientation="Horizontal" Spacing="6">
+          <Grid>
             <!-- شريط أدوات القص الموضعي -->
             <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsCropModeActive}">
-              <Button x:Name="QuickCropZoomOutButton"
+              <Button x:Name="QuickCropZoomOutButton" Classes="quickBarChip quickBarIcon"
                       Command="{Binding ZoomOutCropCommand}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="تصغير الصورة داخل إطار القص"
-                      AutomationProperties.Name="تصغير القص"
-                      Content="-" />
+                      ToolTip.Tip="تصغير الصورة داخل إطار القص" AutomationProperties.Name="تصغير القص">
+                <PathIcon Classes="workspaceIcon" Data="{StaticResource IconMinus}" />
+              </Button>
               <TextBlock Text="{Binding CropZoomPercentText}"
                          FlowDirection="LeftToRight"
                          VerticalAlignment="Center"
                          FontWeight="SemiBold"
                          Margin="2,0"
                          Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
-              <Button x:Name="QuickCropZoomInButton"
+              <Button x:Name="QuickCropZoomInButton" Classes="quickBarChip quickBarIcon"
                       Command="{Binding ZoomInCropCommand}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="تكبير الصورة داخل إطار القص"
-                      AutomationProperties.Name="تكبير القص"
-                      Content="+" />
+                      ToolTip.Tip="تكبير الصورة داخل إطار القص" AutomationProperties.Name="تكبير القص">
+                <PathIcon Classes="workspaceIcon" Data="{StaticResource IconPlus}" />
+              </Button>
               <Button x:Name="QuickCropResetButton"
+                      Classes="quickBarChip"
                       Command="{Binding ResetCropSpecCommand}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
                       ToolTip.Tip="إعادة ضبط القص إلى الحجم الافتراضي"
                       AutomationProperties.Name="إعادة ضبط القص"
                       Content="1×" />
-              <Button x:Name="QuickCropApplyButton"
+              <Border Classes="workspaceDivider" />
+              <Button x:Name="QuickCropApplyButton" Classes="quickBarPrimary quickBarIcon"
                       Command="{Binding ApplyCropModeCommand}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
-                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
-                      ToolTip.Tip="تطبيق القص الموضعي (Enter)"
-                      AutomationProperties.Name="تطبيق القص"
-                      Content="تطبيق القص" />
-              <Button x:Name="QuickCropCancelButton"
+                      ToolTip.Tip="تطبيق القص الموضعي (Enter)" AutomationProperties.Name="تطبيق القص">
+                <PathIcon Classes="workspaceIcon" Data="{StaticResource IconCheckCircle}" />
+              </Button>
+              <Button x:Name="QuickCropCancelButton" Classes="quickBarChip quickBarIcon"
                       Command="{Binding CancelCropModeCommand}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
-                      ToolTip.Tip="إلغاء القص واستعادة الإطار السابق (Esc)"
-                      AutomationProperties.Name="إلغاء القص"
-                      Content="إلغاء" />
+                      ToolTip.Tip="إلغاء القص واستعادة الإطار السابق (Esc)" AutomationProperties.Name="إلغاء القص">
+                <PathIcon Classes="workspaceIcon" Data="{StaticResource IconWindowClose}" />
+              </Button>
             </StackPanel>
 
             <!-- الشريط السياقي المعتاد عند التحديد -->
-            <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsNotCropModeActive}">
-              <Button x:Name="QuickEditStickerButton"
-                      Command="{Binding EditSelectedStickerCommand}"
-                      IsVisible="{Binding IsStickerSelected}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
-                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
-                      ToolTip.Tip="تعديل الملصق في مكانه"
-                      AutomationProperties.Name="تعديل الملصق"
-                      Content="تعديل الملصق" />
-              <Button x:Name="QuickRandomPaletteButton"
-                      Command="{Binding RandomizeSelectedStickerPaletteCommand}"
-                      IsVisible="{Binding IsStickerSelected}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="توليفة لونية عشوائية ذكية OKLCH"
-                      AutomationProperties.Name="توليفة ألوان ذكية"
-                      Content="توليفة ذكية" />
-              <Button x:Name="QuickEditTextButton"
-                      Command="{Binding EnterSelectedTextEditCommand}"
-                      IsVisible="{Binding IsTextSelected}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
-                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
-                      ToolTip.Tip="تحرير النص مباشرة على اللوحة (نقر مزدوج)"
-                      AutomationProperties.Name="تحرير النص على اللوحة"
-                      Content="تحرير النص" />
-              <Button x:Name="QuickEnterCropButton"
-                      Command="{Binding EnterSelectedCropModeCommand}"
-                      IsVisible="{Binding IsImageSelected}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="قص وتأطير الصورة موضعياً (نقر مزدوج)"
-                      AutomationProperties.Name="قص الصورة الموضعي"
-                      Content="قص" />
+            <StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding IsNotCropModeActive}">
+              <Button x:Name="QuickEditStickerButton" Classes="quickBarPrimary quickBarLabeledIcon"
+                      Command="{Binding EditSelectedStickerCommand}" IsVisible="{Binding IsStickerSelected}"
+                      ToolTip.Tip="تعديل الملصق في مكانه" AutomationProperties.Name="تعديل الملصق">
+                <StackPanel Classes="workspaceActionLabel">
+                  <PathIcon Classes="workspaceIcon" Data="{StaticResource IconSticker}" />
+                  <TextBlock Classes="quickBarCaption" Text="تعديل الملصق" />
+                </StackPanel>
+              </Button>
+              <Button x:Name="QuickEditTextButton" Classes="quickBarPrimary quickBarLabeledIcon"
+                      Command="{Binding EnterSelectedTextEditCommand}" IsVisible="{Binding IsTextSelected}"
+                      ToolTip.Tip="تحرير النص مباشرة على اللوحة (نقر مزدوج)" AutomationProperties.Name="تحرير النص على اللوحة">
+                <StackPanel Classes="workspaceActionLabel">
+                  <PathIcon Classes="workspaceIcon" Data="{StaticResource IconText}" />
+                  <TextBlock Classes="quickBarCaption" Text="تحرير النص" />
+                </StackPanel>
+              </Button>
+              <Button x:Name="QuickEnterCropButton" Classes="quickBarPrimary quickBarLabeledIcon"
+                      Command="{Binding EnterSelectedCropModeCommand}" IsVisible="{Binding IsImageSelected}"
+                      ToolTip.Tip="قص وتأطير الصورة موضعياً (نقر مزدوج)" AutomationProperties.Name="قص الصورة الموضعي">
+                <StackPanel Classes="workspaceActionLabel">
+                  <PathIcon Classes="workspaceIcon" Data="{StaticResource IconCrop}" />
+                  <TextBlock Classes="quickBarCaption" Text="قص" />
+                </StackPanel>
+              </Button>
               <Button x:Name="QuickMaskWithShapeButton"
+                      Classes="quickBarPrimary"
                       Command="{Binding MaskWithShapeCommand}"
                       IsVisible="{Binding CanMaskImageWithShape}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
-                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
                       ToolTip.Tip="دمج الصورة المحددة داخل الشكل المحدد"
                       AutomationProperties.Name="تقنيع الصورة بالشكل"
                       Content="قناع بالشكل" />
-              <Button x:Name="QuickInsertSlotImageButton"
-                      Command="{Binding ImportImageCommand}"
-                      IsVisible="{Binding IsCollageSlotSelected}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
-                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
-                      ToolTip.Tip="إدراج أو استبدال صورة في هذه الخانة"
-                      AutomationProperties.Name="إدراج صورة في الخانة"
-                      Content="إدراج صورة" />
-              <Button x:Name="QuickFillAllSlotsButton"
-                      Command="{Binding FillAllSlotsWithSelectedSlotCommand}"
-                      IsVisible="{Binding CanFillSheetWithSelectedSlot}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="تكرار صورة الخانة على كامل شيت الهوية"
-                      AutomationProperties.Name="تكرار صورة الخانة"
-                      Content="تكرار للكل" />
+              <Button x:Name="QuickInsertSlotImageButton" Classes="quickBarPrimary quickBarLabeledIcon"
+                      Command="{Binding ImportImageCommand}" IsVisible="{Binding IsCollageSlotSelected}"
+                      ToolTip.Tip="إدراج صورة الخانة أو استبدالها" AutomationProperties.Name="إدراج صورة الخانة أو استبدالها">
+                <StackPanel Classes="workspaceActionLabel">
+                  <PathIcon Classes="workspaceIcon" Data="{StaticResource IconImage}" />
+                  <TextBlock Classes="quickBarCaption" Text="صورة الخانة" />
+                </StackPanel>
+              </Button>
               <Button x:Name="QuickRotateSlotButton"
+                      Classes="quickBarChip"
                       Command="{Binding RotateSelectedSlotCommand}"
                       IsVisible="{Binding IsCollageSlotSelected}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
                       ToolTip.Tip="تدوير محتوى الخانة 90 درجة"
                       AutomationProperties.Name="تدوير الخانة"
                       Content="تدوير 90°" />
-              <Button x:Name="QuickFlipSlotButton"
-                      Command="{Binding FlipSelectedSlotCommand}"
-                      IsVisible="{Binding IsCollageSlotSelected}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="قلب محتوى الخانة أفقياً"
-                      AutomationProperties.Name="قلب الخانة"
-                      Content="قلب أفقي" />
-              <Button x:Name="QuickResetSlotCropButton"
-                      Command="{Binding ResetSelectedSlotTransformCommand}"
-                      IsVisible="{Binding IsCollageSlotWithImageSelected}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="إعادة ضبط التكبير والتدوير داخل الخانة"
-                      AutomationProperties.Name="إعادة ضبط الخانة"
-                      Content="ضبط 1×" />
               <Button x:Name="QuickClearSlotButton"
+                      Classes="quickBarDestructive"
                       Command="{Binding ClearSelectedSlotCommand}"
                       IsVisible="{Binding IsCollageSlotWithImageSelected}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
-                      ToolTip.Tip="تفريغ الخانة المحددة (Delete)"
-                      AutomationProperties.Name="تفريغ الخانة"
-                      Content="تفريغ" />
-              <Button x:Name="QuickRemoveBgButton"
-                      Command="{Binding RemoveBackgroundCommand}"
-                      IsVisible="{Binding IsPhotoAiTargetVisible}"
-                      IsEnabled="{Binding IsAllAiIdle}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaPrimaryActionBrush}"
-                      Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
-                      ToolTip.Tip="عزل الخلفية محلياً أوفلاين (Ctrl+Shift+B)"
-                      AutomationProperties.Name="عزل الخلفية السريع"
-                      Content="عزل الخلفية" />
-              <Button x:Name="QuickAutoFrameFaceButton"
-                      Command="{Binding AutoFrameFaceCommand}"
-                      IsVisible="{Binding IsPhotoAiTargetVisible}"
-                      IsEnabled="{Binding IsAllAiIdle}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="تأطير الوجه التلقائي لصور الهوية (Ctrl+Shift+F)"
-                      AutomationProperties.Name="تأطير الوجه السريع"
-                      Content="تأطير الوجه" />
-              <Button x:Name="QuickCloudEnhanceButton"
-                      Command="{Binding EnhancePhotoCloudCommand}"
-                      IsVisible="{Binding IsPhotoAiTargetVisible}"
-                      IsEnabled="{Binding IsAllAiIdle}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="ترميم الوجوه ومضاعفة الدقة 2x عبر Modal CPU (Ctrl+Shift+U)"
-                      AutomationProperties.Name="ترميم 2x سحابي"
-                      Content="ترميم 2x سحابي" />
-              <Button x:Name="QuickScanDocumentButton"
-                      Command="{Binding OpenDocumentScannerCommand}"
-                      IsVisible="{Binding IsPhotoAiTargetVisible}"
-                      IsEnabled="{Binding IsScannerToolsEnabled}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="فتح الماسح الضوئي واستعدال المنظور وتقسيم البطاقات (Ctrl+Shift+D)"
-                      AutomationProperties.Name="ماسح المستندات السريع"
-                      Content="مسح واستعدال" />
-              <Button x:Name="QuickDuplicateButton"
-                      Command="{Binding DuplicateSelectionCommand}"
-                      IsVisible="{Binding HasSelection}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="تكرار العناصر المحددة (Ctrl+D)"
-                      AutomationProperties.Name="تكرار التحديد"
-                      Content="تكرار" />
-              <Button x:Name="QuickBringForwardButton"
-                      Command="{Binding BringForwardSelectionCommand}"
-                      IsVisible="{Binding HasSelection}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="تقديم خطوة للأمام (Ctrl+])"
-                      AutomationProperties.Name="إحضار للأمام"
-                      Content="للأمام" />
-              <Button x:Name="QuickSendBackwardButton"
-                      Command="{Binding SendBackwardSelectionCommand}"
-                      IsVisible="{Binding HasSelection}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="إرجاع خطوة للخلف (Ctrl+[)"
-                      AutomationProperties.Name="إرسال للخلف"
-                      Content="للخلف" />
-              <Button x:Name="QuickGroupButton"
-                      Command="{Binding GroupCommand}"
-                      IsVisible="{Binding CanGroup}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="تجميع العناصر المحددة (Ctrl+G)"
-                      AutomationProperties.Name="تجميع العناصر"
-                      Content="تجميع" />
-              <Button x:Name="QuickUngroupButton"
-                      Command="{Binding UngroupCommand}"
-                      IsVisible="{Binding CanUngroup}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
-                      ToolTip.Tip="فك تجميع المجموعة المحددة (Ctrl+Shift+G)"
-                      AutomationProperties.Name="فك التجميع"
-                      Content="فك تجميع" />
-              <Button x:Name="QuickDeleteButton"
-                      Command="{Binding DeleteSelectionCommand}"
-                      MinHeight="{StaticResource CompactButtonSize}"
-                      CornerRadius="{StaticResource ControlCornerRadius}"
-                      Background="{DynamicResource ZiwaSubtleFillBrush}"
-                      Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
-                      ToolTip.Tip="حذف أو تفريغ العنصر المحدد (Delete)"
-                      AutomationProperties.Name="حذف المحدد"
-                      Content="حذف" />
+                      ToolTip.Tip="إزالة الصورة مع إبقاء الخانة (Delete)"
+                      AutomationProperties.Name="تفريغ الخانة من الصورة"
+                      Content="تفريغ الخانة" />
+              <Border Classes="workspaceDivider" IsVisible="{Binding HasSelection}" />
+              <Button x:Name="QuickDuplicateButton" Classes="quickBarChip quickBarIcon"
+                      Command="{Binding DuplicateSelectionCommand}" IsVisible="{Binding HasSelection}"
+                      ToolTip.Tip="تكرار العناصر المحددة (Ctrl+D)" AutomationProperties.Name="تكرار التحديد">
+                <PathIcon Classes="workspaceIcon" Data="{StaticResource IconDuplicate}" />
+              </Button>
+              <Button Classes="quickBarChip quickBarIcon" Command="{Binding AlignSelectionCenterHCommand}" IsVisible="{Binding HasSelection}"
+                      ToolTip.Tip="توسيط التحديد أفقياً في الورقة" AutomationProperties.Name="توسيط أفقي">
+                <PathIcon Classes="workspaceIcon" Data="{StaticResource IconAlignCenterH}" />
+              </Button>
+              <Button Classes="quickBarChip quickBarIcon" Command="{Binding AlignSelectionCenterVCommand}" IsVisible="{Binding HasSelection}"
+                      ToolTip.Tip="توسيط التحديد رأسياً في الورقة" AutomationProperties.Name="توسيط رأسي">
+                <PathIcon Classes="workspaceIcon" Data="{StaticResource IconAlignCenterV}" />
+              </Button>
+              <Button x:Name="QuickDeleteButton" Classes="quickBarDestructive quickBarIcon"
+                      Command="{Binding DeleteSelectionCommand}" IsVisible="{Binding HasSelection}"
+                      ToolTip.Tip="حذف العناصر المحددة (Delete)" AutomationProperties.Name="حذف العناصر المحددة">
+                <PathIcon Classes="workspaceIcon" Data="{StaticResource IconDelete}" />
+              </Button>
+              <Button x:Name="QuickMoreButton" Classes="quickBarChip"
+                      ToolTip.Tip="أوامر إضافية للتحديد" AutomationProperties.Name="المزيد من أوامر التحديد">
+                <StackPanel Classes="workspaceActionLabel">
+                  <TextBlock Text="المزيد" VerticalAlignment="Center" />
+                  <PathIcon Classes="workspaceIcon" Data="{StaticResource IconChevronDown}" />
+                </StackPanel>
+                <Button.Flyout>
+                  <MenuFlyout Placement="Bottom" ShowMode="Standard">
+                    <MenuItem Header="عزل الخلفية محلياً" Command="{Binding RemoveBackgroundCommand}"
+                              IsVisible="{Binding IsPhotoAiTargetVisible}" IsEnabled="{Binding IsAllAiIdle}" InputGesture="Ctrl+Shift+B" />
+                    <MenuItem Header="تأطير الوجه محلياً" Command="{Binding AutoFrameFaceCommand}"
+                              IsVisible="{Binding IsPhotoAiTargetVisible}" IsEnabled="{Binding IsAllAiIdle}" InputGesture="Ctrl+Shift+F" />
+                    <MenuItem Header="مسح واستعدال محلي" Command="{Binding OpenDocumentScannerCommand}"
+                              IsVisible="{Binding IsPhotoAiTargetVisible}" IsEnabled="{Binding IsScannerToolsEnabled}" InputGesture="Ctrl+Shift+D" />
+                    <MenuItem Header="ترميم سحابي 2×" Command="{Binding EnhancePhotoCloudCommand}"
+                              IsVisible="{Binding IsPhotoAiTargetVisible}" IsEnabled="{Binding IsAllAiIdle}" InputGesture="Ctrl+Shift+U"
+                              AutomationProperties.Name="ترميم الصورة سحابياً بدقة مضاعفة" ToolTip.Tip="إرسال الصورة إلى خدمة Modal لترميم الوجه ومضاعفة الدقة" />
+                    <Separator IsVisible="{Binding IsPhotoAiTargetVisible}" />
+                    <MenuItem Header="تكرار الصورة على كامل الورقة" Command="{Binding FillAllSlotsWithSelectedSlotCommand}" IsVisible="{Binding CanFillSheetWithSelectedSlot}" />
+                    <MenuItem Header="قلب الخانة أفقياً" Command="{Binding FlipSelectedSlotCommand}" IsVisible="{Binding IsCollageSlotSelected}" />
+                    <MenuItem Header="إعادة ضبط تأطير الخانة" Command="{Binding ResetSelectedSlotTransformCommand}" IsVisible="{Binding IsCollageSlotWithImageSelected}" />
+                    <MenuItem Header="توليفة ألوان جديدة" Command="{Binding RandomizeSelectedStickerPaletteCommand}" IsVisible="{Binding IsStickerSelected}" />
+                    <MenuItem Header="تقديم طبقة" Command="{Binding BringForwardSelectionCommand}" IsVisible="{Binding HasSelection}" ToolTip.Tip="تقديم طبقة (Ctrl+])" />
+                    <MenuItem Header="تأخير طبقة" Command="{Binding SendBackwardSelectionCommand}" IsVisible="{Binding HasSelection}" ToolTip.Tip="تأخير طبقة (Ctrl+[)" />
+                    <MenuItem Header="تجميع" Command="{Binding GroupCommand}" IsVisible="{Binding CanGroup}" InputGesture="Ctrl+G" />
+                    <MenuItem Header="فك التجميع" Command="{Binding UngroupCommand}" IsVisible="{Binding CanUngroup}" InputGesture="Ctrl+Shift+G" />
+                  </MenuFlyout>
+                </Button.Flyout>
+              </Button>
             </StackPanel>
-          </StackPanel>
+          </Grid>
         </Border>
+
+        <!-- زر عائم لإعادة إظهار لوح المفتش عند طيه -->
+        <Button x:Name="ReopenInspectorFloatingButton"
+                FlowDirection="RightToLeft"
+                Grid.Row="1"
+                Grid.Column="1"
+                IsVisible="{Binding CanShowReopenInspectorButton}"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Margin="14"
+                Padding="10,6"
+                CornerRadius="{StaticResource PillCornerRadius}"
+                Background="{DynamicResource ZiwaElevatedCardBrush}"
+                BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                BorderThickness="{StaticResource HairlineBorderThickness}"
+                Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                Command="{Binding OpenInspectorCommand}"
+                ToolTip.Tip="إظهار لوح الخصائص والمفتش (Ctrl+I)"
+                AutomationProperties.Name="إظهار لوح المفتش">
+          <StackPanel Classes="workspaceActionLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconInspector}" />
+            <TextBlock Text="المفتش" FontSize="12" FontWeight="SemiBold" />
+          </StackPanel>
+        </Button>
+
+        <!-- كبسولة عائمة للخروج من وضع التركيز الكامل -->
+        <Button x:Name="ExitZenModeFloatingButton"
+                FlowDirection="RightToLeft"
+                Grid.Row="1"
+                Grid.Column="1"
+                IsVisible="{Binding IsZenMode}"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Margin="14"
+                Padding="12,6"
+                CornerRadius="{StaticResource PillCornerRadius}"
+                Background="{DynamicResource ZiwaElevatedCardBrush}"
+                BorderBrush="{DynamicResource ZiwaFocusStrokeBrush}"
+                BorderThickness="{StaticResource HairlineBorderThickness}"
+                Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                Command="{Binding ToggleZenModeCommand}"
+                ToolTip.Tip="إنهاء وضع التركيز الكامل واستعادة مساحة العمل (Ctrl+.)"
+                AutomationProperties.Name="الخروج من وضع التركيز">
+          <StackPanel Classes="workspaceActionLabel">
+            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconFocus}" Foreground="{DynamicResource ZiwaPrimaryActionBrush}" />
+            <TextBlock Text="إنهاء وضع التركيز (Ctrl+.)" FontSize="12" FontWeight="SemiBold" />
+          </StackPanel>
+        </Button>
       </Grid>
 
       <!-- 4. لوح الخصائص المفتش السياقي (Inspector) -->

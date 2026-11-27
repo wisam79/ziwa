@@ -92,8 +92,31 @@ public sealed class SkiaBitmapPreviewControl : Control
             float top = ((float)Bounds.Height - drawH) * 0.5f;
             var dest = SKRect.Create(left, top, drawW, drawH);
 
+            using (SKImageFilter? blur = SKImageFilter.CreateBlur(5f, 5f))
+            using (var shadowPaint = new SKPaint
+            {
+                Style = SKPaintStyle.Fill,
+                Color = new SKColor(0, 0, 0, 44),
+                ImageFilter = blur,
+                IsAntialias = true,
+            })
+            {
+                var shadowRect = dest;
+                shadowRect.Offset(0f, 2f);
+                canvas.DrawRect(shadowRect, shadowPaint);
+            }
+
             using var paint = new SKPaint { IsAntialias = true, FilterQuality = SKFilterQuality.High };
             canvas.DrawImage(image, dest, paint);
+
+            using var borderPaint = new SKPaint
+            {
+                Style = SKPaintStyle.Stroke,
+                Color = new SKColor(148, 163, 184, 72),
+                StrokeWidth = 1f,
+                IsAntialias = false,
+            };
+            canvas.DrawRect(dest, borderPaint);
         }
     }
 }

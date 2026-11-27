@@ -7,8 +7,10 @@ using Avalonia.Headless.XUnit;
 using Microsoft.Extensions.DependencyInjection;
 using SkiaSharp;
 using Xunit;
+using Ziwa.App.Controls;
 using Ziwa.App.ViewModels;
 using Ziwa.App.Views;
+using Ziwa.App.Views.Inspector;
 using Ziwa.Application.Abstractions;
 using Ziwa.Application.Persistence;
 using Ziwa.Domain.Models;
@@ -58,18 +60,28 @@ public sealed class Phase4CloudAiHeadlessTests
             AssetId originalId = target.OriginalAssetId;
             vm.Session.SetSelection([target.Id]);
 
-            var inspector = window.FindControl<Ziwa.App.Views.Inspector.InspectorPanelView>("InspectorPanelView");
-            var cloudCardControl = inspector?.FindControl<Ziwa.App.Controls.StudioCard>("CloudAiCard");
-            Button? inspectorBtn = inspector?.FindControl<Button>("InspectorCloudEnhanceButton");
-            Button? quickBtn = window.FindControl<Button>("QuickCloudEnhanceButton");
-            Assert.NotNull(cloudCardControl);
-            Assert.NotNull(inspectorBtn);
-            Assert.NotNull(quickBtn);
-            Assert.True(cloudCardControl!.IsVisible);
-            Assert.False(string.IsNullOrWhiteSpace(AutomationProperties.GetName(inspectorBtn!)));
-            Assert.NotNull(ToolTip.GetTip(inspectorBtn!));
-            Assert.False(string.IsNullOrWhiteSpace(AutomationProperties.GetName(quickBtn!)));
-            Assert.NotNull(ToolTip.GetTip(quickBtn!));
+            InspectorUi.Layout(window);
+            var properties = InspectorUi.Visible<InspectorPropertiesView>(window);
+            var cloudCard = InspectorUi.Visible<StudioCard>(properties, "CloudAiCard");
+            var inspectorBtn = InspectorUi.Visible<Button>(cloudCard, "InspectorCloudEnhanceButton");
+            Assert.Same(vm.EnhancePhotoCloudCommand, inspectorBtn.Command);
+            Assert.False(string.IsNullOrWhiteSpace(AutomationProperties.GetName(inspectorBtn)));
+            Assert.NotNull(ToolTip.GetTip(inspectorBtn));
+            Button more = Assert.IsType<Button>(window.FindControl<Button>("QuickMoreButton"));
+            MenuFlyout menu = Assert.IsType<MenuFlyout>(more.Flyout);
+            menu.ShowAt(more);
+            try
+            {
+                window.UpdateLayout();
+                MenuItem enhance = Assert.Single(menu.Items.OfType<MenuItem>(), item => item.Command == vm.EnhancePhotoCloudCommand);
+                Assert.Contains("سحابي", Assert.IsType<string>(enhance.Header));
+                Assert.False(string.IsNullOrWhiteSpace(AutomationProperties.GetName(enhance)));
+                Assert.NotNull(ToolTip.GetTip(enhance));
+            }
+            finally
+            {
+                menu.Hide();
+            }
 
             Assert.Contains("15", vm.CloudQuotaBadgeText, StringComparison.Ordinal);
 

@@ -36,6 +36,32 @@ public sealed record SceneLayerItemViewModel(
 
 public sealed partial class MainWindowViewModel
 {
+    private const int PropertiesTabIndex = 0;
+    private const int PageTabIndex = 2;
+
+    [ObservableProperty]
+    private int _inspectorTabIndex = PropertiesTabIndex;
+
+    public event Action? InspectorPreflightReviewRequested;
+
+    partial void OnInspectorTabIndexChanged(int value)
+    {
+        if (value != PropertiesTabIndex)
+        {
+            _autoOpenedInspector = false;
+        }
+    }
+
+    [RelayCommand]
+    private void ShowInspectorPage() => InspectorTabIndex = PageTabIndex;
+
+    [RelayCommand]
+    private void ShowInspectorWarnings()
+    {
+        ShowInspectorPage();
+        InspectorPreflightReviewRequested?.Invoke();
+    }
+
     public ObservableCollection<SceneLayerItemViewModel> LayerItems { get; } = [];
     private NodeId? _syncedTransformNodeId;
     private RectMm _syncedTransformBounds;
@@ -137,6 +163,9 @@ public sealed partial class MainWindowViewModel
     public bool IsTextAlignCenter => SelectedNodes.Count == 1 && SelectedNodes[0] is TextNode { Alignment: TextAlignmentKind.Center };
     public bool IsTextAlignLeft => SelectedNodes.Count == 1 && SelectedNodes[0] is TextNode { Alignment: TextAlignmentKind.Left };
     public bool HasSelectedTextCurve => IsTextSelected && SelectedTextCurveOption?.Kind is { } k && k != TextCurveKind.None;
+
+    public bool HasNoFreeformLayers => LayerItems.Count == 0;
+    public string LayerCountBadgeText => LayerItems.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     public IBrush StudioPrimaryBrush => new SolidColorBrush(ToAvaloniaColor(CurrentStickerPalette.Primary));
     public IBrush StudioSecondaryBrush => new SolidColorBrush(ToAvaloniaColor(CurrentStickerPalette.Secondary));
@@ -265,6 +294,8 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(SelectedStickerSecondaryBrush));
         OnPropertyChanged(nameof(SelectedStickerAccentBrush));
         OnPropertyChanged(nameof(SelectedStickerSurfaceBrush));
+        OnPropertyChanged(nameof(HasNoFreeformLayers));
+        OnPropertyChanged(nameof(LayerCountBadgeText));
     }
 
     private static string ResolveNodeKindBadge(SceneNode node) => node switch

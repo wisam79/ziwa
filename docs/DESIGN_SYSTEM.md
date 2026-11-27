@@ -6,8 +6,9 @@
 
 ## 1. المبادئ الأساسية للواجهة
 1. **RTL أصيل في الجذر:** تضبط `MainWindow` خاصية `FlowDirection="RightToLeft"` وتُصمّم جميع الشاشات والشبكات (`Grid`) والهوامش بالاعتماد على ترتيب `RightToLeft` الأصلي، مع استثناء صريح (`FlowDirection="LeftToRight"`) فقط لقيم أرقام الكود مثل Hex `#RRGGBB` والأبعاد التقنية `W × H` عند اللزوم.
-2. **السلامة والوضوح قبل الزخرفة:** كل زر أيقوني يحمل `ToolTip.Tip` و`AutomationProperties.Name` واضحين؛ لا توصف الواجهة بحشو مكرر ولا تُوضع أيقونات تزيينية داخل عناوين الأقسام أو حقول المنزلقات.
-3. **الربط المصرّف إجباري (`CompiledBindings`):** يُفعّل `<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>` في `Ziwa.App.csproj` وتُحدد `x:DataType` في كل `.axaml` لضمان صفر أخطاء ربط وقت التشغيل وسرعة إقلاع عالية.
+2. **نص أقل من دون غموض:** يكفي رمز مألوف لأمر متكرر مثل القص أو المحاذاة؛ لكل زر أيقوني تلميح (`ToolTip.Tip`) واسم وصول (`AutomationProperties.Name`) بالعربية. إذا احتمل الرمز أكثر من معنى فاستخدم تسمية قصيرة. احذف الشرح الذي يكرّر العنوان، لا أسماء الحقول والوحدات والتحذيرات أو عواقب الحذف والإرسال السحابي. لا تضف أيقونات لمجرد الزينة.
+3. **المساحة بحسب الوظيفة:** الأزرار والعدّادات بحجم محتواها، والمساحة المتبقية للورقة أو المعاينة أو القائمة. عند الازدحام اجمع الأوامر الثانوية في قائمة قبل تصغير أهداف النقر (`28×28` في المحرر و`44×44` للمس).
+4. **الربط المصرّف إجباري (`CompiledBindings`):** يُفعّل `<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>` في `Ziwa.App.csproj` وتُحدد `x:DataType` في كل `.axaml` لضمان صفر أخطاء ربط وقت التشغيل وسرعة إقلاع عالية.
 
 ---
 
@@ -16,7 +17,8 @@
 
 | الفئة | أمثلة التوكنز في `Tokens.axaml` | الغرض |
 |---|---|---|
-| **الأسطح (`Surfaces`)** | `ZiwaCanvasBackgroundBrush`, `ZiwaSurfaceBrush`, `ZiwaCardBrush`, `ZiwaSubtleFillBrush`, `ZiwaScrimBrush` | تدرج اللوحات الداكنة والفاتحة بتباين Apple HIG هادئ (`systemBackground` / `systemGray`) وتعتيم موحد للنوافذ المنبثقة |
+| **خط الواجهة** | `ContentControlThemeFontFamily` → `ZiwaIbmPlexArabicFont` | ترث النوافذ وعناصر التحكم خط IBM Plex Sans Arabic المضمّن، باستقلال عن خطوط المستند والطباعة |
+| **الأسطح (`Surfaces`)** | `ZiwaCanvasBackgroundBrush`, `ZiwaSurfaceBrush`, `ZiwaCardBrush`, `ZiwaElevatedCardBrush`, `ZiwaSubtleFillBrush`, `ZiwaQrSurfaceBrush`, `ZiwaScrimBrush` | تدرج اللوحات الداكنة والفاتحة بأربع طبقات عمق Apple HIG هادئة وتعتيم موحد للنوافذ المنبثقة |
 | **الحدود والفواصل (`Strokes`)** | `ZiwaHairlineBorderBrush`, `ZiwaFocusStrokeBrush`, `ZiwaControlBorderBrush` | حدود شعرية نظيفة لفصل صفوف المفتش والبطاقات |
 | **الإجراءات والحالات** | `ZiwaPrimaryActionBrush`, `ZiwaDestructiveActionBrush`, `ZiwaSuccessBrush`, `ZiwaWarningBrush`, `ZiwaInfoBrush` | ألوان نظام Apple HIG متوافقة مع تباين نصي `>= 4.5:1` في الثيمين الفاتح والداكن |
 | **الاستدارة (`CornerRadius`)** | `ControlCornerRadius` (`6px`), `CheckBoxCornerRadius` (`3px`), `OverlayCornerRadius` (`10px`), `DialogCornerRadius` (`12px`), `PillCornerRadius` (`999px`) | توحيد الاستدارة وفق سلم Apple HIG للحاويات والألواح العائمة |
@@ -40,8 +42,10 @@
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **بلوكات مساحة العمل ومكونات الاستوديو:** تجمع `MainWindow` شريط الأوامر وسكة الأدوات وشريط الصفحات وشريط الحالة من `Views/Workspace/`، ولوح المفتش من `Views/Inspector/InspectorPanelView.axaml`، والنوافذ المنبثقة من `Views/` و`Views/Dialogs/`. تعتمد جميع الشاشات على مكونات `Ziwa` القياسية (`StudioDialogShell`، `StudioCard`، `StudioNumberField`، `StudioSliderRow`) وقوالب `Themes/StudioControlThemes.axaml` و`Themes/AppleHigStyles.axaml`، وتتشاطر `WorkspaceStyles.axaml` و`Icons.axaml` دون تكرار أنماط أزرار أو بطاقات داخل صفحات العرض. تُحصر الأسماء المتغيرة داخل العرض المتاح مع تلميح كامل، وتُمرّر ألسنة الصفحات وحدها، بينما تظل الإجراءات ظاهرة.
+- **بلوكات مساحة العمل ومكونات الاستوديو:** تجمع `MainWindow` شريط الأوامر وسكة الأدوات وشريط الصفحات وشريط الحالة من `Views/Workspace/`، ولوح المفتش من `Views/Inspector/InspectorPanelView.axaml`، والنوافذ المنبثقة من `Views/` و`Views/Dialogs/`. تعتمد جميع الشاشات على مكونات `Ziwa` القياسية (`StudioDialogShell` الداعم للإغلاق بالنقر على التعتيم، `StudioCard`، `StudioNumberField`، `StudioSliderRow`) وقوالب `Themes/StudioControlThemes.axaml` و`Themes/AppleHigStyles.axaml` (بما فيها فئات `studioMenuItem` و`quickBarChip`/`quickBarPrimary`/`quickBarDestructive` و`statusPill` وأنماط `FlyoutPresenter`/`ContextMenu`/`ListBox`/`ToolTip`/`ProgressBar`)، وتتشاطر `WorkspaceStyles.axaml` و`Icons.axaml` دون تكرار أنماط أزرار أو بطاقات داخل صفحات العرض. تُحصر الأسماء المتغيرة داخل العرض المتاح مع تلميح كامل، وتُمرّر ألسنة الصفحات وحدها، بينما تظل الإجراءات ظاهرة.
+- **تجربة Spectrum في الشريط السياقي فقط:** نستخدم نمط [مجموعات الأوامر في Adobe Spectrum](https://react-spectrum.adobe.com/react-spectrum/ActionGroup.html) داخل Avalonia Fluent، لا ثيمًا إضافيًا. يبقى الشريط صفًا واحدًا؛ عند ضيق مساحة الرسم تختصر الأفعال المألوفة إلى رموز، ويبقى القص والتوسيط مباشرين. تعرض قائمة «المزيد» أوامر التحديد الثانوية بأسمائها، ومنها «ترميم سحابي» قبل أي إرسال. لا يتغيّر خط IBM Plex Sans Arabic أو تصميم بقية النوافذ.
 - **اتجاه الورقة والمساطر:** واجهة المحرّر والألواح العائمة RTL، أما مساحة الرسم والمساطر ومعاينات الصور فلها محاور ثابتة: `+X` إلى اليمين و`+Y` إلى الأسفل. المسطرة الرأسية على يسار الورقة وتشارك المسطرة الأفقية ولوحة الرسم نفس `ViewportTransform`. هذا لا يغيّر تشكيل العربية داخل المستند أو مخرجاته.
+- **المفتش:** رأس ثابت للتنبيهات والطي، وتحته تبويبات «خصائص | طبقات | صفحة» لكل منها تمرير مستقل. يبدأ «خصائص» بالمحرر الخاص بالتحديد وتأتي أدوات التحويل المشتركة بعده. تبقى الطبقات مرئية أثناء تحديد صف أو قفله أو إخفائه. تفتح مراجعة ما قبل الطباعة تبويب «صفحة» عند قائمة التنبيهات مباشرة، حتى إن كان التبويب مفتوحًا وممرّرًا للأسفل. يستخدم المفتش أقسامًا مسطحة من `Themes/InspectorStyles.axaml` ولا يغيّر بطاقات الحوارات أو عرض مساحة الرسم.
 - **فتح المفتش السياقي:** تحديد عنصر أو خلية يفتح لوح الخصائص تلقائياً إذا كان مغلقاً ويعيد الحالة السابقة عند إلغاء التحديد (ما لم يثبّته المستخدم يدوياً).
 - **السياقية الذكية (درس `FF-05`):** تحديد ملصق بارامتري يُظهر بطاقة «تعديل الملصق / نسخ SVG» أولاً ويطوي أدوات الـ AI الفوتوغرافية تلقائياً لتفادي ازدحام المفتش.
 

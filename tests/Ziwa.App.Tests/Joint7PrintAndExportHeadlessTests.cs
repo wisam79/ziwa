@@ -1,9 +1,13 @@
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using Ziwa.App.Controls;
 using Ziwa.App.ViewModels;
 using Ziwa.App.Views;
+using Ziwa.App.Views.Dialogs;
+using Ziwa.App.Views.Inspector;
 using Ziwa.Application.Persistence;
 using Ziwa.Application.Printing;
 using Ziwa.Domain.Models;
@@ -15,7 +19,7 @@ namespace Ziwa.App.Tests;
 public sealed class Joint7PrintAndExportHeadlessTests
 {
     [AvaloniaFact]
-    public async Task PrintDialogDpiOrientationCmykProfileAndPreflightReview_WorkEndToEnd()
+    public void PrintDialogDpiOrientationCmykProfileAndPreflightReview_WorkEndToEnd()
     {
         using ServiceProvider sp = Bootstrapper.BuildServiceProvider();
         MainWindowViewModel vm = sp.GetRequiredService<MainWindowViewModel>();
@@ -55,11 +59,18 @@ public sealed class Joint7PrintAndExportHeadlessTests
             vm.SelectedCmykProfileOption = vm.AvailableCmykProfileOptions.First(o => o.Kind == CmykProfileKind.USWebCoatedSwop);
             Assert.Equal(CmykProfileKind.USWebCoatedSwop, vm.SelectedCmykProfile);
 
-            // ReviewPreflightWarnings closes Print Dialog, opens Inspector & selects the offending node
-            vm.ReviewPreflightWarningsCommand.Execute(null);
+            // Review the warning through the dialog button, not just the underlying command.
+            InspectorUi.Layout(window);
+            var review = InspectorUi.Visible<Button>(InspectorUi.Visible<PrintExportDialogView>(window), "ReviewPreflightButton");
+            Assert.Same(vm.ReviewPreflightWarningsCommand, review.Command);
+            InspectorUi.Click(window, review);
             Assert.False(vm.IsPrintDialogOpen);
             Assert.True(vm.IsInspectorOpen);
             Assert.Contains(nearTrim.Id, vm.Session.SelectedNodeIds);
+            var tabs = InspectorUi.Visible<TabControl>(InspectorUi.Visible<InspectorPanelView>(window), "InspectorTabs");
+            Assert.Equal(2, vm.InspectorTabIndex);
+            Assert.Equal(2, tabs.SelectedIndex);
+            InspectorUi.Visible<StudioCard>(InspectorUi.Visible<InspectorPageView>(tabs), "PreflightCard");
         }
         finally
         {

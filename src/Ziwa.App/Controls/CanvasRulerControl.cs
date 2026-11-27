@@ -192,7 +192,7 @@ public sealed class CanvasRulerControl : Control
 
         var tickPen = new Pen(tickBrush, 1.0);
         var originPen = new Pen(originBrush, 1.5);
-        var typeface = Typeface.Default;
+        var typeface = new Typeface(GetValue(TextBlock.FontFamilyProperty));
 
         for (double mm = minMm; mm <= maxMm; mm += minorStepMm)
         {
@@ -240,10 +240,30 @@ public sealed class CanvasRulerControl : Control
                 if (isHorizontal)
                 {
                     context.DrawLine(trackerPen, new Point(ptrDip, 0), new Point(ptrDip, Bounds.Height));
+                    var notch = new StreamGeometry();
+                    using (StreamGeometryContext g = notch.Open())
+                    {
+                        g.BeginFigure(new Point(ptrDip - 3.5, Bounds.Height), true);
+                        g.LineTo(new Point(ptrDip + 3.5, Bounds.Height));
+                        g.LineTo(new Point(ptrDip, Bounds.Height - 4.5));
+                        g.EndFigure(true);
+                    }
+
+                    context.DrawGeometry(originBrush, null, notch);
                 }
                 else
                 {
                     context.DrawLine(trackerPen, new Point(0, ptrDip), new Point(Bounds.Width, ptrDip));
+                    var notch = new StreamGeometry();
+                    using (StreamGeometryContext g = notch.Open())
+                    {
+                        g.BeginFigure(new Point(Bounds.Width, ptrDip - 3.5), true);
+                        g.LineTo(new Point(Bounds.Width, ptrDip + 3.5));
+                        g.LineTo(new Point(Bounds.Width - 4.5, ptrDip));
+                        g.EndFigure(true);
+                    }
+
+                    context.DrawGeometry(originBrush, null, notch);
                 }
             }
         }

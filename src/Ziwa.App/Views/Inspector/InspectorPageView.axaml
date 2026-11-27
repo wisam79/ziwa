@@ -1,0 +1,222 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             xmlns:prep="using:Ziwa.Domain.PrePress"
+             xmlns:controls="using:Ziwa.App.Controls"
+             x:Class="Ziwa.App.Views.Inspector.InspectorPageView"
+             x:DataType="vm:MainWindowViewModel"
+             FlowDirection="RightToLeft">
+  <ScrollViewer x:Name="PageScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="{StaticResource InspectorPadding}" Spacing="10">
+      <controls:StudioCard x:Name="PreflightCard"
+                           IsVisible="{Binding HasPreflightWarnings}"
+                           Header="{Binding PreflightSummaryText}"
+                           AccentKind="Warning">
+        <ItemsControl ItemsSource="{Binding PreflightIssues}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="prep:PreflightIssue">
+              <Button Margin="0,0,0,4"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch"
+                      Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).SelectPreflightIssueCommand}"
+                      CommandParameter="{Binding}"
+                      MinHeight="28"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaCardBrush}"
+                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                      BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                      BorderThickness="{StaticResource HairlineBorderThickness}"
+                      ToolTip.Tip="{Binding MessageAr}"
+                      AutomationProperties.Name="{Binding MessageAr}">
+                <TextBlock Text="{Binding MessageAr}"
+                           FontSize="11"
+                           TextWrapping="Wrap" />
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </controls:StudioCard>
+
+      <controls:StudioCard Header="مقاس الورقة والنزيف">
+        <StackPanel Spacing="8">
+          <ComboBox ItemsSource="{Binding AvailablePaperPresets}" SelectedItem="{Binding SelectedPaperPreset}" HorizontalAlignment="Stretch"
+                    ToolTip.Tip="اختيار مقاس ورق جاهز" AutomationProperties.Name="مقاسات الورق الجاهزة">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:PaperPresetOption">
+                <TextBlock Text="{Binding TitleAr}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="6" RowSpacing="6">
+            <controls:StudioNumberField Grid.Column="0" Label="العرض" Unit="مم"
+                                        Minimum="10" Maximum="2000" Increment="1" FormatString="0.#"
+                                        Value="{Binding PageWidthInputMm}"
+                                        ToolTip.Tip="عرض الورقة بالمليمتر" AccessibleName="عرض الورقة" />
+            <controls:StudioNumberField Grid.Column="1" Label="الارتفاع" Unit="مم"
+                                        Minimum="10" Maximum="2000" Increment="1" FormatString="0.#"
+                                        Value="{Binding PageHeightInputMm}"
+                                        ToolTip.Tip="ارتفاع الورقة بالمليمتر" AccessibleName="ارتفاع الورقة" />
+            <controls:StudioNumberField Grid.Row="1" Grid.Column="0" Label="النزيف" Unit="مم"
+                                        Minimum="0" Maximum="25" Increment="0.5" FormatString="0.#"
+                                        Value="{Binding PageBleedInputMm}"
+                                        ToolTip.Tip="مساحة النزيف بالمليمتر" AccessibleName="النزيف" />
+            <Button x:Name="ApplyPageGeometryButton" Grid.Row="1" Grid.Column="1"
+                    Classes="studioSubtle"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Bottom" MinHeight="28"
+                    Command="{Binding ApplyPageGeometryCommand}"
+                    ToolTip.Tip="تطبيق مقاس الورقة والنزيف بالمليمتر على الصفحات"
+                    AutomationProperties.Name="تطبيق مقاس الورقة"
+                    Content="تطبيق المقاس" />
+          </Grid>
+          <WrapPanel ItemSpacing="6" LineSpacing="4">
+            <Border Classes="statusPill">
+              <TextBlock Text="{Binding PageSizeMmText}"
+                         FlowDirection="LeftToRight"
+                         FontSize="11"
+                         Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+            </Border>
+            <Border Classes="statusPill">
+              <TextBlock Text="{Binding EffectiveDpiText}"
+                         FlowDirection="LeftToRight"
+                         FontSize="11"
+                         FontWeight="SemiBold"
+                         Foreground="{DynamicResource ZiwaInfoBrush}" />
+            </Border>
+          </WrapPanel>
+        </StackPanel>
+      </controls:StudioCard>
+
+      <controls:StudioCard IsVisible="{Binding IsCollageMode}"
+                           Header="شبكة الكولاج"
+                           Subtitle="{Binding CollageSheetSummaryText}">
+        <StackPanel Spacing="8">
+          <StackPanel Spacing="3">
+            <TextBlock Text="القالب" FontSize="11" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+            <ComboBox x:Name="CollagePresetComboBox"
+                      ItemsSource="{Binding AvailableCollagePresetOptions}"
+                      SelectedItem="{Binding SelectedCollagePresetOption}"
+                      HorizontalAlignment="Stretch"
+                      ToolTip.Tip="اختيار مقاس صور هوية أو شبكة كولاج جاهزة"
+                      AutomationProperties.Name="قالب الكولاج الجاهز">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:CollagePresetOption">
+                  <TextBlock Text="{Binding TitleAr}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </StackPanel>
+          <Grid ColumnDefinitions="*,6,*">
+            <StackPanel Grid.Column="0" Spacing="3">
+              <TextBlock Text="نمط المقاس" FontSize="11" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <ComboBox x:Name="CollageSizingModeComboBox"
+                        ItemsSource="{Binding AvailableCollageSizingOptions}"
+                        SelectedItem="{Binding SelectedCollageSizingOption}"
+                        HorizontalAlignment="Stretch"
+                        ToolTip.Tip="تحديد مقاس الخلية بالمليمتر أو التمديد لملء الورقة"
+                        AutomationProperties.Name="نمط مقاس الكولاج">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:CollageSizingModeOption">
+                    <TextBlock Text="{Binding TitleAr}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="3">
+              <TextBlock Text="المحاذاة" FontSize="11" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <ComboBox x:Name="CollageAlignmentComboBox"
+                        ItemsSource="{Binding AvailableCollageAlignmentOptions}"
+                        SelectedItem="{Binding SelectedCollageAlignmentOption}"
+                        HorizontalAlignment="Stretch"
+                        ToolTip.Tip="موضع محاذاة شبكة الكولاج داخل الورقة"
+                        AutomationProperties.Name="محاذاة شبكة الكولاج">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:GridAlignmentOption">
+                    <TextBlock Text="{Binding TitleAr}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="*,6,*" IsVisible="{Binding IsCollageFixedPhysicalSizing}">
+            <controls:StudioNumberField x:Name="CollageCellWidthInput"
+                                        Grid.Column="0" Label="عرض الخلية" Unit="مم"
+                                        Minimum="10" Maximum="250" Increment="1" FormatString="0.#"
+                                        Value="{Binding CollageCellWidthInputMm}"
+                                        ToolTip.Tip="العرض الفيزيائي الفعلي لكل صورة هوية بالمليمتر"
+                                        AccessibleName="عرض خانة الكولاج" />
+            <controls:StudioNumberField x:Name="CollageCellHeightInput"
+                                        Grid.Column="2" Label="ارتفاع الخلية" Unit="مم"
+                                        Minimum="10" Maximum="250" Increment="1" FormatString="0.#"
+                                        Value="{Binding CollageCellHeightInputMm}"
+                                        ToolTip.Tip="الارتفاع الفيزيائي الفعلي لكل صورة هوية بالمليمتر"
+                                        AccessibleName="ارتفاع خانة الكولاج" />
+          </Grid>
+          <Grid ColumnDefinitions="*,6,*" RowDefinitions="Auto,Auto" RowSpacing="6">
+            <controls:StudioNumberField Grid.Row="0" Grid.Column="0" Label="الصفوف"
+                                        Minimum="1" Maximum="12" Increment="1" FormatString="0"
+                                        Value="{Binding CollageRowsInput}"
+                                        ToolTip.Tip="عدد صفوف شبكة الكولاج" AccessibleName="صفوف الكولاج" />
+            <controls:StudioNumberField Grid.Row="0" Grid.Column="2" Label="الأعمدة"
+                                        Minimum="1" Maximum="12" Increment="1" FormatString="0"
+                                        Value="{Binding CollageColumnsInput}"
+                                        ToolTip.Tip="عدد أعمدة شبكة الكولاج" AccessibleName="أعمدة الكولاج" />
+            <controls:StudioNumberField Grid.Row="1" Grid.Column="0" Label="الفجوة" Unit="مم"
+                                        Minimum="0" Maximum="25" Increment="0.5" FormatString="0.#"
+                                        Value="{Binding CollageGapInputMm}"
+                                        ToolTip.Tip="المسافة بين خانات الكولاج بالمليمتر" AccessibleName="فجوة الكولاج" />
+            <controls:StudioNumberField Grid.Row="1" Grid.Column="2" Label="الهامش" Unit="مم"
+                                        Minimum="0" Maximum="30" Increment="0.5" FormatString="0.#"
+                                        Value="{Binding CollageMarginInputMm}"
+                                        ToolTip.Tip="هامش شبكة الكولاج الخارجي بالمليمتر" AccessibleName="هامش الكولاج" />
+          </Grid>
+          <WrapPanel Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
+            <Button x:Name="ApplyCollageGridButton"
+                    Classes="studioPrimary"
+                    Command="{Binding ApplyCollageGridAdjustmentsCommand}"
+                    ToolTip.Tip="تحديث صفوف وأعمدة ومقاس وفجوات شبكة الكولاج"
+                    AutomationProperties.Name="تطبيق شبكة الكولاج"
+                    Content="تطبيق الشبكة" />
+            <Button x:Name="ToggleAutoRepeatButton"
+                    Classes="studioSubtle"
+                    Command="{Binding ToggleAutoRepeatCommand}"
+                    ToolTip.Tip="تفعيل أو إيقاف تكرار صورة الهوية على كامل الشيت"
+                    AutomationProperties.Name="تكرار صورة الهوية"
+                    Content="{Binding AutoRepeatToggleText}" />
+            <Button x:Name="ClearAllCollageSlotsButton"
+                    Classes="studioDestructive"
+                    Command="{Binding ClearAllCollageSlotsCommand}"
+                    ToolTip.Tip="تفريغ جميع خانات شيت الكولاج الحالي"
+                    AutomationProperties.Name="تفريغ كل الخانات"
+                    Content="تفريغ الكل" />
+          </WrapPanel>
+          <StackPanel Spacing="4" IsVisible="{Binding HasPendingCollageAssets}">
+            <TextBlock Text="{Binding CollagePendingBadgeText}" FontSize="11" Foreground="{DynamicResource ZiwaInfoBrush}" />
+            <Button x:Name="DistributePendingCollageButton"
+                    Classes="studioSubtle"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding AutoDistributePendingCollageAssetsCommand}"
+                    ToolTip.Tip="توزيع الصور المنتظرة تلقائياً في الخانات الشاغرة"
+                    AutomationProperties.Name="توزيع الصور المنتظرة"
+                    Content="توزيع الصور المنتظرة" />
+          </StackPanel>
+        </StackPanel>
+      </controls:StudioCard>
+
+      <controls:StudioCard Header="اسم المشروع">
+        <Grid ColumnDefinitions="*,6,Auto">
+          <TextBox x:Name="DocumentTitleInputBox" Grid.Column="0"
+                   Text="{Binding EditableDocumentTitle}"
+                   Watermark="اسم المشروع"
+                   ToolTip.Tip="تعديل عنوان المشروع الظاهر في المكتبة والمطبوعات"
+                   AutomationProperties.Name="اسم المشروع" />
+          <Button x:Name="RenameDocumentButton" Grid.Column="2"
+                  Classes="studioSubtle"
+                  Command="{Binding RenameDocumentCommand}"
+                  ToolTip.Tip="حفظ الاسم الجديد للمشروع"
+                  AutomationProperties.Name="تسمية المشروع"
+                  Content="حفظ الاسم" />
+        </Grid>
+      </controls:StudioCard>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

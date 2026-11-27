@@ -1,0 +1,44 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Ziwa.App.Controls">
+  <Styles.Resources>
+    <ControlTheme x:Key="InspectorSection" TargetType="controls:StudioCard">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" Padding="0,3,0,9">
+            <StackPanel Spacing="6">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4"
+                    IsVisible="{TemplateBinding Header, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock x:Name="SectionTitle" Text="{TemplateBinding Header}" VerticalAlignment="Center"
+                           FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                <ContentPresenter Grid.Column="1" Content="{TemplateBinding HeaderBadge}" VerticalAlignment="Center" />
+              </Grid>
+              <TextBlock Text="{TemplateBinding Subtitle}" TextWrapping="Wrap" FontSize="11"
+                         Foreground="{DynamicResource ZiwaSecondaryTextBrush}"
+                         IsVisible="{TemplateBinding Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              <ContentPresenter HorizontalContentAlignment="Stretch" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+            </StackPanel>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^[AccentKind=Warning] /template/ TextBlock#SectionTitle">
+        <Setter Property="Foreground" Value="{DynamicResource ZiwaWarningBrush}" />
+      </Style>
+    </ControlTheme>
+  </Styles.Resources>
+
+  <Style Selector="controls|StudioCard">
+    <Setter Property="Theme" Value="{StaticResource InspectorSection}" />
+  </Style>
+  <Style Selector="TabItem">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="MinHeight" Value="{StaticResource ToolbarButtonHeight}" />
+    <Setter Property="Padding" Value="8,4" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Expander">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="4,2" />
+  </Style>
+</Styles>
