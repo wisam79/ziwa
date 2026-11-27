@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ziwa.App.Services;
+using Ziwa.App.ViewModels;
 using Ziwa.Application.Abstractions;
 using Ziwa.Application.Persistence;
-using Ziwa.App.ViewModels;
 using Ziwa.Infrastructure.Ai;
 using Ziwa.Infrastructure.Auth;
 using Ziwa.Infrastructure.Bridge;

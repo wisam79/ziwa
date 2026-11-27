@@ -3,11 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Ziwa.App.ViewModels;
 using Ziwa.App.Views;
-using Ziwa.Application.Printing;
 using Ziwa.Domain.Models;
 using Ziwa.Domain.PrePress;
 using Ziwa.Domain.Primitives;
 #if WINDOWS
+using Ziwa.Application.Printing;
 using Ziwa.Platform.Windows.Printing;
 #endif
 

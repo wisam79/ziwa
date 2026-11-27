@@ -5,7 +5,6 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Win32;
 using SkiaSharp;
 using Xunit;
 using Ziwa.App.ViewModels;
@@ -14,6 +13,7 @@ using Ziwa.App.Views.Workspace;
 using Ziwa.Application.Persistence;
 using Ziwa.Domain.Models;
 #if WINDOWS
+using Microsoft.Win32;
 using Ziwa.Platform.Windows.Shell;
 using Ziwa.Platform.Windows.SingleInstance;
 #endif
