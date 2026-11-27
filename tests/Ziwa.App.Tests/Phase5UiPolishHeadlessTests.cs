@@ -29,9 +29,11 @@ public sealed class Phase5UiPolishHeadlessTests
             window.Show();
 
             Assert.NotNull(window.FindControl<WindowNotificationManager>("ToastNotificationManager"));
-            Assert.NotNull(window.FindControl<ColorPicker>("TextColorPicker"));
-            Assert.NotNull(window.FindControl<ColorPicker>("ShapeFillColorPicker"));
-            Assert.NotNull(window.FindControl<ColorPicker>("SvgTintColorPicker"));
+            var inspector = Assert.IsType<Ziwa.App.Views.Inspector.InspectorPanelView>(
+                window.FindControl<Ziwa.App.Views.Inspector.InspectorPanelView>("InspectorPanelView"));
+            Assert.NotNull(inspector.FindControl<ColorPicker>("TextColorPicker"));
+            Assert.NotNull(inspector.FindControl<ColorPicker>("ShapeFillColorPicker"));
+            Assert.NotNull(inspector.FindControl<ColorPicker>("SvgTintColorPicker"));
 
             // Toast notifications fire cleanly without throwing
             vm.ShowToast("اختبار", "إشعار تجريبي", NotificationType.Success);

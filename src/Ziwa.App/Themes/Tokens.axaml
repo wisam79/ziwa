@@ -7,6 +7,7 @@
 
   <!-- Apple HIG Corner Radius Hierarchy -->
   <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
+  <CornerRadius x:Key="CheckBoxCornerRadius">3</CornerRadius>
   <CornerRadius x:Key="OverlayCornerRadius">10</CornerRadius>
   <CornerRadius x:Key="DialogCornerRadius">12</CornerRadius>
   <CornerRadius x:Key="PillCornerRadius">999</CornerRadius>
@@ -48,7 +49,12 @@
       <Color x:Key="ZiwaSurfaceColor">#F5F5F7</Color>
       <Color x:Key="ZiwaCardColor">#FFFFFF</Color>
       <Color x:Key="ZiwaSubtleFillColor">#E5E5EA</Color>
+      <Color x:Key="ZiwaHoverFillColor">#DCDCE2</Color>
+      <Color x:Key="ZiwaPressedFillColor">#D0D0D8</Color>
       <Color x:Key="ZiwaRulerBackgroundColor">#F2F2F7</Color>
+      <Color x:Key="ZiwaScrimColor">#66000000</Color>
+      <Color x:Key="ZiwaPrimarySubtleColor">#E8F1FC</Color>
+      <Color x:Key="ZiwaWarningSubtleColor">#FDF6E7</Color>
 
       <!-- Apple HIG Light Typography -->
       <Color x:Key="ZiwaPrimaryTextColor">#1D1D1F</Color>
@@ -72,7 +78,12 @@
       <SolidColorBrush x:Key="ZiwaSurfaceBrush" Color="{StaticResource ZiwaSurfaceColor}" />
       <SolidColorBrush x:Key="ZiwaCardBrush" Color="{StaticResource ZiwaCardColor}" />
       <SolidColorBrush x:Key="ZiwaSubtleFillBrush" Color="{StaticResource ZiwaSubtleFillColor}" />
+      <SolidColorBrush x:Key="ZiwaHoverFillBrush" Color="{StaticResource ZiwaHoverFillColor}" />
+      <SolidColorBrush x:Key="ZiwaPressedFillBrush" Color="{StaticResource ZiwaPressedFillColor}" />
       <SolidColorBrush x:Key="ZiwaRulerBackgroundBrush" Color="{StaticResource ZiwaRulerBackgroundColor}" />
+      <SolidColorBrush x:Key="ZiwaScrimBrush" Color="{StaticResource ZiwaScrimColor}" />
+      <SolidColorBrush x:Key="ZiwaPrimarySubtleBrush" Color="{StaticResource ZiwaPrimarySubtleColor}" />
+      <SolidColorBrush x:Key="ZiwaWarningSubtleBrush" Color="{StaticResource ZiwaWarningSubtleColor}" />
 
       <SolidColorBrush x:Key="ZiwaPrimaryTextBrush" Color="{StaticResource ZiwaPrimaryTextColor}" />
       <SolidColorBrush x:Key="ZiwaSecondaryTextBrush" Color="{StaticResource ZiwaSecondaryTextColor}" />
@@ -95,12 +106,17 @@
       <Color x:Key="ZiwaSurfaceColor">#1C1C1E</Color>
       <Color x:Key="ZiwaCardColor">#2C2C2E</Color>
       <Color x:Key="ZiwaSubtleFillColor">#3A3A3C</Color>
+      <Color x:Key="ZiwaHoverFillColor">#48484C</Color>
+      <Color x:Key="ZiwaPressedFillColor">#56565A</Color>
       <Color x:Key="ZiwaRulerBackgroundColor">#242426</Color>
+      <Color x:Key="ZiwaScrimColor">#99000000</Color>
+      <Color x:Key="ZiwaPrimarySubtleColor">#1A2C42</Color>
+      <Color x:Key="ZiwaWarningSubtleColor">#332A14</Color>
 
       <!-- Apple HIG Dark Typography -->
       <Color x:Key="ZiwaPrimaryTextColor">#F5F5F7</Color>
       <Color x:Key="ZiwaSecondaryTextColor">#AEAEB2</Color>
-      <Color x:Key="ZiwaOnPrimaryActionColor">#0B111A</Color>
+      <Color x:Key="ZiwaOnPrimaryActionColor">#FFFFFF</Color>
 
       <!-- Apple HIG Dark Hairlines -->
       <Color x:Key="ZiwaHairlineBorderColor">#38383A</Color>
@@ -108,7 +124,7 @@
       <Color x:Key="ZiwaFocusStrokeColor">#4DA3FF</Color>
 
       <!-- Apple HIG Dark Semantic Colors (WCAG >= 4.5:1) -->
-      <Color x:Key="ZiwaPrimaryActionColor">#4DA3FF</Color>
+      <Color x:Key="ZiwaPrimaryActionColor">#0070E0</Color>
       <Color x:Key="ZiwaDestructiveActionColor">#FF6961</Color>
       <Color x:Key="ZiwaSuccessColor">#32D74B</Color>
       <Color x:Key="ZiwaWarningColor">#FFD60A</Color>
@@ -119,7 +135,12 @@
       <SolidColorBrush x:Key="ZiwaSurfaceBrush" Color="{StaticResource ZiwaSurfaceColor}" />
       <SolidColorBrush x:Key="ZiwaCardBrush" Color="{StaticResource ZiwaCardColor}" />
       <SolidColorBrush x:Key="ZiwaSubtleFillBrush" Color="{StaticResource ZiwaSubtleFillColor}" />
+      <SolidColorBrush x:Key="ZiwaHoverFillBrush" Color="{StaticResource ZiwaHoverFillColor}" />
+      <SolidColorBrush x:Key="ZiwaPressedFillBrush" Color="{StaticResource ZiwaPressedFillColor}" />
       <SolidColorBrush x:Key="ZiwaRulerBackgroundBrush" Color="{StaticResource ZiwaRulerBackgroundColor}" />
+      <SolidColorBrush x:Key="ZiwaScrimBrush" Color="{StaticResource ZiwaScrimColor}" />
+      <SolidColorBrush x:Key="ZiwaPrimarySubtleBrush" Color="{StaticResource ZiwaPrimarySubtleColor}" />
+      <SolidColorBrush x:Key="ZiwaWarningSubtleBrush" Color="{StaticResource ZiwaWarningSubtleColor}" />
 
       <SolidColorBrush x:Key="ZiwaPrimaryTextBrush" Color="{StaticResource ZiwaPrimaryTextColor}" />
       <SolidColorBrush x:Key="ZiwaSecondaryTextBrush" Color="{StaticResource ZiwaSecondaryTextColor}" />

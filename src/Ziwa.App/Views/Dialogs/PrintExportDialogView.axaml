@@ -1,0 +1,226 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             xmlns:prt="using:Ziwa.Application.Printing"
+             xmlns:controls="using:Ziwa.App.Controls"
+             x:Class="Ziwa.App.Views.Dialogs.PrintExportDialogView"
+             x:DataType="vm:MainWindowViewModel"
+             FlowDirection="RightToLeft">
+  <controls:StudioDialogShell Title="الطباعة والتجهيز المطبعي والتصدير (1:1 مم)"
+                              CloseCommand="{Binding ClosePrintDialogCommand}"
+                              CloseToolTip="إغلاق نافذة الطباعة (Esc)"
+                              CloseAccessibleName="إغلاق نافذة الطباعة"
+                              DialogWidth="520"
+                              DialogMaxHeight="700">
+    <StackPanel Spacing="12">
+      <StackPanel Spacing="4">
+        <TextBlock Text="الطابعة المستهدفة"
+                   FontSize="12"
+                   Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <ComboBox x:Name="PrinterDeviceComboBox"
+                    Grid.Column="0"
+                    ItemsSource="{Binding AvailablePrinters}"
+                    SelectedItem="{Binding SelectedPrinter}"
+                    HorizontalAlignment="Stretch"
+                    ToolTip.Tip="اختيار الطابعة المتصلة أو طابعة المعاينة"
+                    AutomationProperties.Name="الطابعة المستهدفة">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="prt:PrinterDeviceInfo">
+                <TextBlock Text="{Binding PrinterName}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <Button x:Name="SelectVirtualPrinterButton"
+                  Grid.Column="1"
+                  Classes="studioSubtle"
+                  Command="{Binding SelectVirtualPreviewPrinterCommand}"
+                  ToolTip.Tip="اختيار طابعة المعاينة الافتراضية 300 DPI"
+                  AutomationProperties.Name="اختيار طابعة المعاينة"
+                  Content="افتراضية" />
+        </Grid>
+      </StackPanel>
+
+      <Grid ColumnDefinitions="*,96" ColumnSpacing="10">
+        <StackPanel Grid.Column="0" Spacing="4">
+          <TextBlock Text="اتجاه الطباعة"
+                     FontSize="12"
+                     Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+          <ComboBox x:Name="PrintOrientationComboBox"
+                    ItemsSource="{Binding AvailableOrientationOptions}"
+                    SelectedItem="{Binding SelectedPrintOrientationOption}"
+                    HorizontalAlignment="Stretch"
+                    ToolTip.Tip="تحديد الاتجاه العمودي أو الأفقي للطباعة"
+                    AutomationProperties.Name="اتجاه الطباعة">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:PrintOrientationOption">
+                <TextBlock Text="{Binding TitleAr}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </StackPanel>
+        <controls:StudioNumberField x:Name="PrintCopiesNumeric"
+                                    Grid.Column="1"
+                                    Label="النسخ"
+                                    Minimum="1"
+                                    Maximum="99"
+                                    Increment="1"
+                                    FormatString="0"
+                                    Value="{Binding PrintCopies}"
+                                    ToolTip.Tip="عدد النسخ المراد طباعتها"
+                                    AccessibleName="عدد النسخ" />
+      </Grid>
+
+      <StackPanel Spacing="4">
+        <TextBlock Text="دقة التصدير (DPI)"
+                   FontSize="12"
+                   Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+        <ComboBox x:Name="ExportDpiComboBox"
+                  ItemsSource="{Binding AvailableExportDpiOptions}"
+                  SelectedItem="{Binding SelectedExportDpiOption}"
+                  HorizontalAlignment="Stretch"
+                  ToolTip.Tip="اختيار دقة التصيير والتصدير المطبعي"
+                  AutomationProperties.Name="دقة التصدير">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ExportDpiOption">
+              <TextBlock Text="{Binding TitleAr}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+
+      <StackPanel Spacing="4">
+        <TextBlock Text="ملف تعريف CMYK TIFF"
+                   FontSize="12"
+                   Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+        <ComboBox x:Name="CmykProfileComboBox"
+                  ItemsSource="{Binding AvailableCmykProfileOptions}"
+                  SelectedItem="{Binding SelectedCmykProfileOption}"
+                  HorizontalAlignment="Stretch"
+                  ToolTip.Tip="اختيار ملف تعريف ألوان ICC للطباعة التجارية"
+                  AutomationProperties.Name="ملف تعريف CMYK">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:CmykProfileOption">
+              <TextBlock Text="{Binding TitleAr}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+
+      <WrapPanel Orientation="Horizontal">
+        <CheckBox Margin="0,0,14,6"
+                  IsChecked="{Binding PrintAllPages}"
+                  ToolTip.Tip="تضمين كافة صفحات المستند في الطباعة أو التصدير"
+                  AutomationProperties.Name="كل الصفحات"
+                  Content="كل الصفحات" />
+        <CheckBox Margin="0,0,14,6"
+                  IsChecked="{Binding PrintBorderless}"
+                  ToolTip.Tip="طباعة ممتدة حتى حواف الورقة بدون هوامش"
+                  AutomationProperties.Name="طباعة بلا حواف"
+                  Content="بلا حواف" />
+        <CheckBox Margin="0,0,14,6"
+                  IsChecked="{Binding PrintIncludeBleed}"
+                  ToolTip.Tip="تضمين منطقة النزيف المطبعي"
+                  AutomationProperties.Name="تضمين النزيف"
+                  Content="تضمين النزيف" />
+        <CheckBox Margin="0,0,14,6"
+                  IsChecked="{Binding PrintIncludeCropMarks}"
+                  ToolTip.Tip="إظهار علامات القص عند الزوايا"
+                  AutomationProperties.Name="علامات القص"
+                  Content="علامات القص" />
+        <CheckBox Margin="0,0,14,6"
+                  IsChecked="{Binding PrintIncludeRegistrationMarks}"
+                  ToolTip.Tip="إظهار علامات التسجيل والمطابقة اللونية"
+                  AutomationProperties.Name="علامات التسجيل"
+                  Content="علامات التسجيل" />
+        <CheckBox Margin="0,0,14,6"
+                  IsChecked="{Binding PrintIncludeCutContour}"
+                  ToolTip.Tip="تضمين مسار القطع CutContour"
+                  AutomationProperties.Name="مسار القطع"
+                  Content="مسار القطع CutContour" />
+      </WrapPanel>
+
+      <controls:StudioCard x:Name="PrintPreflightBanner"
+                           IsVisible="{Binding HasPreflightWarnings}"
+                           AccentKind="Warning">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <TextBlock Grid.Column="0"
+                     Text="{Binding PreflightSummaryText}"
+                     FontSize="12"
+                     FontWeight="SemiBold"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource ZiwaWarningBrush}" />
+          <Button x:Name="ReviewPreflightButton"
+                  Grid.Column="1"
+                  Classes="studioSubtle"
+                  Command="{Binding ReviewPreflightWarningsCommand}"
+                  ToolTip.Tip="الانتقال إلى قائمة تنبيهات ما قبل الطباعة وتحديد العنصر"
+                  AutomationProperties.Name="مراجعة تنبيهات ما قبل الطباعة"
+                  Content="مراجعة التنبيهات" />
+        </Grid>
+      </controls:StudioCard>
+
+      <controls:StudioCard Header="معايرة المليمتر الفيزيائية">
+        <StackPanel Spacing="4">
+          <TextBlock Text="{Binding PrintCalibrationSummaryText}"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+          <TextBlock IsVisible="{Binding HasHardwareMarginClipWarning}"
+                     Text="تنبيه: أبعاد التصميم تتجاوز المنطقة القابلة للطباعة لهذه الطابعة."
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Foreground="{DynamicResource ZiwaWarningBrush}" />
+        </StackPanel>
+      </controls:StudioCard>
+    </StackPanel>
+
+    <controls:StudioDialogShell.FooterContent>
+      <StackPanel Spacing="8">
+        <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+          <Button x:Name="ExecuteDirectPrintButton"
+                  Grid.Column="0"
+                  Classes="studioPrimary"
+                  Command="{Binding ExecuteDirectPrintCommand}"
+                  ToolTip.Tip="تنفيذ الطباعة المباشرة عبر طابور النظام أو المعاينة"
+                  AutomationProperties.Name="طباعة مباشرة"
+                  Content="طباعة مباشرة" />
+          <Button x:Name="CancelLastPrintJobButton"
+                  Grid.Column="1"
+                  Classes="studioDestructive"
+                  Command="{Binding CancelLastPrintJobCommand}"
+                  IsEnabled="{Binding CanCancelLastPrintJob}"
+                  ToolTip.Tip="إلغاء آخر مهمة طباعة مرسلة"
+                  AutomationProperties.Name="إلغاء مهمة الطباعة"
+                  Content="إلغاء المهمة" />
+        </Grid>
+        <WrapPanel Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
+          <Button x:Name="ExportVectorPdfButton"
+                  Classes="studioSubtle"
+                  Command="{Binding ExportVectorPdfCommand}"
+                  ToolTip.Tip="تصدير ملف Vector PDF متجه متعدد الصفحات"
+                  AutomationProperties.Name="تصدير Vector PDF"
+                  Content="تصدير PDF" />
+          <Button x:Name="ExportCmykTiffButton"
+                  Classes="studioSubtle"
+                  Command="{Binding ExportCmykTiffCommand}"
+                  ToolTip.Tip="تصدير CMYK TIFF مضغوط LZW بملف ICC"
+                  AutomationProperties.Name="تصدير CMYK TIFF"
+                  Content="تصدير CMYK TIFF" />
+          <Button x:Name="ExportRasterPngButton"
+                  Classes="studioSubtle"
+                  Command="{Binding ExportPngCommand}"
+                  ToolTip.Tip="تصدير صورة PNG بالدقة المحددة (150-600 DPI)"
+                  AutomationProperties.Name="تصدير PNG"
+                  Content="تصدير PNG" />
+          <Button x:Name="ExportRasterJpegButton"
+                  Classes="studioSubtle"
+                  Command="{Binding ExportJpegCommand}"
+                  ToolTip.Tip="تصدير صورة JPEG بالدقة المحددة (150-600 DPI)"
+                  AutomationProperties.Name="تصدير JPEG"
+                  Content="تصدير JPEG" />
+        </WrapPanel>
+      </StackPanel>
+    </controls:StudioDialogShell.FooterContent>
+  </controls:StudioDialogShell>
+</UserControl>

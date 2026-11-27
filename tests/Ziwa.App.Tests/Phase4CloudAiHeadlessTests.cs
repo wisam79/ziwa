@@ -58,13 +58,14 @@ public sealed class Phase4CloudAiHeadlessTests
             AssetId originalId = target.OriginalAssetId;
             vm.Session.SetSelection([target.Id]);
 
-            Border? cloudCard = window.FindControl<Border>("CloudAiCard");
-            Button? inspectorBtn = window.FindControl<Button>("InspectorCloudEnhanceButton");
+            var inspector = window.FindControl<Ziwa.App.Views.Inspector.InspectorPanelView>("InspectorPanelView");
+            var cloudCardControl = inspector?.FindControl<Ziwa.App.Controls.StudioCard>("CloudAiCard");
+            Button? inspectorBtn = inspector?.FindControl<Button>("InspectorCloudEnhanceButton");
             Button? quickBtn = window.FindControl<Button>("QuickCloudEnhanceButton");
-            Assert.NotNull(cloudCard);
+            Assert.NotNull(cloudCardControl);
             Assert.NotNull(inspectorBtn);
             Assert.NotNull(quickBtn);
-            Assert.True(cloudCard!.IsVisible);
+            Assert.True(cloudCardControl!.IsVisible);
             Assert.False(string.IsNullOrWhiteSpace(AutomationProperties.GetName(inspectorBtn!)));
             Assert.NotNull(ToolTip.GetTip(inspectorBtn!));
             Assert.False(string.IsNullOrWhiteSpace(AutomationProperties.GetName(quickBtn!)));

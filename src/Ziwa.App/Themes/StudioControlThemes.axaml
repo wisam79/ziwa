@@ -1,0 +1,224 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Ziwa.App.Controls">
+
+  <!-- Unified Modal Dialog Shell -->
+  <ControlTheme x:Key="{x:Type controls:StudioDialogShell}" TargetType="controls:StudioDialogShell">
+    <Setter Property="Template">
+      <ControlTemplate TargetType="controls:StudioDialogShell">
+        <Panel FlowDirection="RightToLeft">
+          <Border x:Name="PART_Scrim"
+                  Background="{DynamicResource ZiwaScrimBrush}"
+                  IsVisible="{TemplateBinding UseScrim}" />
+          <Border x:Name="PART_DialogCard"
+                  Width="{TemplateBinding DialogWidth}"
+                  Height="{TemplateBinding DialogHeight}"
+                  MaxHeight="{TemplateBinding DialogMaxHeight}"
+                  HorizontalAlignment="{TemplateBinding DialogHorizontalAlignment}"
+                  VerticalAlignment="{TemplateBinding DialogVerticalAlignment}"
+                  Margin="24"
+                  Background="{DynamicResource ZiwaCardBrush}"
+                  BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  CornerRadius="{StaticResource DialogCornerRadius}"
+                  BoxShadow="{StaticResource ZiwaSheetShadow}"
+                  ClipToBounds="True">
+            <Grid RowDefinitions="Auto,*,Auto">
+              <!-- Unified Header -->
+              <Border Grid.Row="0"
+                      Background="{DynamicResource ZiwaCardBrush}"
+                      BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                      BorderThickness="0,0,0,1"
+                      Padding="18,12">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                  <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="{TemplateBinding Title}"
+                               FontSize="15"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+                    <TextBlock Text="{TemplateBinding Subtitle}"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource ZiwaSecondaryTextBrush}"
+                               IsVisible="{TemplateBinding Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                  </StackPanel>
+                  <ContentPresenter Grid.Column="1"
+                                    Content="{TemplateBinding HeaderExtraContent}"
+                                    VerticalAlignment="Center" />
+                  <Button x:Name="PART_CloseButton"
+                          Grid.Column="2"
+                          Classes="workspaceAction iconOnly"
+                          Command="{TemplateBinding CloseCommand}"
+                          IsEnabled="{TemplateBinding IsCloseEnabled}"
+                          ToolTip.Tip="{TemplateBinding CloseToolTip}"
+                          AutomationProperties.Name="{TemplateBinding CloseAccessibleName}"
+                          VerticalAlignment="Center"
+                          Content="✕" />
+                </Grid>
+              </Border>
+
+              <!-- Body -->
+              <ScrollViewer x:Name="PART_BodyScroll"
+                            Grid.Row="1"
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                <Border Padding="18,14">
+                  <ContentPresenter Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </Border>
+              </ScrollViewer>
+
+              <!-- Optional Pinned Footer -->
+              <Border x:Name="PART_Footer"
+                      Grid.Row="2"
+                      Background="{DynamicResource ZiwaSurfaceBrush}"
+                      BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                      BorderThickness="0,1,0,0"
+                      Padding="18,12"
+                      IsVisible="{TemplateBinding FooterContent, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <ContentPresenter Content="{TemplateBinding FooterContent}" />
+              </Border>
+            </Grid>
+          </Border>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^[ScrollableBody=False] /template/ ScrollViewer#PART_BodyScroll">
+      <Setter Property="VerticalScrollBarVisibility" Value="Disabled" />
+    </Style>
+  </ControlTheme>
+
+  <!-- Unified Inspector & Section Card -->
+  <ControlTheme x:Key="{x:Type controls:StudioCard}" TargetType="controls:StudioCard">
+    <Setter Property="Template">
+      <ControlTemplate TargetType="controls:StudioCard">
+        <Border x:Name="PART_Root"
+                Background="{DynamicResource ZiwaSurfaceBrush}"
+                BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                BorderThickness="{StaticResource HairlineBorderThickness}"
+                CornerRadius="{StaticResource OverlayCornerRadius}"
+                Padding="{StaticResource CardPadding}">
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="8"
+                  IsVisible="{TemplateBinding Header, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+              <StackPanel Grid.Column="0" Spacing="1">
+                <TextBlock Text="{TemplateBinding Header}"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+                <TextBlock Text="{TemplateBinding Subtitle}"
+                           FontSize="11"
+                           Foreground="{DynamicResource ZiwaSecondaryTextBrush}"
+                           IsVisible="{TemplateBinding Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              </StackPanel>
+              <ContentPresenter Grid.Column="1"
+                                Content="{TemplateBinding HeaderBadge}"
+                                VerticalAlignment="Center" />
+            </Grid>
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}" />
+          </StackPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^[AccentKind=Focus] /template/ Border#PART_Root">
+      <Setter Property="BorderBrush" Value="{DynamicResource ZiwaFocusStrokeBrush}" />
+    </Style>
+    <Style Selector="^[AccentKind=Warning] /template/ Border#PART_Root">
+      <Setter Property="BorderBrush" Value="{DynamicResource ZiwaWarningBrush}" />
+      <Setter Property="Background" Value="{DynamicResource ZiwaWarningSubtleBrush}" />
+    </Style>
+    <Style Selector="^[AccentKind=Destructive] /template/ Border#PART_Root">
+      <Setter Property="BorderBrush" Value="{DynamicResource ZiwaDestructiveActionBrush}" />
+    </Style>
+    <Style Selector="^[AccentKind=Subtle] /template/ Border#PART_Root">
+      <Setter Property="Background" Value="{DynamicResource ZiwaCardBrush}" />
+    </Style>
+  </ControlTheme>
+
+  <!-- Studio Numeric Field with Unit & Scrubbing -->
+  <ControlTheme x:Key="{x:Type controls:StudioNumberField}" TargetType="controls:StudioNumberField">
+    <Setter Property="Template">
+      <ControlTemplate TargetType="controls:StudioNumberField">
+        <StackPanel Spacing="3">
+          <TextBlock x:Name="PART_ScrubHandle"
+                     Text="{TemplateBinding Label}"
+                     FontSize="11"
+                     Foreground="{DynamicResource ZiwaSecondaryTextBrush}"
+                     Cursor="SizeWestEast"
+                     IsVisible="{TemplateBinding Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                     ToolTip.Tip="اسحب أفقياً لتعديل القيمة أو انقر للكتابة" />
+          <Border x:Name="PART_InputBox"
+                  Background="{DynamicResource ZiwaCardBrush}"
+                  BorderBrush="{DynamicResource ZiwaControlBorderBrush}"
+                  BorderThickness="{StaticResource HairlineBorderThickness}"
+                  CornerRadius="{StaticResource ControlCornerRadius}"
+                  MinHeight="28"
+                  FlowDirection="LeftToRight">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox x:Name="PART_TextBox"
+                       Grid.Column="0"
+                       MinWidth="0"
+                       Background="{DynamicResource ZiwaTransparentBrush}"
+                       BorderThickness="0"
+                       Padding="7,3"
+                       MinHeight="26"
+                       FontSize="12"
+                       VerticalContentAlignment="Center"
+                       AutomationProperties.Name="{TemplateBinding AccessibleName}" />
+              <TextBlock Grid.Column="1"
+                         Text="{TemplateBinding Unit}"
+                         FontSize="10"
+                         Foreground="{DynamicResource ZiwaSecondaryTextBrush}"
+                         VerticalAlignment="Center"
+                         Margin="0,0,7,0"
+                         IsHitTestVisible="False"
+                         IsVisible="{TemplateBinding Unit, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </Grid>
+          </Border>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^ /template/ Border#PART_InputBox:focus-within">
+      <Setter Property="BorderBrush" Value="{DynamicResource ZiwaFocusStrokeBrush}" />
+    </Style>
+  </ControlTheme>
+
+  <!-- Studio Slider Row with Double-Click Reset -->
+  <ControlTheme x:Key="{x:Type controls:StudioSliderRow}" TargetType="controls:StudioSliderRow">
+    <Setter Property="Template">
+      <ControlTemplate TargetType="controls:StudioSliderRow">
+        <Grid ColumnDefinitions="68,*,44" ColumnSpacing="6">
+          <Border x:Name="PART_ResetArea"
+                  Grid.Column="0"
+                  Background="{DynamicResource ZiwaTransparentBrush}"
+                  Cursor="Hand"
+                  ToolTip.Tip="انقر مرتين لإعادة القيمة الافتراضية">
+            <TextBlock Text="{TemplateBinding Label}"
+                       FontSize="11"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+          </Border>
+          <Slider Grid.Column="1"
+                  Minimum="{TemplateBinding Minimum}"
+                  Maximum="{TemplateBinding Maximum}"
+                  TickFrequency="{TemplateBinding TickFrequency}"
+                  Value="{TemplateBinding Value, Mode=TwoWay}"
+                  VerticalAlignment="Center" />
+          <TextBlock Grid.Column="2"
+                     Text="{TemplateBinding FormattedValue}"
+                     FlowDirection="LeftToRight"
+                     HorizontalAlignment="Right"
+                     FontSize="11"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+</ResourceDictionary>

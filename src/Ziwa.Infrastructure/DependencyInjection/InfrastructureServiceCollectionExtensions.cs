@@ -74,7 +74,9 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IProjectAssetStore, RenderingProjectAssetStore>();
         services.AddSingleton<IProjectLibrary, SqliteProjectRepo>();
         services.AddSingleton<ICrashGuard, CrashGuard>();
-        services.AddSingleton<AssetStore>();
+        services.AddSingleton(sp => new AssetStore(
+            sp.GetRequiredService<FontRegistry>(),
+            sp.GetRequiredService<HarfBuzzArabicShaper>()));
         services.AddSingleton<IRenderAssetProvider>(sp => sp.GetRequiredService<AssetStore>());
         services.AddSingleton<IAssetRegistrar, RenderingAssetRegistrar>();
         services.AddSingleton<IImageAssetImporter, FileImageAssetImporter>();

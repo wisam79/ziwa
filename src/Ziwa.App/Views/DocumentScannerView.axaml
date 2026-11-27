@@ -6,89 +6,68 @@
              x:Class="Ziwa.App.Views.DocumentScannerView"
              x:DataType="vm:MainWindowViewModel"
              FlowDirection="RightToLeft">
-  <UserControl.Styles>
-    <Style Selector="Button">
-      <Setter Property="Background" Value="{DynamicResource ZiwaSubtleFillBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource ZiwaPrimaryTextBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource ZiwaControlBorderBrush}" />
-      <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
-      <Setter Property="MinHeight" Value="{StaticResource ToolbarButtonHeight}" />
-    </Style>
-  </UserControl.Styles>
-  <Border Background="{DynamicResource ZiwaCardBrush}"
-          BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
-          BorderThickness="{StaticResource HairlineBorderThickness}"
-          CornerRadius="{StaticResource DialogCornerRadius}"
-          BoxShadow="{StaticResource ZiwaSheetShadow}"
-          Padding="20"
-          Margin="24"
-          Width="980"
-          Height="690"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Center">
-    <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
-      <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-        <StackPanel Grid.Column="0" Spacing="2">
-          <TextBlock Text="الماسح الذكي للمستندات والبطاقات واستعدال المنظور"
-                     FontSize="17"
-                     FontWeight="Bold"
-                     Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
-          <TextBlock Text="اسحب الزوايا الأربع بدقة مع العدسة المكبّرة، قسّم بطاقات الهوية، واختر فلتر المستند المناسب"
-                     FontSize="12"
-                     Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
-        </StackPanel>
-        <Button x:Name="ScannerOpenFileButton"
-                Grid.Column="1"
-                IsEnabled="{Binding IsScannerToolsEnabled}"
-                Command="{Binding LoadScannerImageFromFileCommand}"
-                Content="فتح صورة أخرى…"
-                ToolTip.Tip="اختيار صورة ممسوحة من الجهاز"
-                AutomationProperties.Name="فتح صورة أخرى في الماسح" />
-        <Button x:Name="CloseScannerButton"
-                Grid.Column="2"
-                IsEnabled="{Binding IsScannerToolsEnabled}"
-                Command="{Binding CloseDocumentScannerCommand}"
-                Content="إغلاق"
-                ToolTip.Tip="إغلاق نافذة الماسح الضوئي (Esc)"
-                AutomationProperties.Name="إغلاق الماسح الضوئي" />
-      </Grid>
+  <controls:StudioDialogShell Title="الماسح الذكي للمستندات والبطاقات واستعدال المنظور"
+                              Subtitle="اسحب الزوايا الأربع بدقة مع العدسة المكبّرة، قسّم بطاقات الهوية، واختر فلتر المستند المناسب"
+                              CloseCommand="{Binding CloseDocumentScannerCommand}"
+                              IsCloseEnabled="{Binding IsScannerToolsEnabled}"
+                              CloseToolTip="إغلاق نافذة الماسح الضوئي (Esc)"
+                              CloseAccessibleName="إغلاق الماسح الضوئي"
+                              DialogWidth="980"
+                              DialogHeight="700"
+                              DialogMaxHeight="740"
+                              ScrollableBody="False">
+    <controls:StudioDialogShell.HeaderExtraContent>
+      <Button x:Name="ScannerOpenFileButton"
+              Classes="studioSubtle"
+              IsEnabled="{Binding IsScannerToolsEnabled}"
+              Command="{Binding LoadScannerImageFromFileCommand}"
+              Content="فتح صورة أخرى…"
+              ToolTip.Tip="اختيار صورة ممسوحة من الجهاز"
+              AutomationProperties.Name="فتح صورة أخرى في الماسح" />
+    </controls:StudioDialogShell.HeaderExtraContent>
 
-      <WrapPanel Grid.Row="1" Orientation="Horizontal" IsEnabled="{Binding IsScannerToolsEnabled}">
+    <Grid RowDefinitions="Auto,*" RowSpacing="12">
+      <WrapPanel Grid.Row="0" Orientation="Horizontal" IsEnabled="{Binding IsScannerToolsEnabled}">
         <Button x:Name="RedetectScanRegionsButton"
+                Classes="studioSubtle"
                 Margin="0,0,6,6"
                 Command="{Binding RedetectScanRegionsCommand}"
                 Content="كشف تلقائي (مستند / بطاقات)"
                 ToolTip.Tip="إعادة الكشف التلقائي لحواف مستند أو عدة بطاقات"
                 AutomationProperties.Name="كشف الحواف تلقائياً" />
         <Button x:Name="SplitCardHorizontalButton"
+                Classes="studioSubtle"
                 Margin="0,0,6,6"
                 Command="{Binding SplitScanCardHorizontalCommand}"
                 Content="تقسيم البطاقة (أعلى / أسفل)"
                 ToolTip.Tip="تقسيم الإطار المحدد أفقياً إلى بطاقتي وجه وظهر"
                 AutomationProperties.Name="تقسيم بطاقة أفقياً" />
         <Button x:Name="SplitCardVerticalButton"
+                Classes="studioSubtle"
                 Margin="0,0,6,6"
                 Command="{Binding SplitScanCardVerticalCommand}"
                 Content="تقسيم البطاقة (يمين / يسار)"
                 ToolTip.Tip="تقسيم الإطار المحدد عمودياً إلى بطاقتين متجاورتين"
                 AutomationProperties.Name="تقسيم بطاقة عمودياً" />
         <Button x:Name="AddScanRegionButton"
+                Classes="studioSubtle"
                 Margin="0,0,6,6"
                 Command="{Binding AddManualScanRegionCommand}"
                 Content="+ إضافة إطار"
                 ToolTip.Tip="إضافة إطار قص مستند جديد يدوياً"
                 AutomationProperties.Name="إضافة إطار مسح" />
         <Button x:Name="ResetFullQuadButton"
+                Classes="studioSubtle"
                 Margin="0,0,6,6"
                 Command="{Binding ResetSelectedScanRegionToFullImageCommand}"
                 Content="كامل الصورة"
                 ToolTip.Tip="ضبط زوايا الإطار المحدد لتشمل كامل الصورة"
                 AutomationProperties.Name="ضبط الإطار لكامل الصورة" />
         <Button x:Name="RemoveScanRegionButton"
+                Classes="studioDestructive"
                 Margin="0,0,12,6"
                 Command="{Binding RemoveSelectedScanRegionCommand}"
                 IsEnabled="{Binding CanRemoveScanRegion}"
-                Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
                 Content="حذف الإطار"
                 ToolTip.Tip="حذف الإطار المحدد"
                 AutomationProperties.Name="حذف إطار المسح" />
@@ -106,6 +85,7 @@
           </ComboBox.ItemTemplate>
         </ComboBox>
         <Button x:Name="ApplyScanFilterAllButton"
+                Classes="studioSubtle"
                 Margin="0,0,0,6"
                 Command="{Binding ApplyScanFilterToAllRegionsCommand}"
                 Content="تعميم الفلتر للكل"
@@ -113,7 +93,7 @@
                 AutomationProperties.Name="تعميم فلتر المستند" />
       </WrapPanel>
 
-      <Grid Grid.Row="2" ColumnDefinitions="1.25*,*" ColumnSpacing="12">
+      <Grid Grid.Row="1" ColumnDefinitions="1.25*,*" ColumnSpacing="12">
         <Grid Grid.Column="0" RowDefinitions="*,Auto" RowSpacing="8">
           <Border Grid.Row="0"
                   CornerRadius="{StaticResource OverlayCornerRadius}"
@@ -174,8 +154,10 @@
                      Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
         </Grid>
       </Grid>
+    </Grid>
 
-      <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+    <controls:StudioDialogShell.FooterContent>
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
           <TextBlock Text="{Binding ScannerStatusText}"
                      VerticalAlignment="Center"
@@ -183,8 +165,8 @@
           <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsScannerProcessing}">
             <ProgressBar Width="120" IsIndeterminate="True" Minimum="0" Maximum="100" VerticalAlignment="Center" />
             <Button x:Name="CancelScannerOperationButton"
+                    Classes="studioDestructive"
                     Command="{Binding CancelScannerOperationCommand}"
-                    Foreground="{DynamicResource ZiwaDestructiveActionBrush}"
                     Content="إلغاء المعالجة"
                     ToolTip.Tip="إلغاء معالجة الماسح الضوئي فوراً"
                     AutomationProperties.Name="إلغاء معالجة الماسح" />
@@ -197,19 +179,19 @@
                     Content="إدراج كل البطاقات"
                     VerticalAlignment="Center" />
           <Button x:Name="InsertScannedToCollageButton"
+                  Classes="studioSubtle"
                   Command="{Binding InsertScannedToCollageCommand}"
                   Content="إدراج في خانات الكولاج"
                   ToolTip.Tip="استعدال البطاقات وإدراجها في خانات الكولاج بخطوة تراجع واحدة"
                   AutomationProperties.Name="إدراج المستندات في الكولاج" />
           <Button x:Name="InsertScannedToFreeformButton"
+                  Classes="studioPrimary"
                   Command="{Binding InsertScannedToFreeformCommand}"
-                  Background="{DynamicResource ZiwaPrimaryActionBrush}"
-                  Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
                   Content="إدراج في الورقة الحرة"
                   ToolTip.Tip="استعدال المستندات وإدراجها في الورقة الحرة بخطوة تراجع واحدة"
                   AutomationProperties.Name="إدراج المستندات في الورقة الحرة" />
         </StackPanel>
       </Grid>
-    </Grid>
-  </Border>
+    </controls:StudioDialogShell.FooterContent>
+  </controls:StudioDialogShell>
 </UserControl>

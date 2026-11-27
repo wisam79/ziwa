@@ -119,7 +119,7 @@ public sealed class Phase5AccountLicenseHeadlessTests
 
             await vm.LogoutAccountCommand.ExecuteAsync(null);
             Assert.False(vm.IsUserAuthenticated);
-            Assert.Equal("حسابي / الترخيص", vm.AccountHeaderBadgeText);
+            Assert.Equal("الحساب", vm.AccountHeaderBadgeText);
 
             window.Close();
         }

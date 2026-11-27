@@ -5,66 +5,35 @@
              x:Class="Ziwa.App.Views.AiMaskEditorView"
              x:DataType="vm:MainWindowViewModel"
              FlowDirection="RightToLeft">
-  <UserControl.Styles>
-    <Style Selector="Button">
-      <Setter Property="Background" Value="{DynamicResource ZiwaSubtleFillBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource ZiwaPrimaryTextBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource ZiwaControlBorderBrush}" />
-      <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
-      <Setter Property="MinHeight" Value="{StaticResource ToolbarButtonHeight}" />
-    </Style>
-    <Style Selector="Button.activeTool">
-      <Setter Property="Background" Value="{DynamicResource ZiwaPrimaryActionBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource ZiwaOnPrimaryActionBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource ZiwaFocusStrokeBrush}" />
-    </Style>
-  </UserControl.Styles>
-  <Border Background="{DynamicResource ZiwaCardBrush}"
-          BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
-          BorderThickness="{StaticResource HairlineBorderThickness}"
-          CornerRadius="{StaticResource DialogCornerRadius}"
-          BoxShadow="{StaticResource ZiwaSheetShadow}"
-          Padding="20"
-          Margin="24"
-          Width="860"
-          Height="660"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Center">
-    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="12">
-      <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-        <StackPanel Grid.Column="0" Spacing="2">
-          <TextBlock Text="تعديل قناع العزل بالفرشاة (معاينة قبل/بعد)"
-                     FontSize="17"
-                     FontWeight="Bold"
-                     Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
-          <TextBlock Text="{Binding MaskEditorTargetTitle}"
-                     FontSize="12"
-                     Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
-        </StackPanel>
-        <Button x:Name="CloseMaskEditorButton"
-                Grid.Column="1"
-                Command="{Binding CloseMaskEditorCommand}"
-                Content="إلغاء وإغلاق"
-                ToolTip.Tip="إغلاق محرر القناع دون اعتماد التغييرات (Esc)"
-                AutomationProperties.Name="إغلاق محرر القناع" />
-      </Grid>
-
-      <WrapPanel Grid.Row="1" Orientation="Horizontal">
+  <controls:StudioDialogShell Title="تعديل قناع العزل بالفرشاة (معاينة قبل/بعد)"
+                              Subtitle="{Binding MaskEditorTargetTitle}"
+                              CloseCommand="{Binding CloseMaskEditorCommand}"
+                              CloseToolTip="إغلاق محرر القناع دون اعتماد التغييرات (Esc)"
+                              CloseAccessibleName="إغلاق محرر القناع"
+                              DialogWidth="860"
+                              DialogHeight="670"
+                              DialogMaxHeight="720"
+                              ScrollableBody="False">
+    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
+      <WrapPanel Grid.Row="0" Orientation="Horizontal">
         <Button x:Name="EraseBrushModeButton"
+                Classes="studioSegment"
+                Classes.active="{Binding IsEraseBrushActive}"
                 Margin="0,0,6,6"
-                Classes.activeTool="{Binding IsEraseBrushActive}"
                 Command="{Binding SetEraseMaskBrushCommand}"
                 Content="فرشاة المسح"
                 ToolTip.Tip="مسح أجزاء من الخلفية"
                 AutomationProperties.Name="فرشاة المسح" />
         <Button x:Name="RestoreBrushModeButton"
+                Classes="studioSegment"
+                Classes.active="{Binding IsRestoreBrushActive}"
                 Margin="0,0,6,6"
-                Classes.activeTool="{Binding IsRestoreBrushActive}"
                 Command="{Binding SetRestoreMaskBrushCommand}"
                 Content="فرشاة الاستعادة"
                 ToolTip.Tip="استعادة أجزاء من الصورة الأصلية"
                 AutomationProperties.Name="فرشاة الاستعادة" />
         <Button x:Name="MaskStrokeUndoButton"
+                Classes="studioSubtle"
                 Margin="0,0,6,6"
                 Command="{Binding UndoMaskStrokeCommand}"
                 IsEnabled="{Binding CanUndoMaskStroke}"
@@ -72,6 +41,7 @@
                 ToolTip.Tip="تراجع عن آخر ضربة فرشاة"
                 AutomationProperties.Name="تراجع عن ضربة الفرشاة" />
         <Button x:Name="MaskStrokeRedoButton"
+                Classes="studioSubtle"
                 Margin="0,0,6,6"
                 Command="{Binding RedoMaskStrokeCommand}"
                 IsEnabled="{Binding CanRedoMaskStroke}"
@@ -79,18 +49,21 @@
                 ToolTip.Tip="إعادة ضربة الفرشاة"
                 AutomationProperties.Name="إعادة ضربة الفرشاة" />
         <Button x:Name="InvertMaskButton"
+                Classes="studioSubtle"
                 Margin="0,0,6,6"
                 Command="{Binding InvertMaskCommand}"
                 Content="عكس القناع"
                 ToolTip.Tip="عكس مناطق الإظهار والإخفاء في القناع"
                 AutomationProperties.Name="عكس القناع" />
         <Button x:Name="ResetAutoMaskButton"
+                Classes="studioSubtle"
                 Margin="0,0,6,6"
                 Command="{Binding ResetMaskToAutoCommand}"
                 Content="إعادة لقناع الذكاء"
                 ToolTip.Tip="إعادة القناع إلى النتيجة التلقائية لـ ONNX"
                 AutomationProperties.Name="إعادة القناع التلقائي" />
         <Button x:Name="ResetMaskViewButton"
+                Classes="studioSubtle"
                 Margin="0,0,12,6"
                 Click="OnResetMaskViewClick"
                 Content="ملاءمة 100%"
@@ -110,7 +83,7 @@
         </ComboBox>
       </WrapPanel>
 
-      <Border Grid.Row="2"
+      <Border Grid.Row="1"
               CornerRadius="{StaticResource OverlayCornerRadius}"
               BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
               BorderThickness="{StaticResource HairlineBorderThickness}"
@@ -130,47 +103,47 @@
                                          MaskModified="OnMaskCanvasModified" />
       </Border>
 
-      <Grid Grid.Row="3" ColumnDefinitions="*,*,*" ColumnSpacing="12">
-        <StackPanel Grid.Column="0" Spacing="2">
-          <TextBlock Text="{Binding MaskBrushRadiusText}"
-                     FontSize="12"
-                     Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
-          <Slider Minimum="4" Maximum="160" Value="{Binding MaskBrushRadiusPx}" />
-        </StackPanel>
-        <StackPanel Grid.Column="1" Spacing="2">
-          <TextBlock Text="{Binding MaskBrushSoftnessText}"
-                     FontSize="12"
-                     Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
-          <Slider Minimum="0.05" Maximum="1.0" Value="{Binding MaskBrushSoftness}" />
-        </StackPanel>
-        <StackPanel Grid.Column="2" Spacing="2" IsVisible="{Binding IsSplitMaskPreview}">
-          <TextBlock Text="فاصل قبل / بعد"
-                     FontSize="12"
-                     Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
-          <Slider Minimum="0.05" Maximum="0.95" Value="{Binding MaskSplitRatio}" />
-        </StackPanel>
+      <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="14">
+        <controls:StudioSliderRow Grid.Column="0"
+                                  Label="حجم الفرشاة"
+                                  Minimum="4" Maximum="160" TickFrequency="2" DefaultValue="28"
+                                  DisplayFormat="0" Unit="px"
+                                  Value="{Binding MaskBrushRadiusPx}" />
+        <controls:StudioSliderRow Grid.Column="1"
+                                  Label="نعومة الحافة"
+                                  Minimum="0.05" Maximum="1.0" TickFrequency="0.05" DefaultValue="0.5"
+                                  DisplayScale="100" DisplayFormat="0" Unit="%"
+                                  Value="{Binding MaskBrushSoftness}" />
+        <controls:StudioSliderRow Grid.Column="2"
+                                  IsVisible="{Binding IsSplitMaskPreview}"
+                                  Label="فاصل المعاينة"
+                                  Minimum="0.05" Maximum="0.95" TickFrequency="0.02" DefaultValue="0.5"
+                                  DisplayScale="100" DisplayFormat="0" Unit="%"
+                                  Value="{Binding MaskSplitRatio}" />
       </Grid>
+    </Grid>
 
-      <Grid Grid.Row="4" ColumnDefinitions="*,Auto">
+    <controls:StudioDialogShell.FooterContent>
+      <Grid ColumnDefinitions="*,Auto">
         <TextBlock Grid.Column="0"
                    Text="{Binding MaskEditorBrushSummary}"
                    VerticalAlignment="Center"
                    Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
           <Button x:Name="CancelMaskEditorButton"
+                  Classes="studioSubtle"
                   Command="{Binding CloseMaskEditorCommand}"
                   Content="إلغاء"
                   ToolTip.Tip="تجاهل التعديلات اليدوية"
                   AutomationProperties.Name="إلغاء تعديل القناع" />
           <Button x:Name="ApplyMaskEditorButton"
+                  Classes="studioPrimary"
                   Command="{Binding ApplyMaskEditorCommand}"
-                  Background="{DynamicResource ZiwaPrimaryActionBrush}"
-                  Foreground="{DynamicResource ZiwaOnPrimaryActionBrush}"
                   Content="اعتماد القناع"
                   ToolTip.Tip="اعتماد القناع المعدّل وحفظ الأصل للاستعادة"
                   AutomationProperties.Name="اعتماد القناع المعدل" />
         </StackPanel>
       </Grid>
-    </Grid>
-  </Border>
+    </controls:StudioDialogShell.FooterContent>
+  </controls:StudioDialogShell>
 </UserControl>

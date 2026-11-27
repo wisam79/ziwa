@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             xmlns:cmd="using:Ziwa.Application.Commands"
+             xmlns:controls="using:Ziwa.App.Controls"
+             x:Class="Ziwa.App.Views.Dialogs.CommandPaletteView"
+             x:DataType="vm:MainWindowViewModel"
+             FlowDirection="RightToLeft">
+  <controls:StudioDialogShell Title="لوحة الأوامر السريعة (Ctrl+K)"
+                              CloseCommand="{Binding ToggleCommandPaletteCommand}"
+                              CloseToolTip="إغلاق لوحة الأوامر (Esc)"
+                              CloseAccessibleName="إغلاق لوحة الأوامر"
+                              DialogWidth="480"
+                              DialogMaxHeight="440"
+                              DialogVerticalAlignment="Top"
+                              ScrollableBody="False">
+    <Grid RowDefinitions="Auto,*" RowSpacing="10">
+      <TextBox x:Name="CommandSearchTextBox"
+               Grid.Row="0"
+               Text="{Binding CommandSearchQuery}"
+               Watermark="ابحث عن أمر أو اختصار..." />
+      <ScrollViewer Grid.Row="1" MaxHeight="300">
+        <ItemsControl ItemsSource="{Binding FilteredCommands}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="cmd:CommandDefinition">
+              <Button Margin="0,0,0,4"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch"
+                      Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ExecutePaletteCommandCommand}"
+                      CommandParameter="{Binding}"
+                      MinHeight="{StaticResource CompactButtonSize}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Background="{DynamicResource ZiwaSurfaceBrush}"
+                      Foreground="{DynamicResource ZiwaPrimaryTextBrush}"
+                      BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                      BorderThickness="{StaticResource HairlineBorderThickness}"
+                      ToolTip.Tip="{Binding TitleAr}"
+                      AutomationProperties.Name="{Binding TitleAr}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                  <TextBlock Grid.Column="0"
+                             Text="{Binding TitleAr}"
+                             VerticalAlignment="Center" />
+                  <Border Grid.Column="1"
+                          Classes="shortcutBadge"
+                          IsVisible="{Binding ShortcutGesture, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <TextBlock Text="{Binding ShortcutGesture}"
+                               FontSize="11"
+                               FlowDirection="LeftToRight"
+                               Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                  </Border>
+                </Grid>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Grid>
+  </controls:StudioDialogShell>
+</UserControl>
