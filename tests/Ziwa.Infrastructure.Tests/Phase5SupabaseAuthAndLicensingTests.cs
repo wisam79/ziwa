@@ -313,12 +313,14 @@ public sealed class Phase5SupabaseAuthAndLicensingTests
             var localStore = new AtomicLocalAuthSessionStore(new ProjectStorageOptions(tempRoot), new AtomicFileWriter());
             var cloudStore = new CloudAuthSessionStore();
 
-            using var handler = new DelegateHttpHandler((req, _, _) =>
+            // Keep the login in flight until the test has checked the receiver's response.
+            var userResponse = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var handler = new DelegateHttpHandler((req, _, ct) =>
             {
                 string path = req.RequestUri!.PathAndQuery;
                 if (path.StartsWith("/auth/v1/user", StringComparison.Ordinal))
                 {
-                    return Task.FromResult(JsonResp(HttpStatusCode.OK, """{"id":"u-oauth-1","email":"google@ziwa.app","user_metadata":{"full_name":"Google Studio"}}"""));
+                    return userResponse.Task.WaitAsync(TimeSpan.FromSeconds(10), ct);
                 }
 
                 if (path.StartsWith("/rest/v1/profiles", StringComparison.Ordinal))
@@ -410,6 +412,7 @@ public sealed class Phase5SupabaseAuthAndLicensingTests
                 Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
             }
 
+            userResponse.SetResult(JsonResp(HttpStatusCode.OK, """{"id":"u-oauth-1","email":"google@ziwa.app","user_metadata":{"full_name":"Google Studio"}}"""));
             UserAccountProfile profile = await oauthTask;
             Assert.Equal("Google Studio", profile.DisplayName);
             Assert.Equal("enterprise", profile.Plan);
