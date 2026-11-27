@@ -1168,18 +1168,32 @@ public sealed class SkiaViewportHost : Control
                 float paperH = (float)_page.HeightMm * scale;
                 var paperRectDip = SKRect.Create((float)_viewport.PanXDip, (float)_viewport.PanYDip, paperW, paperH);
 
-                using (SKImageFilter? blur = SKImageFilter.CreateBlur(6f, 6f))
-                using (var shadowPaint = new SKPaint
+                using (SKImageFilter? ambientBlur = SKImageFilter.CreateBlur(10f, 10f))
+                using (var ambientPaint = new SKPaint
                 {
                     Style = SKPaintStyle.Fill,
-                    Color = new SKColor(0, 0, 0, 72),
-                    ImageFilter = blur,
+                    Color = new SKColor(0, 0, 0, 44),
+                    ImageFilter = ambientBlur,
                     IsAntialias = true,
                 })
                 {
-                    var shadowRect = paperRectDip;
-                    shadowRect.Offset(0f, 3f);
-                    canvas.DrawRect(shadowRect, shadowPaint);
+                    var ambientRect = paperRectDip;
+                    ambientRect.Offset(0f, 5f);
+                    canvas.DrawRect(ambientRect, ambientPaint);
+                }
+
+                using (SKImageFilter? contactBlur = SKImageFilter.CreateBlur(3f, 3f))
+                using (var contactPaint = new SKPaint
+                {
+                    Style = SKPaintStyle.Fill,
+                    Color = new SKColor(0, 0, 0, 56),
+                    ImageFilter = contactBlur,
+                    IsAntialias = true,
+                })
+                {
+                    var contactRect = paperRectDip;
+                    contactRect.Offset(0f, 1.5f);
+                    canvas.DrawRect(contactRect, contactPaint);
                 }
 
                 int pageSave = canvas.Save();
@@ -1487,14 +1501,22 @@ public sealed class SkiaViewportHost : Control
                         canvas.DrawLine(selRectDip.MidX, selRectDip.Top, selRectDip.MidX, rotStemTop, selPaint);
 
                         bool rotHovered = _hoveredHandle == TransformHandleKind.Rotate;
+                        float rotRadius = rotHovered ? 5.8f : 4.6f;
+                        using var handleShadow = new SKPaint
+                        {
+                            Style = SKPaintStyle.Fill,
+                            Color = new SKColor(0, 0, 0, 55),
+                            IsAntialias = true,
+                        };
                         using var handleFill = new SKPaint
                         {
                             Style = SKPaintStyle.Fill,
                             Color = rotHovered ? _accentColor : SKColors.White,
                             IsAntialias = true,
                         };
-                        canvas.DrawCircle(selRectDip.MidX, rotStemTop, rotHovered ? 5.5f : 4.5f, handleFill);
-                        canvas.DrawCircle(selRectDip.MidX, rotStemTop, rotHovered ? 5.5f : 4.5f, selPaint);
+                        canvas.DrawCircle(selRectDip.MidX, rotStemTop + 1f, rotRadius, handleShadow);
+                        canvas.DrawCircle(selRectDip.MidX, rotStemTop, rotRadius, handleFill);
+                        canvas.DrawCircle(selRectDip.MidX, rotStemTop, rotRadius, selPaint);
 
                         (TransformHandleKind Kind, float HX, float HY)[] handlePoints =
                         [
@@ -1513,10 +1535,12 @@ public sealed class SkiaViewportHost : Control
                         foreach ((TransformHandleKind kind, float hx, float hy) in handlePoints)
                         {
                             bool isHot = _hoveredHandle == kind;
-                            float half = isHot ? 4.5f : 3.5f;
+                            float half = isHot ? 4.6f : 3.6f;
+                            var shadowRect = SKRect.Create(hx - half, hy - half + 1f, half * 2f, half * 2f);
                             var hRect = SKRect.Create(hx - half, hy - half, half * 2f, half * 2f);
-                            canvas.DrawRect(hRect, isHot ? hotFill : normalFill);
-                            canvas.DrawRect(hRect, selPaint);
+                            canvas.DrawRoundRect(shadowRect, 2.2f, 2.2f, handleShadow);
+                            canvas.DrawRoundRect(hRect, 2.2f, 2.2f, isHot ? hotFill : normalFill);
+                            canvas.DrawRoundRect(hRect, 2.2f, 2.2f, selPaint);
                         }
                     }
                 }
@@ -1606,9 +1630,9 @@ public sealed class SkiaViewportHost : Control
             }
 
             SKRect textBounds = blob.Bounds;
-            float padX = 8f;
-            float pillW = Math.Max(36f, textBounds.Width + (padX * 2f));
-            float pillH = 20f;
+            float padX = 10f;
+            float pillW = Math.Max(40f, textBounds.Width + (padX * 2f));
+            float pillH = 22f;
 
             float x = Math.Clamp(centerX - (pillW * 0.5f), 8f, Math.Max(8f, (float)Bounds.Width - pillW - 8f));
             float y = Math.Clamp(topY, 8f, Math.Max(8f, (float)Bounds.Height - pillH - 8f));
@@ -1617,13 +1641,13 @@ public sealed class SkiaViewportHost : Control
             using var bgPaint = new SKPaint
             {
                 Style = SKPaintStyle.Fill,
-                Color = new SKColor(20, 22, 26, 220),
+                Color = new SKColor(20, 22, 26, 232),
                 IsAntialias = true,
             };
             using var borderPaint = new SKPaint
             {
                 Style = SKPaintStyle.Stroke,
-                Color = new SKColor(255, 255, 255, 45),
+                Color = new SKColor(255, 255, 255, 52),
                 StrokeWidth = 1f,
                 IsAntialias = true,
             };
@@ -1634,8 +1658,8 @@ public sealed class SkiaViewportHost : Control
                 IsAntialias = true,
             };
 
-            canvas.DrawRoundRect(pillRect, 6f, 6f, bgPaint);
-            canvas.DrawRoundRect(pillRect, 6f, 6f, borderPaint);
+            canvas.DrawRoundRect(pillRect, 11f, 11f, bgPaint);
+            canvas.DrawRoundRect(pillRect, 11f, 11f, borderPaint);
             canvas.DrawText(blob, pillRect.MidX - textBounds.MidX, pillRect.MidY - textBounds.MidY, textPaint);
         }
     }

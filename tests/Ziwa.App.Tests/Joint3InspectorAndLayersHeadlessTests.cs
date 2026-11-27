@@ -1,3 +1,7 @@
+using System.Windows.Input;
+using Avalonia;
+using Avalonia.Automation;
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -5,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Ziwa.App.ViewModels;
 using Ziwa.App.Views;
+using Ziwa.App.Views.Inspector;
 using Ziwa.Domain.Models;
 using Ziwa.Domain.Primitives;
 
@@ -12,6 +17,73 @@ namespace Ziwa.App.Tests;
 
 public sealed class Joint3InspectorAndLayersHeadlessTests
 {
+    [AvaloniaFact]
+    public void PageAlignmentButtons_FitOneAccessibleIconRowAndAlignTheSelection()
+    {
+        using ServiceProvider sp = Bootstrapper.BuildServiceProvider();
+        MainWindowViewModel vm = sp.GetRequiredService<MainWindowViewModel>();
+        var window = new MainWindow { DataContext = vm, Width = 1360, Height = 892 };
+        try
+        {
+            window.Show();
+            TextNode text = vm.ActivePage.Nodes.OfType<TextNode>().First();
+            vm.Session.SetSelection([text.Id]);
+            vm.SelectedNodeXMm = 5;
+            vm.SelectedNodeWidthMm = 40;
+            vm.ApplyNumericTransformCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+
+            var inspector = InspectorUi.Visible<InspectorPanelView>(window);
+            var properties = InspectorUi.Visible<InspectorPropertiesView>(inspector);
+            var centerButton = InspectorUi.Visible<Button>(properties, "AlignCenterHPageButton");
+            centerButton.BringIntoView();
+            InspectorUi.Layout(window);
+
+            (string direction, string namePart, ICommand command)[] actions =
+            [
+                ("Right", "يمين", vm.AlignSelectionRightCommand),
+                ("CenterH", "أفقي", vm.AlignSelectionCenterHCommand),
+                ("Left", "يسار", vm.AlignSelectionLeftCommand),
+                ("Top", "أعلى", vm.AlignSelectionTopCommand),
+                ("CenterV", "رأسي", vm.AlignSelectionCenterVCommand),
+                ("Bottom", "أسفل", vm.AlignSelectionBottomCommand),
+            ];
+            Rect? previous = null;
+            foreach (var (direction, namePart, command) in actions)
+            {
+                var button = InspectorUi.Visible<Button>(properties, $"Align{direction}PageButton");
+                Assert.True(button.IsEffectivelyVisible && button.IsEnabled && button.Focusable);
+                Assert.Contains(namePart, AutomationProperties.GetName(button));
+                Assert.False(string.IsNullOrWhiteSpace(ToolTip.GetTip(button) as string));
+                Assert.Same(command, button.Command);
+                var icon = Assert.IsType<PathIcon>(button.Content);
+                Assert.True(inspector.TryFindResource($"IconAlign{direction}", out object? geometry));
+                Assert.NotNull(geometry);
+                Assert.Same(geometry, icon.Data);
+
+                Rect bounds = InspectorUi.BoundsIn(button, window);
+                Assert.True(bounds.Width >= 28 && bounds.Height >= 28);
+                Assert.True(InspectorUi.BoundsIn(inspector, window).Contains(bounds));
+                if (previous is { } last)
+                {
+                    Assert.Equal(last.Y, bounds.Y);
+                    Assert.True(bounds.Right <= last.Left, "Alignment targets must not overlap in the RTL row.");
+                }
+                previous = bounds;
+            }
+
+            InspectorUi.Click(window, centerButton);
+            Assert.Equal(vm.ActivePage.WidthMm / 2, vm.ActivePage.Nodes.First(n => n.Id == text.Id).BoundsMm.CenterX, 1);
+            vm.UndoCommand.Execute(null);
+            Assert.Equal(5.0, vm.ActivePage.Nodes.First(n => n.Id == text.Id).BoundsMm.X, 1);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void InspectorNumericTransformAlignAndTextShapeControls_WorkAndSupportUndo()
     {

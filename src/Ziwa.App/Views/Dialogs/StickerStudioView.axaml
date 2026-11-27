@@ -11,13 +11,13 @@
                               CloseCommand="{Binding CloseStickerStudioCommand}"
                               CloseToolTip="إغلاق استوديو الملصقات (Esc)"
                               CloseAccessibleName="إغلاق استوديو الملصقات"
-                              DialogWidth="430"
-                              DialogMaxHeight="660"
+                              DialogWidth="440"
+                              DialogMaxHeight="680"
                               DialogHorizontalAlignment="Left"
                               DialogVerticalAlignment="Top"
                               UseScrim="False">
     <StackPanel Spacing="10">
-      <Border Height="132"
+      <Border Height="148"
               Background="{DynamicResource ZiwaCanvasBackgroundBrush}"
               BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
               BorderThickness="{StaticResource HairlineBorderThickness}"
@@ -30,7 +30,7 @@
 
       <StackPanel Spacing="4">
         <TextBlock Text="القالب البارامتري"
-                   FontSize="12"
+                   FontSize="11.5"
                    Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
         <ComboBox x:Name="StickerTemplateComboBox"
                   ItemsSource="{Binding StickerTemplates}"
@@ -46,26 +46,28 @@
         </ComboBox>
       </StackPanel>
 
-      <ItemsControl ItemsSource="{Binding StickerFieldItems}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:StickerFieldViewModel">
-            <StackPanel Margin="0,0,0,6" Spacing="3">
-              <TextBlock Text="{Binding LabelAr}"
-                         FontSize="12"
-                         Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
-              <TextBox Text="{Binding Value}" />
-            </StackPanel>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
+      <controls:StudioCard Header="حقول القالب النصية">
+        <ItemsControl ItemsSource="{Binding StickerFieldItems}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:StickerFieldViewModel">
+              <StackPanel Margin="0,0,0,6" Spacing="3">
+                <TextBlock Text="{Binding LabelAr}"
+                           FontSize="11.5"
+                           Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <TextBox Text="{Binding Value}" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </controls:StudioCard>
 
       <controls:StudioCard Header="لوحة الألوان والتناغم (OKLCH)">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
           <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-            <Border Width="20" Height="20" CornerRadius="4" Background="{Binding StudioPrimaryBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
-            <Border Width="20" Height="20" CornerRadius="4" Background="{Binding StudioSecondaryBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
-            <Border Width="20" Height="20" CornerRadius="4" Background="{Binding StudioAccentBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
-            <Border Width="20" Height="20" CornerRadius="4" Background="{Binding StudioSurfaceBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+            <Border Width="24" Height="24" CornerRadius="{StaticResource ControlCornerRadius}" Background="{Binding StudioPrimaryBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+            <Border Width="24" Height="24" CornerRadius="{StaticResource ControlCornerRadius}" Background="{Binding StudioSecondaryBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+            <Border Width="24" Height="24" CornerRadius="{StaticResource ControlCornerRadius}" Background="{Binding StudioAccentBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+            <Border Width="24" Height="24" CornerRadius="{StaticResource ControlCornerRadius}" Background="{Binding StudioSurfaceBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
           </StackPanel>
           <ColorPicker x:Name="StickerCustomPrimaryColorPicker"
                        Grid.Column="1"
@@ -83,8 +85,12 @@
                 Classes="studioSubtle"
                 Command="{Binding RandomizeStickerPaletteCommand}"
                 ToolTip.Tip="توليفة ألوان OKLCH عشوائية ذكية"
-                AutomationProperties.Name="توليفة عشوائية"
-                Content="توليفة عشوائية ذكية" />
+                AutomationProperties.Name="توليفة عشوائية">
+          <StackPanel Classes="workspaceActionLabel">
+            <PathIcon Data="{StaticResource IconSparkles}" Width="14" Height="14" IsHitTestVisible="False" />
+            <TextBlock Text="توليفة عشوائية ذكية" />
+          </StackPanel>
+        </Button>
         <Button x:Name="StudioApplyStickerButton"
                 Grid.Column="2"
                 Classes="studioPrimary"

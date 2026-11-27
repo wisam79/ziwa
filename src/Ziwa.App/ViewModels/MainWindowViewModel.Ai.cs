@@ -103,8 +103,8 @@ public sealed partial class MainWindowViewModel
     public string MaskBrushSoftnessText => $"نعومة الحافة: {MaskBrushSoftness * 100.0:0}%";
     public string MaskEditorBrushSummary =>
         SelectedMaskBrushMode == MaskBrushMode.Erase
-            ? "الوضع الحالي: فرشاة المسح — اسحب لمسح الخلفية"
-            : "الوضع الحالي: فرشاة الاستعادة — اسحب لإرجاع التفاصيل الأصلية";
+            ? "اسحب لإخفاء أجزاء من الصورة."
+            : "اسحب لاستعادة أجزاء من الصورة الأصلية.";
 
     private void InitializeAiIntegration(
         OfflineAiCoordinator? aiCoordinator,

@@ -10,6 +10,7 @@ public enum StudioCardAccent
     Warning,
     Destructive,
     Subtle,
+    Info,
 }
 
 /// <summary>

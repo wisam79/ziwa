@@ -1,6 +1,8 @@
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Layout;
 
 namespace Ziwa.App.Controls;
@@ -55,6 +57,8 @@ public sealed class StudioDialogShell : ContentControl
 
     public static readonly StyledProperty<VerticalAlignment> DialogVerticalAlignmentProperty =
         AvaloniaProperty.Register<StudioDialogShell, VerticalAlignment>(nameof(DialogVerticalAlignment), defaultValue: VerticalAlignment.Center);
+
+    private Control? _scrim;
 
     public string? Title
     {
@@ -144,5 +148,38 @@ public sealed class StudioDialogShell : ContentControl
     {
         get => GetValue(DialogVerticalAlignmentProperty);
         set => SetValue(DialogVerticalAlignmentProperty, value);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+
+        if (_scrim is not null)
+        {
+            _scrim.PointerPressed -= OnScrimPointerPressed;
+        }
+
+        _scrim = e.NameScope.Find<Control>("PART_Scrim");
+        if (_scrim is not null)
+        {
+            _scrim.PointerPressed += OnScrimPointerPressed;
+        }
+    }
+
+    private void OnScrimPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (_scrim is null ||
+            !UseScrim ||
+            !IsCloseEnabled ||
+            !e.GetCurrentPoint(_scrim).Properties.IsLeftButtonPressed)
+        {
+            return;
+        }
+
+        if (CloseCommand is { } cmd && cmd.CanExecute(null))
+        {
+            cmd.Execute(null);
+            e.Handled = true;
+        }
     }
 }

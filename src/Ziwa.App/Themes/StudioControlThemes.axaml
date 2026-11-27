@@ -26,18 +26,18 @@
             <Grid RowDefinitions="Auto,*,Auto">
               <!-- Unified Header -->
               <Border Grid.Row="0"
-                      Background="{DynamicResource ZiwaCardBrush}"
+                      Background="{DynamicResource ZiwaElevatedCardBrush}"
                       BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
                       BorderThickness="0,0,0,1"
                       Padding="18,12">
-                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                   <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                     <TextBlock Text="{TemplateBinding Title}"
                                FontSize="15"
                                FontWeight="Bold"
                                Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
                     <TextBlock Text="{TemplateBinding Subtitle}"
-                               FontSize="11"
+                               FontSize="11.5"
                                TextWrapping="Wrap"
                                Foreground="{DynamicResource ZiwaSecondaryTextBrush}"
                                IsVisible="{TemplateBinding Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
@@ -52,8 +52,12 @@
                           IsEnabled="{TemplateBinding IsCloseEnabled}"
                           ToolTip.Tip="{TemplateBinding CloseToolTip}"
                           AutomationProperties.Name="{TemplateBinding CloseAccessibleName}"
-                          VerticalAlignment="Center"
-                          Content="✕" />
+                          VerticalAlignment="Center">
+                    <PathIcon Data="{StaticResource IconWindowClose}"
+                              Width="11"
+                              Height="11"
+                              IsHitTestVisible="False" />
+                  </Button>
                 </Grid>
               </Border>
 
@@ -133,6 +137,11 @@
     </Style>
     <Style Selector="^[AccentKind=Destructive] /template/ Border#PART_Root">
       <Setter Property="BorderBrush" Value="{DynamicResource ZiwaDestructiveActionBrush}" />
+      <Setter Property="Background" Value="{DynamicResource ZiwaDestructiveSubtleBrush}" />
+    </Style>
+    <Style Selector="^[AccentKind=Info] /template/ Border#PART_Root">
+      <Setter Property="BorderBrush" Value="{DynamicResource ZiwaInfoBrush}" />
+      <Setter Property="Background" Value="{DynamicResource ZiwaInfoSubtleBrush}" />
     </Style>
     <Style Selector="^[AccentKind=Subtle] /template/ Border#PART_Root">
       <Setter Property="Background" Value="{DynamicResource ZiwaCardBrush}" />
@@ -183,6 +192,9 @@
       </ControlTemplate>
     </Setter>
 
+    <Style Selector="^ /template/ Border#PART_InputBox:pointerover">
+      <Setter Property="BorderBrush" Value="{DynamicResource ZiwaSecondaryTextBrush}" />
+    </Style>
     <Style Selector="^ /template/ Border#PART_InputBox:focus-within">
       <Setter Property="BorderBrush" Value="{DynamicResource ZiwaFocusStrokeBrush}" />
     </Style>
@@ -198,7 +210,8 @@
                   Background="{DynamicResource ZiwaTransparentBrush}"
                   Cursor="Hand"
                   ToolTip.Tip="انقر مرتين لإعادة القيمة الافتراضية">
-            <TextBlock Text="{TemplateBinding Label}"
+            <TextBlock x:Name="PART_LabelText"
+                       Text="{TemplateBinding Label}"
                        FontSize="11"
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
@@ -219,6 +232,10 @@
         </Grid>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ Border#PART_ResetArea:pointerover TextBlock#PART_LabelText">
+      <Setter Property="Foreground" Value="{DynamicResource ZiwaPrimaryTextBrush}" />
+    </Style>
   </ControlTheme>
 
 </ResourceDictionary>

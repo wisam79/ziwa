@@ -8,21 +8,34 @@
           BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
           BorderThickness="0,1,0,0"
           Padding="{StaticResource StatusBarPadding}">
-    <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" MinHeight="{StaticResource CompactButtonSize}">
+    <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" MinHeight="{StaticResource CompactButtonSize}">
       <TextBlock x:Name="StatusMessageLabel" Text="{Binding StatusMessage}" ToolTip.Tip="{Binding StatusMessage}"
                  TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center"
                  AutomationProperties.LiveSetting="Polite" />
-      <TextBlock x:Name="StatusSelectionLabel" Grid.Column="1" Text="{Binding SelectionSummary}" ToolTip.Tip="{Binding SelectionSummary}"
+      <Border Grid.Column="1" Classes="workspaceDivider" Height="12" VerticalAlignment="Center" />
+      <TextBlock x:Name="StatusSelectionLabel" Grid.Column="2" Text="{Binding SelectionSummary}" ToolTip.Tip="{Binding SelectionSummary}"
                  MaxWidth="180" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" />
-      <TextBlock x:Name="StatusPointerCoordsLabel" Grid.Column="2" Text="{Binding CanvasPointerCoordsText}" FlowDirection="LeftToRight"
+      <Border Grid.Column="3" Classes="workspaceDivider" Height="12" VerticalAlignment="Center" />
+      <TextBlock x:Name="StatusPointerCoordsLabel" Grid.Column="4" Text="{Binding CanvasPointerCoordsText}" FlowDirection="LeftToRight"
                  Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" />
-      <TextBlock Grid.Column="3" Text="{Binding PageSizeMmText}" FlowDirection="LeftToRight" VerticalAlignment="Center" />
-      <TextBlock Grid.Column="4" Text="{Binding ZoomPercentText}" FlowDirection="LeftToRight" VerticalAlignment="Center" />
-      <TextBlock Grid.Column="5" Text="{Binding PlatformStatusText}" Foreground="{DynamicResource ZiwaSuccessBrush}" VerticalAlignment="Center" />
-      <TextBlock Grid.Column="6" Text="{Binding ProjectSaveStateText}" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" />
-      <Button x:Name="CancelProjectStatusBarButton" Grid.Column="7" Classes="workspaceAction statusAction" IsVisible="{Binding IsProjectBusy}" Command="{Binding CancelProjectOperationCommand}"
+      <Border Grid.Column="5" Classes="workspaceDivider" Height="12" VerticalAlignment="Center" />
+      <TextBlock Grid.Column="6" Text="{Binding PageSizeMmText}" FlowDirection="LeftToRight"
+                 Foreground="{DynamicResource ZiwaPrimaryTextBrush}" VerticalAlignment="Center" />
+      <TextBlock Grid.Column="7" Text="{Binding ZoomPercentText}" FlowDirection="LeftToRight"
+                 Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" />
+      <TextBlock Grid.Column="8" Text="{Binding PlatformStatusText}" Foreground="{DynamicResource ZiwaSuccessBrush}" VerticalAlignment="Center" />
+      <StackPanel Grid.Column="9" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+        <Ellipse Width="6" Height="6" VerticalAlignment="Center"
+                 Fill="{DynamicResource ZiwaWarningBrush}"
+                 IsVisible="{Binding HasUnsavedChanges}" />
+        <Ellipse Width="6" Height="6" VerticalAlignment="Center"
+                 Fill="{DynamicResource ZiwaSuccessBrush}"
+                 IsVisible="{Binding !HasUnsavedChanges}" />
+        <TextBlock Text="{Binding ProjectSaveStateText}" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" />
+      </StackPanel>
+      <Button x:Name="CancelProjectStatusBarButton" Grid.Column="10" Classes="workspaceAction statusAction" IsVisible="{Binding IsProjectBusy}" Command="{Binding CancelProjectOperationCommand}"
               Content="إلغاء العملية" ToolTip.Tip="إلغاء عملية المشروع الحالية" AutomationProperties.Name="إلغاء عملية المشروع" />
-      <Button x:Name="CancelAiStatusBarButton" Grid.Column="8" Classes="workspaceAction statusAction" IsVisible="{Binding IsAnyAiBusy}" Command="{Binding CancelActiveAiOperationCommand}"
+      <Button x:Name="CancelAiStatusBarButton" Grid.Column="11" Classes="workspaceAction statusAction" IsVisible="{Binding IsAnyAiBusy}" Command="{Binding CancelActiveAiOperationCommand}"
               Content="إلغاء الذكاء" ToolTip.Tip="إلغاء عملية الذكاء الاصطناعي فوراً" AutomationProperties.Name="إلغاء عملية الذكاء الاصطناعي" />
     </Grid>
   </Border>

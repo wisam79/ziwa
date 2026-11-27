@@ -66,6 +66,34 @@ public sealed partial class MainWindowHeadlessTests
     }
 
     [AvaloniaFact]
+    public void Workspace_UsesEmbeddedIbmPlexSansArabic()
+    {
+        using ServiceProvider sp = Bootstrapper.BuildServiceProvider();
+        var window = new MainWindow { DataContext = sp.GetRequiredService<MainWindowViewModel>() };
+        try
+        {
+            window.Show();
+            FontFamily family = window.FontFamily;
+            Assert.Equal("IBM Plex Sans Arabic", family.Name);
+            Assert.NotNull(family.Key);
+            foreach (FontWeight weight in new[] { FontWeight.Normal, FontWeight.Bold })
+            {
+                var face = new Typeface(family, weight: weight).GlyphTypeface;
+                Assert.Equal(family.Name, face.FamilyName);
+                Assert.NotEqual((ushort)0, face.GetGlyph('م'));
+            }
+
+            var toolbar = window.FindControl<CommandBarView>("CommandBarRegion")!;
+            Assert.Equal(family, toolbar.FindControl<Button>("ProjectFileMenuButton")!.FontFamily);
+            Assert.Equal(family, toolbar.FindControl<TextBlock>("DocumentTitleLabel")!.FontFamily);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void ThemeToggle_UpdatesResolvedSurfaceAndTextBrushesWithoutErrors()
     {
         using ServiceProvider sp = Bootstrapper.BuildServiceProvider();

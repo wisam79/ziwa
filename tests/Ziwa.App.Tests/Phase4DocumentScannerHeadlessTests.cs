@@ -98,9 +98,17 @@ public sealed class Phase4DocumentScannerHeadlessTests
             vm.SplitScanCardHorizontalCommand.Execute(null);
             Assert.Equal(3, vm.ScannerRegions.Count);
 
-            // Switch document filter to OtsuBlackAndWhite
-            vm.SelectedScanFilterOption = vm.AvailableScanFilterOptions.First(o => o.Filter == DocumentScanFilterKind.OtsuBlackAndWhite);
-            Assert.Equal(DocumentScanFilterKind.OtsuBlackAndWhite, vm.ScannerRegions[0].Filter);
+            // Changing the dialog's filter updates both the selected region and its visible output specs.
+            var filterPicker = Assert.IsType<ComboBox>(scannerView.FindControl<ComboBox>("ScanFilterComboBox"));
+            var filter = vm.AvailableScanFilterOptions.First(o => o.Filter == DocumentScanFilterKind.OtsuBlackAndWhite);
+            filterPicker.SelectedItem = filter;
+            var region = vm.ScannerRegions[0];
+            Assert.Equal(filter.Filter, region.Filter);
+            var summary = Assert.IsType<TextBlock>(scannerView.FindControl<TextBlock>("ScannerPreviewSummary"));
+            (int width, int height) = region.Quad.ComputeOutputDimensionsPx();
+            Assert.Contains(region.LabelAr, summary.Text);
+            Assert.Contains($"{width}×{height} px", summary.Text);
+            Assert.Contains(filter.TitleAr, summary.Text);
 
             // Insert all extracted cards into Freeform in 1 Undo step
             int nodesBefore = vm.ActivePage.Nodes.Length;

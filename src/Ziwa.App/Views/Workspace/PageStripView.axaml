@@ -57,6 +57,7 @@
                     <MenuItem Header="تكرار الصفحة النشطة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).DuplicateActivePageCommand}" />
                     <MenuItem Header="تقديم الصفحة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).MovePageEarlierCommand}" />
                     <MenuItem Header="تأخير الصفحة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).MovePageLaterCommand}" />
+                    <Separator />
                     <MenuItem Header="حذف الصفحة" Command="{Binding $parent[local:PageStripView].((vm:MainWindowViewModel)DataContext).DeleteActivePageCommand}" />
                   </ContextMenu>
                 </Button.ContextMenu>
@@ -71,9 +72,11 @@
         </ItemsControl>
       </ScrollViewer>
 
-      <TextBlock Grid.Column="2" Width="150" TextTrimming="CharacterEllipsis"
-                 Text="{Binding ActivePageDisplayText}" ToolTip.Tip="{Binding ActivePageDisplayText}"
-                 Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" FontSize="12" />
+      <Border Grid.Column="2" Classes="statusPill" VerticalAlignment="Center">
+        <TextBlock x:Name="PageCounter" Text="{Binding ActivePageCounterText}" FlowDirection="LeftToRight"
+                   ToolTip.Tip="{Binding ActivePageDisplayText}" AutomationProperties.Name="{Binding ActivePageDisplayText}"
+                   Foreground="{DynamicResource ZiwaSecondaryTextBrush}" VerticalAlignment="Center" FontSize="11.5" />
+      </Border>
     </Grid>
   </Border>
 </UserControl>

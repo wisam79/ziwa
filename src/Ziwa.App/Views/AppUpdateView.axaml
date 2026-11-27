@@ -23,7 +23,13 @@
           <TextBlock Grid.Column="1" Text="{Binding UpdateLatestVersionText}" FlowDirection="LeftToRight" FontWeight="Bold" Foreground="{DynamicResource ZiwaInfoBrush}" />
         </Grid>
         <TextBlock Text="بصمة SHA-256 المتوقعة (Fail-Closed):" FontSize="11" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
-        <TextBlock Text="{Binding UpdateChecksumPreviewText}" FlowDirection="LeftToRight" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+        <Border Background="{DynamicResource ZiwaCardBrush}"
+                BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}"
+                BorderThickness="{StaticResource HairlineBorderThickness}"
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                Padding="8,6">
+          <TextBlock Text="{Binding UpdateChecksumPreviewText}" FlowDirection="LeftToRight" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+        </Border>
         <ScrollViewer MaxHeight="90" IsVisible="{Binding HasUpdateReleaseNotes}">
           <TextBlock x:Name="UpdateReleaseNotesTextBlock"
                      Text="{Binding UpdateReleaseNotesText}"

@@ -27,7 +27,7 @@
       <!-- رسالة النتيجة / الأخطاء -->
       <controls:StudioCard x:Name="AccountFeedbackBanner"
                            IsVisible="{Binding HasAccountFeedback}"
-                           AccentKind="Focus">
+                           AccentKind="Info">
         <TextBlock x:Name="AccountFeedbackTextBlock"
                    Text="{Binding AccountFeedbackMessage}"
                    TextWrapping="Wrap"

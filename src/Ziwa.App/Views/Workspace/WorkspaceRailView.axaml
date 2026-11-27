@@ -17,7 +17,7 @@
                 AutomationProperties.Name="أداة التحديد والتحريك">
           <StackPanel Classes="workspaceRailLabel" VerticalAlignment="Center">
             <PathIcon Classes="workspaceIcon" Data="{StaticResource IconCursor}" />
-            <TextBlock Text="تحديد" FontWeight="Bold" />
+            <TextBlock Text="تحديد" />
           </StackPanel>
         </Button>
         <Button x:Name="TextToolButton" Classes="workspaceAction railTool"
@@ -28,16 +28,17 @@
           </StackPanel>
           <Button.Flyout>
             <Flyout Placement="LeftEdgeAlignedTop">
-              <StackPanel Spacing="4">
-                <Button x:Name="InsertHeadingTextButton" Classes="workspaceAction" Click="OnTextMenuItemClick" Command="{Binding AddHeadingTextCommand}"
+              <StackPanel MinWidth="185" Spacing="2">
+                <Button x:Name="InsertHeadingTextButton" Classes="studioMenuItem" Click="OnTextMenuItemClick" Command="{Binding AddHeadingTextCommand}"
                         ToolTip.Tip="إدراج عنوان عربي بارز" AutomationProperties.Name="عنوان رئيسي" Content="عنوان رئيسي" />
-                <Button x:Name="InsertSubheadingTextButton" Classes="workspaceAction" Click="OnTextMenuItemClick" Command="{Binding AddSubheadingTextCommand}"
+                <Button x:Name="InsertSubheadingTextButton" Classes="studioMenuItem" Click="OnTextMenuItemClick" Command="{Binding AddSubheadingTextCommand}"
                         ToolTip.Tip="إدراج نص فرعي للتفاصيل" AutomationProperties.Name="نص فرعي" Content="نص فرعي" />
-                <Button x:Name="InsertCapsuleBadgeButton" Classes="workspaceAction" Click="OnTextMenuItemClick" Command="{Binding AddCapsuleBadgeCommand}"
+                <Button x:Name="InsertCapsuleBadgeButton" Classes="studioMenuItem" Click="OnTextMenuItemClick" Command="{Binding AddCapsuleBadgeCommand}"
                         ToolTip.Tip="إدراج شارة نصية كبسولة" AutomationProperties.Name="شارة كبسولة" Content="شارة كبسولة" />
-                <Button x:Name="InsertCurvedSealMenuButton" Classes="workspaceAction" Click="OnTextMenuItemClick" Command="{Binding AddCurvedSealCommand}"
+                <Border Classes="studioDivider" Margin="4,3" />
+                <Button x:Name="InsertCurvedSealMenuButton" Classes="studioMenuItem" Click="OnTextMenuItemClick" Command="{Binding AddCurvedSealCommand}"
                         ToolTip.Tip="إدراج ختم نصي عربي منحنٍ" AutomationProperties.Name="ختم عربي منحنٍ" Content="ختم منحنٍ" />
-                <Button x:Name="InsertWatermarkMenuButton" Classes="workspaceAction" Click="OnTextMenuItemClick" Command="{Binding AddWatermarkTextCommand}"
+                <Button x:Name="InsertWatermarkMenuButton" Classes="studioMenuItem" Click="OnTextMenuItemClick" Command="{Binding AddWatermarkTextCommand}"
                         ToolTip.Tip="إدراج علامة مائية شفافة مائلة" AutomationProperties.Name="علامة مائية" Content="علامة مائية" />
               </StackPanel>
             </Flyout>
@@ -58,14 +59,15 @@
           </StackPanel>
           <Button.Flyout>
             <Flyout Placement="LeftEdgeAlignedTop">
-              <StackPanel Spacing="4">
-                <Button x:Name="InsertRectangleButton" Classes="workspaceAction" Click="OnShapeMenuItemClick" Command="{Binding AddRectangleShapeCommand}"
+              <StackPanel MinWidth="175" Spacing="2">
+                <Button x:Name="InsertRectangleButton" Classes="studioMenuItem" Click="OnShapeMenuItemClick" Command="{Binding AddRectangleShapeCommand}"
                         ToolTip.Tip="إدراج مستطيل" AutomationProperties.Name="إدراج مستطيل" Content="مستطيل" />
-                <Button x:Name="InsertEllipseButton" Classes="workspaceAction" Click="OnShapeMenuItemClick" Command="{Binding AddEllipseShapeCommand}"
+                <Button x:Name="InsertEllipseButton" Classes="studioMenuItem" Click="OnShapeMenuItemClick" Command="{Binding AddEllipseShapeCommand}"
                         ToolTip.Tip="إدراج دائرة أو شكل بيضاوي" AutomationProperties.Name="إدراج دائرة" Content="دائرة" />
-                <Button x:Name="InsertStarButton" Classes="workspaceAction" Click="OnShapeMenuItemClick" Command="{Binding AddStarShapeCommand}"
+                <Button x:Name="InsertStarButton" Classes="studioMenuItem" Click="OnShapeMenuItemClick" Command="{Binding AddStarShapeCommand}"
                         ToolTip.Tip="إدراج نجمة خماسية" AutomationProperties.Name="إدراج نجمة خماسية" Content="نجمة خماسية" />
-                <Button x:Name="InsertLineButton" Classes="workspaceAction" Click="OnShapeMenuItemClick" Command="{Binding AddLineShapeCommand}"
+                <Border Classes="studioDivider" Margin="4,3" />
+                <Button x:Name="InsertLineButton" Classes="studioMenuItem" Click="OnShapeMenuItemClick" Command="{Binding AddLineShapeCommand}"
                         ToolTip.Tip="إدراج خط فاصل" AutomationProperties.Name="إدراج خط فاصل" Content="خط فاصل" />
               </StackPanel>
             </Flyout>
@@ -103,7 +105,18 @@
         <Button x:Name="PhoneBridgeToolButton" Classes="workspaceAction railTool" Command="{Binding OpenPhoneBridgeDialogCommand}"
                 ToolTip.Tip="جسر كاميرا الهاتف الفوري عبر QR (Ctrl+Shift+P)" AutomationProperties.Name="جسر كاميرا الهاتف">
           <StackPanel Classes="workspaceRailLabel">
-            <PathIcon Classes="workspaceIcon" Data="{StaticResource IconPhoneBridge}" />
+            <Grid Width="22" Height="22" HorizontalAlignment="Center">
+              <PathIcon Classes="workspaceIcon"
+                        Width="{StaticResource WorkspaceRailIconSize}"
+                        Height="{StaticResource WorkspaceRailIconSize}"
+                        Data="{StaticResource IconPhoneBridge}" />
+              <Ellipse Width="7"
+                       Height="7"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Top"
+                       Fill="{DynamicResource ZiwaSuccessBrush}"
+                       IsVisible="{Binding IsPhoneBridgeRunning}" />
+            </Grid>
             <TextBlock Text="هاتف" />
           </StackPanel>
         </Button>

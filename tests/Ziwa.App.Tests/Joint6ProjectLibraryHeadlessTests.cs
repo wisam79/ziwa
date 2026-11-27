@@ -1,5 +1,11 @@
+using Avalonia;
+using Avalonia.Automation;
+using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Ziwa.App.ViewModels;
@@ -58,6 +64,70 @@ public sealed class Joint6ProjectLibraryHeadlessTests
                 await vm.StartQuickStartFromLibraryCommand.ExecuteAsync("quickstart.idPhotoSheet");
                 Assert.False(vm.IsProjectLibraryOpen);
                 Assert.True(vm.IsCollageMode);
+                Assert.True(await vm.RequestCloseAsync());
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(root)) { Directory.Delete(root, recursive: true); }
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task LibraryPresets_DisplayRegisteredShortcuts_AndHandleAltOnlyWhileOpen()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "ziwa-library-keys-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            using ServiceProvider sp = Bootstrapper.BuildServiceProvider(new ProjectStorageOptions(root), new TestDialogs(Path.Combine(root, "project.ziwa")));
+            MainWindowViewModel vm = sp.GetRequiredService<MainWindowViewModel>();
+            var window = new MainWindow { DataContext = vm };
+            try
+            {
+                window.Show();
+                await vm.OpenProjectLibraryCommand.ExecuteAsync(null);
+                // Presets keep their registered shortcut beside the title and their print specs below it.
+                window.UpdateLayout();
+                var library = Assert.Single(window.GetVisualDescendants().OfType<ProjectLibraryView>());
+                var presets = library.GetVisualDescendants().OfType<Button>()
+                    .Where(b => b.Command == vm.StartQuickStartFromLibraryCommand).ToList();
+                Assert.Equal(4, presets.Count);
+                foreach (Button preset in presets)
+                {
+                    var id = Assert.IsType<string>(preset.CommandParameter);
+                    Assert.True(vm.CommandRegistry.TryGet(new(id), out var command));
+                    Assert.NotNull(command);
+                    Assert.Equal(command.ShortcutGesture, AutomationProperties.GetAcceleratorKey(preset));
+                    var labels = preset.GetVisualDescendants().OfType<TextBlock>().ToList();
+                    var shortcut = Assert.Single(labels, label => label.Text == command.ShortcutGesture);
+                    Assert.True(shortcut.Bounds.Height > 0);
+                    double rowTop = shortcut.TranslatePoint(default, preset)!.Value.Y;
+                    Assert.Contains(labels, label => label != shortcut && Math.Abs(label.TranslatePoint(default, preset)!.Value.Y - rowTop) < 1);
+                    Assert.Contains(labels, label => label.TranslatePoint(default, preset)!.Value.Y >= rowTop + shortcut.Bounds.Height);
+                }
+
+                // Alt+1 works while focus is elsewhere in the dialog, then releases the library binding.
+                var search = Assert.IsType<TextBox>(library.FindControl<TextBox>("ProjectLibrarySearchBox"));
+                Assert.True(search.Focus());
+                window.KeyPressQwerty(PhysicalKey.Digit1, RawInputModifiers.Alt);
+                window.KeyReleaseQwerty(PhysicalKey.Digit1, RawInputModifiers.Alt);
+                Dispatcher.UIThread.RunJobs();
+                var launch = vm.StartQuickStartFromLibraryCommand.ExecutionTask;
+                Assert.NotNull(launch);
+                await launch;
+                Assert.False(vm.IsProjectLibraryOpen);
+                Assert.True(vm.IsCollageMode);
+
+                Dispatcher.UIThread.RunJobs();
+                Assert.All(presets, preset => Assert.Null(preset.HotKey));
+                window.KeyPressQwerty(PhysicalKey.Digit1, RawInputModifiers.Alt);
+                window.KeyReleaseQwerty(PhysicalKey.Digit1, RawInputModifiers.Alt);
+                Dispatcher.UIThread.RunJobs();
+                Assert.Same(launch, vm.StartQuickStartFromLibraryCommand.ExecutionTask);
 
                 Assert.True(await vm.RequestCloseAsync());
             }

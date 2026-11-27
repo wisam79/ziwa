@@ -83,6 +83,13 @@ public sealed class WorkspaceChromeHeadlessTests
             Assert.True(BoundsIn(Find<Button>(toolbar, "Export300DpiButton"), window).Right <= titleBounds.X);
 
             ScrollViewer scroller = Find<ScrollViewer>(pages, "PageTabsScroller");
+            var counter = Find<TextBlock>(pages, "PageCounter");
+            Assert.Equal("1 / 18", counter.Text);
+            Assert.Equal(vm.ActivePageDisplayText, ToolTip.GetTip(counter));
+            Assert.Equal(vm.ActivePageDisplayText, AutomationProperties.GetName(counter));
+            var counterPill = Assert.IsType<Border>(counter.Parent);
+            Assert.True(double.IsNaN(counterPill.Width));
+            AssertInside(counterPill, pages);
             var actions = Find<StackPanel>(pages, "PageActions");
             Assert.True(scroller.Extent.Width > scroller.Viewport.Width);
             Rect actionBounds = BoundsIn(actions, pages);
@@ -104,6 +111,8 @@ public sealed class WorkspaceChromeHeadlessTests
             Assert.True(last.Focus());
             window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
             Assert.Equal(17, vm.Document.ActivePageIndex);
+            Assert.Equal("18 / 18", counter.Text);
+            Assert.Equal(vm.ActivePageDisplayText, ToolTip.GetTip(counter));
             Assert.Same(last, Assert.Single(tabs, button => button.Classes.Contains("active")));
             Assert.Contains("الصفحة النشطة", AutomationProperties.GetName(last));
             Assert.True(Math.Abs(scroller.Offset.X - offset) < 1);

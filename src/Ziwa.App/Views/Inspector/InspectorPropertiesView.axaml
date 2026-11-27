@@ -1,0 +1,590 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ziwa.App.ViewModels"
+             xmlns:controls="using:Ziwa.App.Controls"
+             x:Class="Ziwa.App.Views.Inspector.InspectorPropertiesView"
+             x:DataType="vm:MainWindowViewModel"
+             FlowDirection="RightToLeft">
+  <Grid RowDefinitions="Auto,*">
+    <!-- Keep cancellation available while scrolling or changing the selection. -->
+    <StackPanel Margin="12,0">
+      <StackPanel x:Name="AiWaitPanel" Margin="0,8,0,0" IsVisible="{Binding IsAiBusy}">
+        <controls:StudioCard Header="المعالجة المحلية">
+          <StackPanel Spacing="5">
+            <ProgressBar IsIndeterminate="True" Minimum="0" Maximum="100" />
+            <TextBlock Text="{Binding AiBusyStatusText}"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ZiwaInfoBrush}" />
+            <Button x:Name="CancelAiOperationButton"
+                    Classes="studioDestructive"
+                    HorizontalAlignment="Left"
+                    Command="{Binding CancelAiOperationCommand}"
+                    ToolTip.Tip="إلغاء العملية المحلية الجارية"
+                    AutomationProperties.Name="إلغاء الاستدلال المحلي"
+                    Content="إلغاء" />
+          </StackPanel>
+        </controls:StudioCard>
+      </StackPanel>
+
+      <StackPanel x:Name="CloudAiWaitPanel" Margin="0,8,0,0" IsVisible="{Binding IsCloudAiBusy}">
+        <controls:StudioCard Header="الترميم السحابي">
+          <StackPanel Spacing="5">
+            <ProgressBar IsIndeterminate="True" Minimum="0" Maximum="100" />
+            <TextBlock Text="{Binding CloudAiBusyStatusText}"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ZiwaInfoBrush}" />
+            <Button x:Name="CancelCloudAiButton"
+                    Classes="studioDestructive"
+                    HorizontalAlignment="Left"
+                    Command="{Binding CancelCloudAiOperationCommand}"
+                    ToolTip.Tip="إلغاء الترميم السحابي فوراً دون إعادة محاولة"
+                    AutomationProperties.Name="إلغاء الترميم السحابي"
+                    Content="إلغاء الترميم" />
+          </StackPanel>
+        </controls:StudioCard>
+      </StackPanel>
+    </StackPanel>
+    <ScrollViewer x:Name="PropertiesScrollViewer" Grid.Row="1" HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+      <Border Padding="12,8,12,16">
+        <StackPanel Spacing="8">
+          <controls:StudioCard x:Name="PropertiesEmptyState" IsVisible="{Binding !HasAnySelection}" Header="{Binding SelectionSummary}">
+            <StackPanel Spacing="8">
+              <TextBlock Text="حدّد عنصراً أو خانة لتعديل خصائصها." TextWrapping="Wrap"
+                         Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <Button x:Name="ShowInspectorPageButton" Classes="studioSubtle"
+                      HorizontalAlignment="Left" Command="{Binding ShowInspectorPageCommand}" ToolTip.Tip="عرض مقاس الورقة وإعداداتها"
+                      AutomationProperties.Name="فتح إعدادات الورقة" Content="إعدادات الورقة" />
+            </StackPanel>
+          </controls:StudioCard>
+
+          <TextBlock x:Name="PropertiesSelectionSummary" IsVisible="{Binding HasAnySelection}"
+                     Text="{Binding SelectionSummary}"
+                     FontWeight="SemiBold"
+                     FontSize="12" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding SelectionSummary}"
+                     Foreground="{DynamicResource ZiwaPrimaryTextBrush}" />
+
+          <StackPanel IsVisible="{Binding IsTextSelected}" Spacing="6">
+            <controls:StudioCard Header="النص والخط">
+              <StackPanel Spacing="8">
+                <TextBox x:Name="SelectedTextContentBox" Text="{Binding SelectedTextContent}"
+                         AcceptsReturn="True"
+                         MinHeight="60" MaxHeight="120" TextWrapping="Wrap"
+                         AutomationProperties.Name="محتوى النص" />
+                <ComboBox x:Name="TextFontFamilyComboBox" MinWidth="0" ItemsSource="{Binding AvailableFontFamilies}" SelectedItem="{Binding SelectedTextFontFamily}"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                          ToolTip.Tip="اختيار نوع الخط" AutomationProperties.Name="نوع الخط" />
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                  <ColorPicker x:Name="TextColorPicker" Grid.Column="0" Color="{Binding SelectedTextColor}"
+                               ToolTip.Tip="لون النص" AutomationProperties.Name="لون النص" />
+                  <controls:StudioNumberField Grid.Column="1" Label="الحجم" VerticalAlignment="Center" Unit="pt"
+                                              Minimum="6" Maximum="240" Increment="2" FormatString="0"
+                                              Value="{Binding SelectedTextFontSizePt}"
+                                              ToolTip.Tip="حجم الخط بالنقاط" AccessibleName="حجم الخط" />
+                  <CheckBox x:Name="TextBoldCheckBox" Grid.Column="2" IsChecked="{Binding SelectedTextBold}" VerticalAlignment="Center"
+                            ToolTip.Tip="جعل النص عريضاً" AutomationProperties.Name="خط عريض" Content="عريض" />
+                </Grid>
+                <Grid ColumnDefinitions="*,6,*">
+                  <Button x:Name="CommitTextButton"
+                          Grid.Column="0"
+                          Classes="studioPrimary"
+                          HorizontalAlignment="Stretch"
+                          Command="{Binding CommitSelectedTextCommand}"
+                          ToolTip.Tip="اعتماد تعديل النص"
+                          AutomationProperties.Name="اعتماد النص"
+                          Content="تطبيق النص" />
+                  <Button x:Name="ApplyTextStyleButton"
+                          Grid.Column="2"
+                          Classes="studioSubtle"
+                          HorizontalAlignment="Stretch"
+                          Command="{Binding ApplySelectedTextStyleCommand}"
+                          ToolTip.Tip="تطبيق الخط والحجم واللون"
+                          AutomationProperties.Name="تطبيق تنسيق النص"
+                          Content="تطبيق التنسيق" />
+                </Grid>
+              </StackPanel>
+            </controls:StudioCard>
+            <Expander x:Name="TextTypographyExpander" Header="المحاذاة ومسار النص" IsExpanded="False"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8">
+              <StackPanel Spacing="8">
+                <UniformGrid Columns="3" ColumnSpacing="4">
+                  <Button x:Name="AlignTextRightButton" Classes="studioSegment" Classes.active="{Binding IsTextAlignRight}"
+                          HorizontalAlignment="Stretch" Command="{Binding AlignTextRightCommand}"
+                          ToolTip.Tip="محاذاة النص لليمين" AutomationProperties.Name="محاذاة النص يمين" Content="يمين" />
+                  <Button x:Name="AlignTextCenterButton" Classes="studioSegment" Classes.active="{Binding IsTextAlignCenter}"
+                          HorizontalAlignment="Stretch" Command="{Binding AlignTextCenterCommand}"
+                          ToolTip.Tip="توسيط النص" AutomationProperties.Name="توسيط النص" Content="وسط" />
+                  <Button x:Name="AlignTextLeftButton" Classes="studioSegment" Classes.active="{Binding IsTextAlignLeft}"
+                          HorizontalAlignment="Stretch" Command="{Binding AlignTextLeftCommand}"
+                          ToolTip.Tip="محاذاة النص لليسار" AutomationProperties.Name="محاذاة النص يسار" Content="يسار" />
+                </UniformGrid>
+                <ComboBox x:Name="TextCurveKindComboBox"
+                          ItemsSource="{Binding AvailableTextCurveOptions}"
+                          SelectedItem="{Binding SelectedTextCurveOption}"
+                          HorizontalAlignment="Stretch"
+                          ToolTip.Tip="تحويل النص إلى قوس علوي أو سفلي أو دائرة ختم"
+                          AutomationProperties.Name="انحناء النص">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TextCurveOption">
+                      <TextBlock Text="{Binding TitleAr}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <controls:StudioSliderRow x:Name="TextCurveBendSlider"
+                                          IsVisible="{Binding HasSelectedTextCurve}"
+                                          Label="شدة القوس"
+                                          Minimum="0.2" Maximum="1.0" TickFrequency="0.05" DefaultValue="0.5"
+                                          DisplayFormat="0.##"
+                                          Value="{Binding SelectedTextCurveBend}" />
+                <controls:StudioSliderRow x:Name="TextLetterSpacingSlider"
+                                          Label="تباعد الأحرف"
+                                          Minimum="-0.05" Maximum="0.35" TickFrequency="0.02" DefaultValue="0"
+                                          DisplayFormat="0.##"
+                                          Value="{Binding SelectedTextLetterSpacingEm}" />
+              </StackPanel>
+            </Expander>
+            <Expander x:Name="TextEffectsExpander" Header="تأثيرات النص" IsExpanded="False"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8">
+              <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="6">
+                  <CheckBox x:Name="TextOutlineCheckBox" Grid.Column="0" IsChecked="{Binding SelectedTextHasOutline}"
+                            ToolTip.Tip="إضافة حد خارجي حول أحرف النص" AutomationProperties.Name="حد خارجي للنص" Content="حد خارجي" />
+                  <ColorPicker x:Name="TextOutlineColorPicker" Grid.Column="1" Color="{Binding SelectedTextOutlineColor}"
+                               ToolTip.Tip="لون الحد الخارجي للنص" AutomationProperties.Name="لون الحد الخارجي للنص" />
+                  <controls:StudioNumberField x:Name="TextOutlineWidthNumeric"
+                                              Grid.Column="2" Unit="مم"
+                                              Minimum="0.1" Maximum="5" Increment="0.1" FormatString="0.##"
+                                              Value="{Binding SelectedTextOutlineWidthMm}"
+                                              ToolTip.Tip="سُمك الحد الخارجي للنص بالمليمتر" AccessibleName="سُمك حد النص" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                  <CheckBox x:Name="TextPillCheckBox" Grid.Column="0" IsChecked="{Binding SelectedTextHasPill}"
+                            ToolTip.Tip="تفعيل خلفية شارة كبسولة خلف النص" AutomationProperties.Name="خلفية كبسولة للنص" Content="كبسولة" />
+                  <ColorPicker x:Name="TextPillColorPicker" Grid.Column="1" Color="{Binding SelectedTextPillColor}"
+                               ToolTip.Tip="لون خلفية الشارة الكبسولة" AutomationProperties.Name="لون الكبسولة" />
+                  <CheckBox x:Name="TextShadowCheckBox" Grid.Column="2" IsChecked="{Binding SelectedTextHasShadow}"
+                            ToolTip.Tip="إضافة ظل ناعم للنص" AutomationProperties.Name="ظل النص" Content="ظل" />
+                </Grid>
+                <Button x:Name="ApplyTextEffectsButton"
+                        Classes="studioSubtle"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding ApplySelectedTextEffectsCommand}"
+                        ToolTip.Tip="تحديث ألوان وسُمك تأثيرات النص"
+                        AutomationProperties.Name="تطبيق تأثيرات النص"
+                        Content="تحديث التأثيرات" />
+              </StackPanel>
+            </Expander>
+          </StackPanel>
+
+          <StackPanel x:Name="PhotoAndFilterToolsPanel" Spacing="8" IsVisible="{Binding IsPhotoToolsVisible}">
+            <controls:StudioCard Header="مرشحات الصورة">
+              <StackPanel Spacing="8">
+                <ComboBox x:Name="FilterPresetComboBox"
+                          ItemsSource="{Binding AvailableFilterPresetOptions}"
+                          SelectedItem="{Binding SelectedFilterPresetOption}"
+                          HorizontalAlignment="Stretch"
+                          ToolTip.Tip="اختيار مرشح لوني جاهز للصورة"
+                          AutomationProperties.Name="مرشح الصورة الجاهز">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:FilterPresetOption">
+                      <TextBlock Text="{Binding TitleAr}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <controls:StudioSliderRow x:Name="FilterBrightnessSlider"
+                                          Label="سطوع"
+                                          Minimum="-1" Maximum="1" TickFrequency="0.05" DefaultValue="0"
+                                          DisplayScale="100" DisplayFormat="+0;-0;0" Unit="%"
+                                          Value="{Binding FilterBrightness}" />
+                <controls:StudioSliderRow x:Name="FilterContrastSlider"
+                                          Label="تباين"
+                                          Minimum="-1" Maximum="1" TickFrequency="0.05" DefaultValue="0"
+                                          DisplayScale="100" DisplayFormat="+0;-0;0" Unit="%"
+                                          Value="{Binding FilterContrast}" />
+                <controls:StudioSliderRow x:Name="FilterSaturationSlider"
+                                          Label="تشبع"
+                                          Minimum="-1" Maximum="1" TickFrequency="0.05" DefaultValue="0"
+                                          DisplayScale="100" DisplayFormat="+0;-0;0" Unit="%"
+                                          Value="{Binding FilterSaturation}" />
+                <WrapPanel Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
+                  <Button x:Name="ApplyFilterButton"
+                          Classes="studioPrimary"
+                          Command="{Binding ApplyImageFiltersCommand}"
+                          ToolTip.Tip="تطبيق المرشح على الصورة أو الخانة"
+                          AutomationProperties.Name="تطبيق المرشح"
+                          Content="تطبيق المرشح" />
+                  <Button x:Name="ApplyFilterAllSlotsButton"
+                          Classes="studioSubtle"
+                          Command="{Binding ApplyFiltersToAllSlotsCommand}"
+                          IsVisible="{Binding IsCollageMode}"
+                          ToolTip.Tip="تطبيق على كل الخانات"
+                          AutomationProperties.Name="تطبيق على كل الخانات"
+                          Content="على كل الخانات" />
+                  <Button x:Name="ResetFilterButton"
+                          Classes="studioSubtle"
+                          Command="{Binding ResetImageOrSlotFiltersCommand}"
+                          ToolTip.Tip="إعادة تعيين المرشحات"
+                          AutomationProperties.Name="إعادة تعيين المرشح"
+                          Content="إعادة تعيين" />
+                </WrapPanel>
+                <Button x:Name="RestoreOriginalImageButton"
+                        Classes="studioSubtle"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding RestoreOriginalImageCommand}"
+                        IsVisible="{Binding CanRestoreOriginalTarget}"
+                        ToolTip.Tip="استعادة الصورة الأصلية وإلغاء العزل والقص"
+                        AutomationProperties.Name="استعادة الأصل"
+                        Content="استعادة الأصل" />
+              </StackPanel>
+            </controls:StudioCard>
+            <controls:StudioCard Header="قناع الصورة">
+              <StackPanel Spacing="8">
+                <ComboBox x:Name="ImageMaskComboBox"
+                          ItemsSource="{Binding AvailableMaskOptions}"
+                          SelectedItem="{Binding SelectedMaskOption}"
+                          HorizontalAlignment="Stretch"
+                          ToolTip.Tip="اختيار شكل قناع قص غير هدام للصورة أو خانة الكولاج"
+                          AutomationProperties.Name="قناع الصورة">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MaskOption">
+                      <TextBlock Text="{Binding TitleAr}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button x:Name="ApplyMaskAllSlotsButton"
+                        Classes="studioSubtle"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding ApplyMaskToAllSlotsCommand}"
+                        IsVisible="{Binding IsCollageMode}"
+                        ToolTip.Tip="تطبيق شكل القناع على جميع خانات شيت الكولاج"
+                        AutomationProperties.Name="تعميم القناع على كل الخانات"
+                        Content="لكل الخانات" />
+              </StackPanel>
+            </controls:StudioCard>
+          </StackPanel>
+
+          <controls:StudioCard IsVisible="{Binding IsCollageSlotSelected}" Header="إطار الخانة وزواياها">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,6,*" RowDefinitions="Auto,Auto" RowSpacing="6">
+                <controls:StudioNumberField x:Name="CollageSlotCornerRadiusInput"
+                                            Grid.Row="0" Grid.Column="0"
+                                            Label="تدوير الزوايا" Unit="مم"
+                                            Minimum="0" Maximum="25" Increment="0.5" FormatString="0.#"
+                                            Value="{Binding CollageSlotCornerRadiusMm}"
+                                            ToolTip.Tip="نصف قطر استدارة زوايا الخانة بالمليمتر"
+                                            AccessibleName="استدارة زوايا الخانة" />
+                <controls:StudioNumberField x:Name="CollageSlotBorderWidthInput"
+                                            Grid.Row="0" Grid.Column="2"
+                                            Label="سمك الإطار" Unit="مم"
+                                            Minimum="0" Maximum="10" Increment="0.2" FormatString="0.#"
+                                            Value="{Binding CollageSlotBorderWidthMm}"
+                                            ToolTip.Tip="سمك إطار خانة الكولاج بالمليمتر (0 لإلغاء الإطار)"
+                                            AccessibleName="سمك إطار الخانة" />
+                <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="لون الإطار:" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                  <ColorPicker x:Name="CollageSlotBorderColorPicker"
+                               Color="{Binding CollageSlotBorderColor}"
+                               ToolTip.Tip="اختيار لون إطار خانة الكولاج"
+                               AutomationProperties.Name="لون إطار الخانة" />
+                </StackPanel>
+              </Grid>
+              <Grid ColumnDefinitions="*,6,*">
+                <Button x:Name="ApplySlotStyleButton"
+                        Grid.Column="0"
+                        Classes="studioPrimary"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding ApplySlotStyleCommand}"
+                        ToolTip.Tip="تطبيق استدارة الزوايا والإطار على الخانة المحددة"
+                        AutomationProperties.Name="تطبيق نمط الخانة"
+                        Content="تطبيق الإطار" />
+                <Button x:Name="ApplySlotStyleAllButton"
+                        Grid.Column="2"
+                        Classes="studioSubtle"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding ApplySlotStyleToAllCommand}"
+                        ToolTip.Tip="تعميم الزوايا والإطار على جميع خانات الشيت"
+                        AutomationProperties.Name="تعميم الإطار على كل الخانات"
+                        Content="لكل الخانات" />
+              </Grid>
+            </StackPanel>
+          </controls:StudioCard>
+
+          <controls:StudioCard x:Name="StickerInspectorCard"
+                               IsVisible="{Binding IsStickerSelected}"
+                               Header="الملصق"
+                               AccentKind="Focus">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding SelectedStickerTemplateTitle}" TextTrimming="CharacterEllipsis"
+                           FontSize="11"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                  <Border Width="14" Height="14" CornerRadius="3" Background="{Binding SelectedStickerPrimaryBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+                  <Border Width="14" Height="14" CornerRadius="3" Background="{Binding SelectedStickerSecondaryBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+                  <Border Width="14" Height="14" CornerRadius="3" Background="{Binding SelectedStickerAccentBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+                  <Border Width="14" Height="14" CornerRadius="3" Background="{Binding SelectedStickerSurfaceBrush}" BorderBrush="{DynamicResource ZiwaHairlineBorderBrush}" BorderThickness="1" />
+                </StackPanel>
+              </Grid>
+              <Grid ColumnDefinitions="*,6,*" ColumnSpacing="0">
+                <Button x:Name="InspectorEditStickerButton"
+                        Grid.Column="0"
+                        Classes="studioPrimary"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding EditSelectedStickerCommand}"
+                        ToolTip.Tip="فتح استوديو الملصق لتعديله في مكانه"
+                        AutomationProperties.Name="تعديل الملصق في مكانه"
+                        Content="تعديل الملصق" />
+                <Button x:Name="InspectorRandomStickerPaletteButton"
+                        Grid.Column="2"
+                        Classes="studioSubtle"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding RandomizeSelectedStickerPaletteCommand}"
+                        ToolTip.Tip="اشتقاق ألوان جديدة في فضاء OKLCH"
+                        AutomationProperties.Name="توليفة ألوان OKLCH"
+                        Content="توليفة ذكية" />
+              </Grid>
+            </StackPanel>
+          </controls:StudioCard>
+
+          <controls:StudioCard IsVisible="{Binding IsSvgSelected}" Header="لون الشعار">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
+              <ColorPicker x:Name="SvgTintColorPicker" Grid.Column="0" Color="{Binding SelectedSvgTintColor}"
+                           ToolTip.Tip="اختيار لون تلوين الشعار" AutomationProperties.Name="لون الشعار" />
+              <Button x:Name="ToggleSvgTintButton"
+                      Grid.Column="1"
+                      Classes="studioPrimary"
+                      HorizontalAlignment="Stretch"
+                      Command="{Binding ToggleSvgTintCommand}"
+                      ToolTip.Tip="تلوين الشعار المتجه بضغطة واحدة"
+                      AutomationProperties.Name="تلوين الشعار"
+                      Content="تلوين سريع" />
+              <Button x:Name="ClearSvgTintButton"
+                      Grid.Column="2"
+                      Classes="studioSubtle"
+                      Command="{Binding ClearSvgTintCommand}"
+                      ToolTip.Tip="استعادة ألوان الشعار الأصلية"
+                      AutomationProperties.Name="إزالة تلوين الشعار"
+                      Content="أصلي" />
+            </Grid>
+          </controls:StudioCard>
+
+          <controls:StudioCard IsVisible="{Binding IsShapeSelected}" Header="مظهر الشكل">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBlock Text="لون التعبئة" VerticalAlignment="Center" />
+                <ColorPicker x:Name="ShapeFillColorPicker" Grid.Column="1" Color="{Binding SelectedShapeFillColor}"
+                             ToolTip.Tip="اختيار لون تعبئة الشكل" AutomationProperties.Name="لون الشكل" />
+              </Grid>
+              <controls:StudioSliderRow x:Name="ShapeOpacitySlider"
+                                        Label="الشفافية"
+                                        Minimum="10" Maximum="100" TickFrequency="5" DefaultValue="100"
+                                        DisplayFormat="0" Unit="%"
+                                        Value="{Binding SelectedShapeOpacityPercent}" />
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                <ColorPicker x:Name="ShapeStrokeColorPicker" Grid.Column="0" Color="{Binding SelectedShapeStrokeColor}"
+                             ToolTip.Tip="لون حدود الشكل أو الخط" AutomationProperties.Name="لون حدود الشكل" />
+                <controls:StudioNumberField x:Name="ShapeStrokeWidthNumeric"
+                                            Grid.Column="1"
+                                            Label="سُمك الحدود" Unit="مم"
+                                            Minimum="0" Maximum="20" Increment="0.2" FormatString="0.#"
+                                            Value="{Binding SelectedShapeStrokeWidthMm}"
+                                            ToolTip.Tip="سُمك حدود الشكل بالمليمتر (0 لإلغاء الحدود)"
+                                            AccessibleName="سُمك حدود الشكل" />
+              </Grid>
+              <Button x:Name="ApplyShapeStyleButton"
+                      Classes="studioPrimary"
+                      HorizontalAlignment="Stretch"
+                      Command="{Binding ApplySelectedShapeStyleCommand}"
+                      ToolTip.Tip="تطبيق التعبئة والحدود والشفافية على الشكل المحدد"
+                      AutomationProperties.Name="تطبيق نمط الشكل"
+                      Content="تطبيق المظهر" />
+            </StackPanel>
+          </controls:StudioCard>
+
+          <controls:StudioCard x:Name="GroupContextCard" Header="إجراءات التحديد">
+            <controls:StudioCard.IsVisible>
+              <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                <Binding Path="CanGroup" />
+                <Binding Path="CanUngroup" />
+              </MultiBinding>
+            </controls:StudioCard.IsVisible>
+            <WrapPanel ItemSpacing="6" LineSpacing="6">
+              <Button x:Name="GroupButton"
+                      Classes="studioSubtle"
+                      Command="{Binding GroupCommand}"
+                      IsVisible="{Binding CanGroup}"
+                      ToolTip.Tip="تجميع العناصر المحددة (Ctrl+G)"
+                      AutomationProperties.Name="تجميع العناصر المحددة"
+                      Content="تجميع" />
+              <Button x:Name="UngroupButton"
+                      Classes="studioSubtle"
+                      Command="{Binding UngroupCommand}"
+                      IsVisible="{Binding CanUngroup}"
+                      ToolTip.Tip="فك التجميع (Ctrl+Shift+G)"
+                      AutomationProperties.Name="فك التجميع"
+                      Content="فك التجميع" />
+              <Button x:Name="MaskWithShapeButton"
+                      Classes="studioPrimary"
+                      Command="{Binding MaskWithShapeCommand}"
+                      IsVisible="{Binding CanMaskImageWithShape}"
+                      ToolTip.Tip="قنّع الصورة بهذا الشكل"
+                      AutomationProperties.Name="قنّع الصورة بهذا الشكل"
+                      Content="قنّع بالشكل" />
+            </WrapPanel>
+          </controls:StudioCard>
+
+          <controls:StudioCard x:Name="OfflineAiCard"
+                               IsVisible="{Binding IsPhotoAiTargetVisible}"
+                               Header="معالجة محلية"
+                               Subtitle="تُعالَج الصورة على جهازك دون إرسالها.">
+            <StackPanel Spacing="6">
+              <WrapPanel ItemSpacing="6" LineSpacing="6">
+                <Button x:Name="InspectorRemoveBgButton"
+                        Classes="studioPrimary"
+                        Command="{Binding RemoveBackgroundCommand}"
+                        IsEnabled="{Binding IsAllAiIdle}"
+                        ToolTip.Tip="عزل الخلفية محلياً دون إرسال الصورة (Ctrl+Shift+B)"
+                        AutomationProperties.Name="عزل الخلفية تلقائياً على الجهاز"
+                        Content="عزل الخلفية" />
+                <Button x:Name="InspectorEditMaskButton"
+                        Classes="studioSubtle"
+                        Command="{Binding OpenMaskEditorCommand}"
+                        IsEnabled="{Binding IsAllAiIdle}"
+                        ToolTip.Tip="مسح القناع واستعادته بالفرشاة مع معاينة قبل/بعد"
+                        AutomationProperties.Name="تعديل القناع بالفرشاة"
+                        Content="تعديل القناع" />
+              </WrapPanel>
+              <TextBlock Text="معيار صورة الهوية"
+                         FontSize="11"
+                         Foreground="{DynamicResource ZiwaSecondaryTextBrush}" />
+              <ComboBox x:Name="FramingPresetComboBox"
+                        ItemsSource="{Binding AvailableFramingPresets}"
+                        SelectedItem="{Binding SelectedFramingPresetOption}"
+                        AutomationProperties.Name="معيار تأطير الوجه للهوية"
+                        HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:IdPhotoFramingPresetOption">
+                    <TextBlock Text="{Binding TitleAr}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <WrapPanel ItemSpacing="6" LineSpacing="6">
+                <Button x:Name="InspectorAutoFrameFaceButton"
+                        Classes="studioSubtle"
+                        Command="{Binding AutoFrameFaceCommand}"
+                        IsEnabled="{Binding IsAllAiIdle}"
+                        ToolTip.Tip="توسيط الرأس والكتفين وفق معيار الهوية (Ctrl+Shift+F)"
+                        AutomationProperties.Name="تأطير الوجه لصور الهوية"
+                        Content="تأطير الوجه" />
+                <Button x:Name="InspectorOpenScannerButton"
+                        Classes="studioSubtle"
+                        Command="{Binding OpenDocumentScannerCommand}"
+                        IsEnabled="{Binding IsScannerToolsEnabled}"
+                        ToolTip.Tip="مسح المستندات والبطاقات وتصحيح المنظور (Ctrl+Shift+D)"
+                        AutomationProperties.Name="ماسح المستندات والبطاقات"
+                        Content="مسح مستند" />
+              </WrapPanel>
+            </StackPanel>
+          </controls:StudioCard>
+
+          <controls:StudioCard x:Name="CloudAiCard"
+                               IsVisible="{Binding IsPhotoAiTargetVisible}"
+                               Header="ترميم سحابي">
+            <StackPanel Spacing="6">
+              <Border Background="{DynamicResource ZiwaSubtleFillBrush}"
+                      CornerRadius="{StaticResource ControlCornerRadius}"
+                      Padding="6,2">
+                <TextBlock x:Name="CloudQuotaBadgeTextBlock"
+                           Text="{Binding CloudQuotaBadgeText}"
+                           FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource ZiwaInfoBrush}" />
+              </Border>
+              <Button x:Name="InspectorCloudEnhanceButton"
+                      Classes="studioPrimary"
+                      HorizontalAlignment="Left"
+                      Command="{Binding EnhancePhotoCloudCommand}"
+                      IsEnabled="{Binding IsAllAiIdle}"
+                      ToolTip.Tip="إرسال الصورة للترميم السحابي ومضاعفة الدقة (Ctrl+Shift+U)"
+                      AutomationProperties.Name="إرسال الصورة للترميم السحابي ومضاعفة الدقة"
+                      Content="إرسال للترميم السحابي ×2" />
+            </StackPanel>
+          </controls:StudioCard>
+
+          <controls:StudioCard x:Name="TransformAndAlignCard"
+                               IsVisible="{Binding HasSelection}"
+                               Header="الموقع والمحاذاة">
+            <StackPanel Spacing="8">
+              <!-- RTL button order; the glyphs point to physical page edges, not reading directions. -->
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
+                <Button x:Name="AlignRightPageButton" Classes="workspaceAction iconOnly"
+                        Command="{Binding AlignSelectionRightCommand}"
+                        ToolTip.Tip="محاذاة مع حافة الورقة اليمنى" AutomationProperties.Name="محاذاة يمين الورقة">
+                  <PathIcon Classes="workspaceIcon" Data="{StaticResource IconAlignRight}" FlowDirection="LeftToRight" />
+                </Button>
+                <Button x:Name="AlignCenterHPageButton" Classes="workspaceAction iconOnly"
+                        Command="{Binding AlignSelectionCenterHCommand}"
+                        ToolTip.Tip="توسيط أفقي في منتصف الورقة" AutomationProperties.Name="توسيط أفقي">
+                  <PathIcon Classes="workspaceIcon" Data="{StaticResource IconAlignCenterH}" FlowDirection="LeftToRight" />
+                </Button>
+                <Button x:Name="AlignLeftPageButton" Classes="workspaceAction iconOnly"
+                        Command="{Binding AlignSelectionLeftCommand}"
+                        ToolTip.Tip="محاذاة مع حافة الورقة اليسرى" AutomationProperties.Name="محاذاة يسار الورقة">
+                  <PathIcon Classes="workspaceIcon" Data="{StaticResource IconAlignLeft}" FlowDirection="LeftToRight" />
+                </Button>
+                <Button x:Name="AlignTopPageButton" Classes="workspaceAction iconOnly"
+                        Command="{Binding AlignSelectionTopCommand}"
+                        ToolTip.Tip="محاذاة مع أعلى الورقة" AutomationProperties.Name="محاذاة أعلى الورقة">
+                  <PathIcon Classes="workspaceIcon" Data="{StaticResource IconAlignTop}" FlowDirection="LeftToRight" />
+                </Button>
+                <Button x:Name="AlignCenterVPageButton" Classes="workspaceAction iconOnly"
+                        Command="{Binding AlignSelectionCenterVCommand}"
+                        ToolTip.Tip="توسيط رأسي في منتصف الورقة" AutomationProperties.Name="توسيط رأسي">
+                  <PathIcon Classes="workspaceIcon" Data="{StaticResource IconAlignCenterV}" FlowDirection="LeftToRight" />
+                </Button>
+                <Button x:Name="AlignBottomPageButton" Classes="workspaceAction iconOnly"
+                        Command="{Binding AlignSelectionBottomCommand}"
+                        ToolTip.Tip="محاذاة مع أسفل الورقة" AutomationProperties.Name="محاذاة أسفل الورقة">
+                  <PathIcon Classes="workspaceIcon" Data="{StaticResource IconAlignBottom}" FlowDirection="LeftToRight" />
+                </Button>
+              </StackPanel>
+
+              <StackPanel Spacing="8" IsVisible="{Binding IsSingleNodeSelected}">
+                <Grid ColumnDefinitions="*,6,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                  <controls:StudioNumberField Grid.Row="0" Grid.Column="0" Label="الموقع س (X)" Unit="مم"
+                                              Increment="0.5" FormatString="0.#" Value="{Binding SelectedNodeXMm}"
+                                              ToolTip.Tip="الإحداثي الأفقي بالمليمتر" AccessibleName="الإحداثي الأفقي X" />
+                  <controls:StudioNumberField Grid.Row="0" Grid.Column="2" Label="الموقع ص (Y)" Unit="مم"
+                                              Increment="0.5" FormatString="0.#" Value="{Binding SelectedNodeYMm}"
+                                              ToolTip.Tip="الإحداثي الرأسي بالمليمتر" AccessibleName="الإحداثي الرأسي Y" />
+                  <controls:StudioNumberField Grid.Row="1" Grid.Column="0" Label="العرض" Unit="مم"
+                                              Minimum="2" Maximum="2000" Increment="1" FormatString="0.#" Value="{Binding SelectedNodeWidthMm}"
+                                              ToolTip.Tip="عرض العنصر بالمليمتر" AccessibleName="عرض العنصر" />
+                  <controls:StudioNumberField Grid.Row="1" Grid.Column="2" Label="الارتفاع" Unit="مم"
+                                              Minimum="2" Maximum="2000" Increment="1" FormatString="0.#" Value="{Binding SelectedNodeHeightMm}"
+                                              ToolTip.Tip="ارتفاع العنصر بالمليمتر" AccessibleName="ارتفاع العنصر" />
+                  <controls:StudioNumberField Grid.Row="2" Grid.Column="0" Label="الدوران" Unit="°"
+                                              Minimum="0" Maximum="360" Increment="5" FormatString="0.#" Value="{Binding SelectedNodeRotationDeg}"
+                                              ToolTip.Tip="زاوية الدوران بالدرجات" AccessibleName="زاوية الدوران" />
+                  <controls:StudioNumberField Grid.Row="2" Grid.Column="2" Label="الشفافية" Unit="%"
+                                              Minimum="5" Maximum="100" Increment="5" FormatString="0" Value="{Binding SelectedNodeOpacityPercent}"
+                                              ToolTip.Tip="شفافية العنصر المحدد" AccessibleName="شفافية العنصر" />
+                </Grid>
+                <Button x:Name="ApplyNumericTransformButton"
+                        Classes="studioPrimary"
+                        HorizontalAlignment="Left"
+                        Command="{Binding ApplyNumericTransformCommand}"
+                        ToolTip.Tip="تطبيق الموقع والأبعاد والدوران والشفافية"
+                        AutomationProperties.Name="تطبيق الأبعاد والموقع"
+                        Content="تطبيق الأبعاد والموقع" />
+              </StackPanel>
+            </StackPanel>
+          </controls:StudioCard>
+        </StackPanel>
+      </Border>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

@@ -34,6 +34,7 @@ public partial class MainWindow : Window
             _subscribedViewModel.ToastRequested += OnToastRequested;
             _subscribedViewModel.ViewportFitRequested += OnViewportFitRequested;
             _subscribedViewModel.InlineTextEditOpened += OnInlineTextEditOpened;
+            _subscribedViewModel.InspectorPreflightReviewRequested += InspectorPanelView.ScrollToPreflight;
         }
     }
 
@@ -44,6 +45,7 @@ public partial class MainWindow : Window
             _subscribedViewModel.ToastRequested -= OnToastRequested;
             _subscribedViewModel.ViewportFitRequested -= OnViewportFitRequested;
             _subscribedViewModel.InlineTextEditOpened -= OnInlineTextEditOpened;
+            _subscribedViewModel.InspectorPreflightReviewRequested -= InspectorPanelView.ScrollToPreflight;
             _subscribedViewModel = null;
         }
     }

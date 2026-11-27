@@ -132,6 +132,8 @@ public sealed partial class MainWindowViewModel
         {
             SelectPreflightIssue(PreflightIssues[0]);
         }
+
+        ShowInspectorWarnings();
     }
 
     [RelayCommand]

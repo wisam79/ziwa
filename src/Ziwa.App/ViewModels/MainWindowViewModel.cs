@@ -242,6 +242,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public string PlatformStatusText => _platformCapabilities.PlatformName;
     public string ZoomPercentText => $"{Viewport.Zoom * 100.0:0}%";
     public string ThemeToggleText => IsDarkTheme ? "المظهر الفاتح" : "المظهر الداكن";
+    public string ActivePageCounterText => $"{Document.ActivePageIndex + 1} / {Document.Pages.Length}";
     public string ActivePageDisplayText => $"صفحة {Document.ActivePageIndex + 1} من {Document.Pages.Length} — {ActivePage.Name}";
     public bool IsMultiPage => Document.Pages.Length > 1;
     public bool CanDeleteActivePage => Document.Pages.Length > 1;
@@ -267,6 +268,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public bool IsQuickBarVisible => HasAnySelection && !IsZenMode;
     public bool IsChromeVisible => !IsZenMode;
     public bool EffectiveInspectorVisible => !IsZenMode && IsInspectorOpen;
+    public bool CanShowReopenInspectorButton => !IsZenMode && !IsInspectorOpen;
+    public string WorkspaceModeBadgeText => IsCollageMode ? "شيت كولاج" : "وضع حر";
+    public bool HasNoFilteredCommands => FilteredCommands.Count == 0;
 
     public bool CanMaskImageWithShape =>
         SelectedNodes.Count == 2 &&
@@ -789,6 +793,20 @@ public sealed partial class MainWindowViewModel : ObservableObject
             }));
 
         _commandRegistry.Register(new CommandDefinition(
+            new CommandId("view.toggleInspector"),
+            "إظهار / إخفاء لوح المفتش",
+            "Ctrl+I",
+            "عرض",
+            () => true,
+            _ =>
+            {
+                _autoOpenedInspector = false;
+                IsInspectorOpen = !IsInspectorOpen;
+                StatusMessage = IsInspectorOpen ? "تم فتح لوح المفتش" : "تم طي لوح المفتش";
+                return Task.CompletedTask;
+            }));
+
+        _commandRegistry.Register(new CommandDefinition(
             new CommandId("view.zoomIn"),
             "تكبير",
             string.Empty,
@@ -1051,6 +1069,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         {
             if (!IsInspectorOpen)
             {
+                InspectorTabIndex = PropertiesTabIndex;
                 _autoOpenedInspector = true;
                 IsInspectorOpen = true;
             }
@@ -1140,6 +1159,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(PageWidthMm));
         OnPropertyChanged(nameof(PageHeightMm));
         OnPropertyChanged(nameof(PageSizeMmText));
+        OnPropertyChanged(nameof(ActivePageCounterText));
         OnPropertyChanged(nameof(ActivePageDisplayText));
         OnPropertyChanged(nameof(IsMultiPage));
         OnPropertyChanged(nameof(CanDeleteActivePage));
@@ -1166,6 +1186,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(IsQuickBarVisible));
         OnPropertyChanged(nameof(CanMaskImageWithShape));
         OnPropertyChanged(nameof(SelectionSummary));
+        OnPropertyChanged(nameof(WorkspaceModeBadgeText));
         SyncInspectorPolishFields();
         SyncCanvasInteractionFields();
         SyncPrintExportOptions();
@@ -1260,6 +1281,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
                 FilteredCommands.Add(cmd);
             }
         }
+
+        OnPropertyChanged(nameof(HasNoFilteredCommands));
     }
 
     partial void OnViewportChanged(ViewportTransform value) => OnPropertyChanged(nameof(ZoomPercentText));
@@ -1274,13 +1297,18 @@ public sealed partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(ThemeToggleText));
     }
 
-    partial void OnIsInspectorOpenChanged(bool value) => OnPropertyChanged(nameof(EffectiveInspectorVisible));
+    partial void OnIsInspectorOpenChanged(bool value)
+    {
+        OnPropertyChanged(nameof(EffectiveInspectorVisible));
+        OnPropertyChanged(nameof(CanShowReopenInspectorButton));
+    }
 
     partial void OnIsZenModeChanged(bool value)
     {
         OnPropertyChanged(nameof(IsChromeVisible));
         OnPropertyChanged(nameof(IsQuickBarVisible));
         OnPropertyChanged(nameof(EffectiveInspectorVisible));
+        OnPropertyChanged(nameof(CanShowReopenInspectorButton));
     }
 
     partial void OnCommandSearchQueryChanged(string value) => RefreshFilteredCommands();
