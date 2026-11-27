@@ -159,17 +159,21 @@ public sealed class Phase4ModalAiUpscalerTests
 
         // 1. User cancellation aborts promptly
         int cancelCalls = 0;
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (var cancelHandler = new DelegateHttpMessageHandler(async (_, _, ct) =>
         {
             cancelCalls++;
+            requestStarted.TrySetResult();
             await Task.Delay(TimeSpan.FromSeconds(10), ct);
             return CreateJsonResponse(HttpStatusCode.OK, "{}");
         }))
         {
             using var upscaler = new ModalAiUpscaler(store, new CloudAiOptions { CustomHttpHandler = cancelHandler });
-            using var cts = new CancellationTokenSource(40);
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-                upscaler.EnhanceImageAsync(sourceId, session, cancellationToken: cts.Token));
+            using var cts = new CancellationTokenSource();
+            var pending = upscaler.EnhanceImageAsync(sourceId, session, cancellationToken: cts.Token);
+            await requestStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            cts.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending.WaitAsync(TimeSpan.FromSeconds(5)));
             Assert.Equal(1, cancelCalls);
         }
 
