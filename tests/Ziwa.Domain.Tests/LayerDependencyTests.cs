@@ -32,7 +32,8 @@ public sealed class LayerDependencyTests
 
             XDocument doc = XDocument.Load(csproj);
             string[] actualRefs = doc.Descendants("ProjectReference")
-                .Select(e => Path.GetFileNameWithoutExtension(e.Attribute("Include")?.Value ?? string.Empty))
+                .Select(e => Path.GetFileNameWithoutExtension(
+                    (e.Attribute("Include")?.Value ?? string.Empty).Replace('\\', '/')))
                 .Where(name => !string.IsNullOrWhiteSpace(name))
                 .ToArray();
 
