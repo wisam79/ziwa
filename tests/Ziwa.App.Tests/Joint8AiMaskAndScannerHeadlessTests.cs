@@ -49,6 +49,7 @@ public sealed class Joint8AiMaskAndScannerHeadlessTests
             Assert.True(vm.ScannerRegions[idx].Quad.TopLeft.X > 1.0);
 
             vm.ResetSelectedScanRegionToFullImageCommand.Execute(null);
+            Assert.Equal(idx, vm.SelectedScannerRegionIndex);
             Assert.Equal(0.0, vm.ScannerRegions[idx].Quad.TopLeft.X, 1);
             Assert.Equal(0.0, vm.ScannerRegions[idx].Quad.TopLeft.Y, 1);
             Assert.Equal(159.0, vm.ScannerRegions[idx].Quad.BottomRight.X, 1);

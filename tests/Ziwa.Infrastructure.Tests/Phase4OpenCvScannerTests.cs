@@ -14,7 +14,7 @@ namespace Ziwa.Infrastructure.Tests;
 public sealed class Phase4OpenCvScannerTests
 {
     [Fact]
-    public async Task OpenCvDocumentScanner_DetectsSkewedSingleDocument_AndMultipleIdCards_AndSupportsCancellation()
+    public async Task OpenCvDocumentScanner_DetectsSkewedSingleDocument_AndMultipleIdCards()
     {
         using var store = new AssetStore();
         var scanner = new OpenCvDocumentScanner(store);
@@ -37,12 +37,43 @@ public sealed class Phase4OpenCvScannerTests
         AssetId multiCardAsset = store.RegisterAsset(CreateTwoIdCardsPhotoPng(600, 420));
         ScanDetectionResult multiDetection = await scanner.DetectDocumentsAsync(multiCardAsset, ScanDetectionMode.AutoSingleOrMulti);
         Assert.Equal(2, multiDetection.Regions.Length);
+    }
 
-        // 3. Cancellation check
-        var slowScanner = new OpenCvDocumentScanner(store, new DocumentScannerOptions(ProcessingStepDelayMs: 350));
-        using var cts = new CancellationTokenSource(35);
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            slowScanner.DetectDocumentsAsync(singleDocAsset, ScanDetectionMode.AutoSingleOrMulti, cts.Token));
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Scan_HonorsCancellationBeforeAndDuringProcessing(bool extract)
+    {
+        using var store = new AssetStore();
+        AssetId asset = store.RegisterAsset(CreateRectifiedSampleCardPng(160, 100));
+        var decoded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var resume = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var scanner = new OpenCvDocumentScanner(store, new DocumentScannerOptions(AfterSourceDecodedAsync: _ =>
+        {
+            decoded.SetResult();
+            return resume.Task;
+        }));
+        Task RunScan(CancellationToken token) => extract
+            ? scanner.ExtractDocumentsAsync(asset, [new(Guid.NewGuid(), "بطاقة", DocumentQuadPx.CreateInsetDefault(160, 100), DocumentScanFilterKind.None)], token)
+            : scanner.DetectDocumentsAsync(asset, cancellationToken: token);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => RunScan(new CancellationToken(canceled: true)));
+        Assert.False(decoded.Task.IsCompleted);
+
+        using var cts = new CancellationTokenSource();
+        Task pending = RunScan(cts.Token);
+        try
+        {
+            await decoded.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            cts.Cancel();
+        }
+        finally
+        {
+            resume.TrySetResult();
+        }
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
+        Assert.Equal(1, store.AssetCount);
     }
 
     [Fact]

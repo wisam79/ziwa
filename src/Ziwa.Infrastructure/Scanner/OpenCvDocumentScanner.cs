@@ -37,12 +37,13 @@ public sealed class OpenCvDocumentScanner : IDocumentScannerService
         return await Task.Run(async () =>
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (_options.ProcessingStepDelayMs > 0)
+            using SKBitmap fullBitmap = AlphaMaskCompositor.DecodeNormalizedBytesToBitmap(encodedBytes);
+            if (_options.AfterSourceDecodedAsync is { } afterDecode)
             {
-                await Task.Delay(_options.ProcessingStepDelayMs, cancellationToken).ConfigureAwait(false);
+                await afterDecode(cancellationToken).ConfigureAwait(false);
             }
 
-            using SKBitmap fullBitmap = AlphaMaskCompositor.DecodeNormalizedBytesToBitmap(encodedBytes);
+            cancellationToken.ThrowIfCancellationRequested();
             int fullW = fullBitmap.Width;
             int fullH = fullBitmap.Height;
 
@@ -124,12 +125,13 @@ public sealed class OpenCvDocumentScanner : IDocumentScannerService
         return await Task.Run(async () =>
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (_options.ProcessingStepDelayMs > 0)
+            using SKBitmap fullBitmap = AlphaMaskCompositor.DecodeNormalizedBytesToBitmap(encodedBytes);
+            if (_options.AfterSourceDecodedAsync is { } afterDecode)
             {
-                await Task.Delay(_options.ProcessingStepDelayMs, cancellationToken).ConfigureAwait(false);
+                await afterDecode(cancellationToken).ConfigureAwait(false);
             }
 
-            using SKBitmap fullBitmap = AlphaMaskCompositor.DecodeNormalizedBytesToBitmap(encodedBytes);
+            cancellationToken.ThrowIfCancellationRequested();
             int fullW = fullBitmap.Width;
             int fullH = fullBitmap.Height;
             byte[] fullRgba = new byte[checked(fullW * fullH * 4)];

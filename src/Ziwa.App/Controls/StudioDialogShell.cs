@@ -59,6 +59,45 @@ public sealed class StudioDialogShell : ContentControl
         AvaloniaProperty.Register<StudioDialogShell, VerticalAlignment>(nameof(DialogVerticalAlignment), defaultValue: VerticalAlignment.Center);
 
     private Control? _scrim;
+    private Button? _closeButton;
+    private bool _isCovered;
+
+    internal TextBox? InitialTextInput { get; set; }
+
+    protected override bool IsEnabledCore => base.IsEnabledCore && !_isCovered;
+
+    internal void SetCovered(bool covered)
+    {
+        if (_isCovered != covered)
+        {
+            // Avalonia registers button HotKeys on the Window, before routed key events.
+            _isCovered = covered;
+            UpdateIsEffectivelyEnabled();
+        }
+    }
+
+    internal void FocusEntry()
+    {
+        if (InitialTextInput is { } input && input.Focus(NavigationMethod.Tab))
+        {
+            input.SelectAll();
+        }
+        else if (_closeButton?.Focus(NavigationMethod.Tab) != true)
+        {
+            Focus(NavigationMethod.Tab); // Busy dialogs may have no enabled close button.
+        }
+    }
+
+    internal bool TryClose()
+    {
+        if (!IsCloseEnabled || CloseCommand is not { } command || !command.CanExecute(null))
+        {
+            return false;
+        }
+
+        command.Execute(null);
+        return true;
+    }
 
     public string? Title
     {
@@ -159,6 +198,7 @@ public sealed class StudioDialogShell : ContentControl
             _scrim.PointerPressed -= OnScrimPointerPressed;
         }
 
+        _closeButton = e.NameScope.Find<Button>("PART_CloseButton");
         _scrim = e.NameScope.Find<Control>("PART_Scrim");
         if (_scrim is not null)
         {
@@ -168,18 +208,9 @@ public sealed class StudioDialogShell : ContentControl
 
     private void OnScrimPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (_scrim is null ||
-            !UseScrim ||
-            !IsCloseEnabled ||
-            !e.GetCurrentPoint(_scrim).Properties.IsLeftButtonPressed)
+        if (_scrim is not null && UseScrim && e.GetCurrentPoint(_scrim).Properties.IsLeftButtonPressed)
         {
-            return;
-        }
-
-        if (CloseCommand is { } cmd && cmd.CanExecute(null))
-        {
-            cmd.Execute(null);
-            e.Handled = true;
+            e.Handled = TryClose();
         }
     }
 }

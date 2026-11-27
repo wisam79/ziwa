@@ -24,12 +24,14 @@ public sealed partial class MainWindowViewModel
     private int _scannerSourceFullHeightPx;
     private SKBitmap? _scannerSourceBitmap;
     private SKBitmap? _scannerRectifiedPreviewBitmap;
+    private bool _replacingScannerRegion;
 
     [ObservableProperty]
     private bool _isDocumentScannerOpen;
 
     [ObservableProperty]
-    private int _selectedScannerRegionIndex;
+    [NotifyCanExecuteChangedFor(nameof(InsertScannedToFreeformCommand), nameof(InsertScannedToCollageCommand))]
+    private int _selectedScannerRegionIndex = -1;
 
     [ObservableProperty]
     private DocumentScanFilterOption _selectedScanFilterOption = new(
@@ -37,6 +39,7 @@ public sealed partial class MainWindowViewModel
         DocumentScanFilterCatalog.GetTitleAr(DocumentScanFilterKind.MagicColor));
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(InsertScannedToFreeformCommand), nameof(InsertScannedToCollageCommand))]
     private bool _insertAllScannedRegions = true;
 
     [ObservableProperty]
@@ -57,11 +60,21 @@ public sealed partial class MainWindowViewModel
 
     public bool IsScannerProcessing => _scannerCoordinator?.IsProcessing == true;
     public bool IsScannerToolsEnabled => !IsScannerProcessing;
-    public bool CanRemoveScanRegion => ScannerRegions.Count > 1 && SelectedScannerRegionIndex >= 0 && SelectedScannerRegionIndex < ScannerRegions.Count;
+    private bool HasSelectedScanRegion => SelectedScannerRegionIndex >= 0 && SelectedScannerRegionIndex < ScannerRegions.Count;
+    public bool CanRemoveScanRegion => ScannerRegions.Count > 1 && HasSelectedScanRegion;
+    private bool CanInsertScannedRegions => IsScannerToolsEnabled && !_scannerSourceAssetId.IsEmpty &&
+        ScannerRegions.Count > 0 && (InsertAllScannedRegions || HasSelectedScanRegion);
+
+    private void NotifyScannerInsertCommands()
+    {
+        InsertScannedToFreeformCommand.NotifyCanExecuteChanged();
+        InsertScannedToCollageCommand.NotifyCanExecuteChanged();
+    }
 
     private void InitializeScannerIntegration(DocumentScannerCoordinator? scannerCoordinator)
     {
         _scannerCoordinator = scannerCoordinator;
+        ScannerRegions.CollectionChanged += (_, _) => NotifyScannerInsertCommands();
         if (_scannerCoordinator is not null)
         {
             _scannerCoordinator.StateChanged += OnScannerCoordinatorStateChanged;
@@ -84,8 +97,30 @@ public sealed partial class MainWindowViewModel
             LoadScannerImageFromFileAsync));
     }
 
+    private void ReplaceScannerRegion(int index, DetectedDocumentRegion updated)
+    {
+        // A bound ListBox deselects a replaced item, even when we only moved its corner.
+        // Keep the active index without re-warping the preview during a drag.
+        int selected = SelectedScannerRegionIndex;
+        _replacingScannerRegion = true;
+        try
+        {
+            ScannerRegions[index] = updated;
+            SelectedScannerRegionIndex = selected;
+        }
+        finally
+        {
+            _replacingScannerRegion = false;
+        }
+    }
+
     partial void OnSelectedScannerRegionIndexChanged(int value)
     {
+        if (_replacingScannerRegion)
+        {
+            return;
+        }
+
         if (value >= 0 && value < ScannerRegions.Count)
         {
             DocumentScanFilterKind filter = ScannerRegions[value].Filter;
@@ -94,10 +129,9 @@ public sealed partial class MainWindowViewModel
             {
                 SelectedScanFilterOption = match;
             }
-
-            RefreshScannerRectifiedPreview();
         }
 
+        RefreshScannerRectifiedPreview();
         OnPropertyChanged(nameof(CanRemoveScanRegion));
     }
 
@@ -111,7 +145,7 @@ public sealed partial class MainWindowViewModel
         DetectedDocumentRegion current = ScannerRegions[SelectedScannerRegionIndex];
         if (current.Filter != value.Filter)
         {
-            ScannerRegions[SelectedScannerRegionIndex] = current with { Filter = value.Filter };
+            ReplaceScannerRegion(SelectedScannerRegionIndex, current with { Filter = value.Filter });
             OnPropertyChanged(nameof(ScannerRegions));
             RefreshScannerRectifiedPreview();
         }
@@ -137,7 +171,7 @@ public sealed partial class MainWindowViewModel
 
         if (!Equals(updatedQuad, current.Quad))
         {
-            ScannerRegions[regionIndex] = current with { Quad = updatedQuad };
+            ReplaceScannerRegion(regionIndex, current with { Quad = updatedQuad });
             OnPropertyChanged(nameof(ScannerRegions));
             if (refreshRectifiedPreview && regionIndex == SelectedScannerRegionIndex)
             {
@@ -232,7 +266,7 @@ public sealed partial class MainWindowViewModel
             new PointPx(0.0, maxH));
 
         DetectedDocumentRegion current = ScannerRegions[SelectedScannerRegionIndex];
-        ScannerRegions[SelectedScannerRegionIndex] = current with { Quad = fullQuad };
+        ReplaceScannerRegion(SelectedScannerRegionIndex, current with { Quad = fullQuad });
         OnPropertyChanged(nameof(ScannerRegions));
         RefreshScannerRectifiedPreview();
         ScannerStatusText = "تم ضبط الإطار على كامل مساحة الصورة";
@@ -299,7 +333,7 @@ public sealed partial class MainWindowViewModel
         DocumentScanFilterKind filter = SelectedScanFilterOption?.Filter ?? DocumentScanFilterKind.MagicColor;
         for (int i = 0; i < ScannerRegions.Count; i++)
         {
-            ScannerRegions[i] = ScannerRegions[i] with { Filter = filter };
+            ReplaceScannerRegion(i, ScannerRegions[i] with { Filter = filter });
         }
 
         OnPropertyChanged(nameof(ScannerRegions));
@@ -307,19 +341,15 @@ public sealed partial class MainWindowViewModel
         ScannerStatusText = $"تم تعميم فلتر «{DocumentScanFilterCatalog.GetTitleAr(filter)}» على جميع الإطارات";
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanInsertScannedRegions))]
     private async Task InsertScannedToFreeformAsync(CancellationToken ct)
     {
-        if (_scannerCoordinator is null || _scannerSourceAssetId.IsEmpty)
+        if (_scannerCoordinator is null || !CanInsertScannedRegions)
         {
             return;
         }
 
         IReadOnlyList<ScanExtractionRequestItem> items = BuildExtractionRequests();
-        if (items.Count == 0)
-        {
-            return;
-        }
 
         ScannerInsertionOutcome outcome = await _scannerCoordinator.ExtractAndInsertToFreeformAsync(_scannerSourceAssetId, items, ct);
         ScannerStatusText = outcome.MessageAr;
@@ -331,19 +361,15 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanInsertScannedRegions))]
     private async Task InsertScannedToCollageAsync(CancellationToken ct)
     {
-        if (_scannerCoordinator is null || _scannerSourceAssetId.IsEmpty)
+        if (_scannerCoordinator is null || !CanInsertScannedRegions)
         {
             return;
         }
 
         IReadOnlyList<ScanExtractionRequestItem> items = BuildExtractionRequests();
-        if (items.Count == 0)
-        {
-            return;
-        }
 
         ScannerInsertionOutcome outcome = await _scannerCoordinator.ExtractAndInsertToCollageAsync(
             _scannerSourceAssetId,
@@ -375,20 +401,22 @@ public sealed partial class MainWindowViewModel
         }
 
         IsDocumentScannerOpen = false;
-        _scannerSourceAssetId = AssetId.Empty;
+        SetScannerSource(AssetId.Empty, null);
+    }
+
+    private void SetScannerSource(AssetId assetId, SKBitmap? source)
+    {
+        SKBitmap? oldSource = _scannerSourceBitmap;
+        _scannerSourceAssetId = assetId;
         _scannerSourceFullWidthPx = 0;
         _scannerSourceFullHeightPx = 0;
+        _scannerSourceBitmap = source;
         ScannerRegions.Clear();
-        SKBitmap? oldSource = _scannerSourceBitmap;
-        SKBitmap? oldPreview = _scannerRectifiedPreviewBitmap;
-        _scannerSourceBitmap = null;
-        _scannerRectifiedPreviewBitmap = null;
-        ScannerPreviewSummaryText = string.Empty;
+        SelectedScannerRegionIndex = -1;
+        RefreshScannerRectifiedPreview();
         OnPropertyChanged(nameof(ScannerSourceBitmap));
-        OnPropertyChanged(nameof(ScannerRectifiedPreviewBitmap));
         OnPropertyChanged(nameof(CanRemoveScanRegion));
         DisposeBitmapAfterCompositorPass(oldSource);
-        DisposeBitmapAfterCompositorPass(oldPreview);
     }
 
     private async Task OpenDocumentScannerCoreAsync(CancellationToken ct)
@@ -405,7 +433,7 @@ public sealed partial class MainWindowViewModel
 
     public async Task OpenScannerWithAssetAsync(AssetId assetId, CancellationToken ct = default)
     {
-        if (_scannerCoordinator is null || _assetStore is null || assetId.IsEmpty)
+        if (_scannerCoordinator is null || _assetStore is null || assetId.IsEmpty || IsScannerProcessing)
         {
             return;
         }
@@ -416,11 +444,7 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
-        _scannerSourceAssetId = assetId;
-        SKBitmap? oldSource = _scannerSourceBitmap;
-        _scannerSourceBitmap = AlphaMaskCompositor.DecodeNormalizedBytesToBitmap(encodedBytes, maxEdgePx: 1400);
-        OnPropertyChanged(nameof(ScannerSourceBitmap));
-        DisposeBitmapAfterCompositorPass(oldSource);
+        SetScannerSource(assetId, AlphaMaskCompositor.DecodeNormalizedBytesToBitmap(encodedBytes, maxEdgePx: 1400));
 
         IsDocumentScannerOpen = true;
         await RunDetectionForCurrentAssetAsync(ScanDetectionMode.AutoSingleOrMulti, ct);
@@ -433,7 +457,13 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
+        SKBitmap? source = _scannerSourceBitmap;
         ScannerDetectionOutcome outcome = await _scannerCoordinator.DetectAsync(_scannerSourceAssetId, mode, ct);
+        if (!ReferenceEquals(source, _scannerSourceBitmap))
+        {
+            return;
+        }
+
         if (!outcome.Succeeded || outcome.Detection is not { } detection)
         {
             ScannerStatusText = outcome.MessageAr;
@@ -470,7 +500,7 @@ public sealed partial class MainWindowViewModel
         string secondLabel = axis == IdCardSplitAxis.HorizontalTopBottom ? "بطاقة الهوية (أسفل)" : "بطاقة الهوية (ب)";
 
         int idx = SelectedScannerRegionIndex;
-        ScannerRegions[idx] = new DetectedDocumentRegion(Guid.NewGuid(), firstLabel, first, target.Confidence, target.Filter);
+        ReplaceScannerRegion(idx, new DetectedDocumentRegion(Guid.NewGuid(), firstLabel, first, target.Confidence, target.Filter));
         ScannerRegions.Insert(idx + 1, new DetectedDocumentRegion(Guid.NewGuid(), secondLabel, second, target.Confidence, target.Filter));
         SelectedScannerRegionIndex = idx;
         OnPropertyChanged(nameof(ScannerRegions));
@@ -493,8 +523,7 @@ public sealed partial class MainWindowViewModel
                 .ToArray();
         }
 
-        int idx = Math.Clamp(SelectedScannerRegionIndex, 0, ScannerRegions.Count - 1);
-        DetectedDocumentRegion selected = ScannerRegions[idx];
+        DetectedDocumentRegion selected = ScannerRegions[SelectedScannerRegionIndex];
         return [new ScanExtractionRequestItem(selected.Id, selected.LabelAr, selected.Quad, selected.Filter)];
     }
 
@@ -519,6 +548,7 @@ public sealed partial class MainWindowViewModel
         {
             OnPropertyChanged(nameof(IsScannerProcessing));
             OnPropertyChanged(nameof(IsScannerToolsEnabled));
+            NotifyScannerInsertCommands();
             if (_scannerCoordinator is { IsProcessing: true } coord)
             {
                 ScannerStatusText = coord.ProcessingStatusAr;

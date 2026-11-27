@@ -4,6 +4,9 @@
 
   <!-- Unified Modal Dialog Shell -->
   <ControlTheme x:Key="{x:Type controls:StudioDialogShell}" TargetType="controls:StudioDialogShell">
+    <Setter Property="KeyboardNavigation.TabNavigation" Value="Cycle" />
+    <Setter Property="Focusable" Value="True" />
+    <Setter Property="IsTabStop" Value="False" />
     <Setter Property="Template">
       <ControlTemplate TargetType="controls:StudioDialogShell">
         <Panel FlowDirection="RightToLeft">

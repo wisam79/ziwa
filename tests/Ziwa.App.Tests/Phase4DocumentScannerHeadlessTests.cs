@@ -139,34 +139,100 @@ public sealed class Phase4DocumentScannerHeadlessTests
     }
 
     [AvaloniaFact]
-    public async Task DocumentScanner_LocksEditingToolsDuringProcessing_AndCancelsCleanly()
+    public async Task NewSourceClearsPriorDetection_RejectsConcurrentOpen_AndStaysEmptyAfterCancellation()
     {
         string tempRoot = Path.Combine(Path.GetTempPath(), "ziwa-p403-lock-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempRoot);
         try
         {
-            using ServiceProvider sp = Bootstrapper.BuildServiceProvider(
-                new ProjectStorageOptions(tempRoot),
-                scannerOptions: new DocumentScannerOptions(ProcessingStepDelayMs: 450));
+            var secondDecoded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var resume = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            int decodedCount = 0;
+            using ServiceProvider sp = Bootstrapper.BuildServiceProvider(new ProjectStorageOptions(tempRoot),
+                scannerOptions: new DocumentScannerOptions(AfterSourceDecodedAsync: token =>
+                {
+                    if (Interlocked.Increment(ref decodedCount) != 2)
+                    {
+                        return Task.CompletedTask;
+                    }
 
+                    secondDecoded.SetResult();
+                    return resume.Task.WaitAsync(token);
+                }));
             MainWindowViewModel vm = sp.GetRequiredService<MainWindowViewModel>();
             AssetStore assetStore = sp.GetRequiredService<AssetStore>();
-            AssetId scanAssetId = assetStore.RegisterAsset(CreateTwoCardScanPng(400, 280));
-
+            AssetId first = assetStore.RegisterAsset(CreateTwoCardScanPng(520, 360));
+            AssetId second = assetStore.RegisterAsset(CreateTwoCardScanPng(400, 280));
             var window = new MainWindow { DataContext = vm };
-            window.Show();
+            Task? pending = null;
+            try
+            {
+                window.Show();
+                await vm.OpenScannerWithAssetAsync(first);
+                InspectorUi.Layout(window);
+                var freeform = InspectorUi.Visible<Button>(window, "InsertScannedToFreeformButton");
+                var collage = InspectorUi.Visible<Button>(window, "InsertScannedToCollageButton");
+                Assert.NotEmpty(vm.ScannerRegions);
+                Assert.NotNull(vm.ScannerRectifiedPreviewBitmap);
+                Assert.NotEmpty(vm.ScannerPreviewSummaryText);
+                Assert.True(freeform.IsEffectivelyEnabled);
+                Assert.True(collage.IsEffectivelyEnabled);
 
-            Task openTask = vm.OpenScannerWithAssetAsync(scanAssetId);
-            await Task.Delay(40);
-            Assert.True(vm.IsScannerProcessing);
-            Assert.False(vm.IsScannerToolsEnabled);
+                pending = vm.OpenScannerWithAssetAsync(second);
+                await secondDecoded.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.True(vm.IsScannerProcessing);
+                Assert.False(vm.IsScannerToolsEnabled);
+                SKBitmap secondBitmap = Assert.IsType<SKBitmap>(vm.ScannerSourceBitmap);
+                Assert.Equal(400, secondBitmap.Width);
+                AssertNoInsertableRegions();
 
-            vm.CancelScannerOperationCommand.Execute(null);
-            await openTask;
+                // A new open while B is busy must not replace B's source or status.
+                string busyStatus = vm.ScannerStatusText;
+                await vm.OpenScannerWithAssetAsync(first);
+                Assert.Same(secondBitmap, vm.ScannerSourceBitmap);
+                Assert.Equal(busyStatus, vm.ScannerStatusText);
+                Assert.Equal(2, decodedCount);
 
-            Assert.False(vm.IsScannerProcessing);
-            Assert.True(vm.IsScannerToolsEnabled);
-            window.Close();
+                vm.CancelScannerOperationCommand.Execute(null);
+                await pending.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.True(vm.IsDocumentScannerOpen);
+                Assert.False(vm.IsScannerProcessing);
+                Assert.True(vm.IsScannerToolsEnabled);
+                Assert.Contains("إلغاء", vm.ScannerStatusText);
+                vm.AddManualScanRegionCommand.Execute(null); // A's dimensions must not be reusable.
+                AssertNoInsertableRegions();
+
+                // Retry uses B, not the rejected request, and enables both insert buttons again.
+                await vm.RedetectScanRegionsCommand.ExecuteAsync(null);
+                vm.ResetSelectedScanRegionToFullImageCommand.Execute(null);
+                Assert.Equal(new PointPx(399, 279), vm.ScannerRegions[vm.SelectedScannerRegionIndex].Quad.BottomRight);
+                InspectorUi.Layout(window);
+                Assert.True(freeform.IsEffectivelyEnabled);
+                Assert.True(collage.IsEffectivelyEnabled);
+
+                void AssertNoInsertableRegions()
+                {
+                    InspectorUi.Layout(window);
+                    Assert.Empty(vm.ScannerRegions);
+                    Assert.Equal(-1, vm.SelectedScannerRegionIndex);
+                    Assert.Null(vm.ScannerRectifiedPreviewBitmap);
+                    Assert.Equal(string.Empty, vm.ScannerPreviewSummaryText);
+                    Assert.False(vm.InsertScannedToFreeformCommand.CanExecute(null));
+                    Assert.False(vm.InsertScannedToCollageCommand.CanExecute(null));
+                    Assert.False(freeform.IsEffectivelyEnabled);
+                    Assert.False(collage.IsEffectivelyEnabled);
+                }
+            }
+            finally
+            {
+                resume.TrySetResult();
+                if (pending is not null)
+                {
+                    await pending;
+                }
+
+                window.Close();
+            }
         }
         finally
         {

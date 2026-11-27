@@ -64,6 +64,81 @@ public sealed class Joint1CanvasInteractionHeadlessTests
     }
 
     [AvaloniaFact]
+    public void InlineEditor_StaysInsideViewportAfterResizeAndDraftGrowth()
+    {
+        using ServiceProvider sp = Bootstrapper.BuildServiceProvider();
+        var vm = sp.GetRequiredService<MainWindowViewModel>();
+        var window = new MainWindow { DataContext = vm, Width = 1360, Height = 860 };
+        try
+        {
+            window.Show();
+            TextNode text = vm.ActivePage.Nodes.OfType<TextNode>().First();
+            vm.Session.SetSelection([text.Id]);
+            InspectorUi.Layout(window);
+            var host = InspectorUi.Visible<SkiaViewportHost>(window);
+            vm.Viewport = vm.Viewport with
+            {
+                PanXDip = host.Bounds.Width - text.BoundsMm.X * vm.Viewport.DipPerMm - 32,
+                PanYDip = host.Bounds.Height - text.BoundsMm.Y * vm.Viewport.DipPerMm - 32,
+            };
+            vm.EnterSelectedTextEditCommand.Execute(null);
+            InspectorUi.Layout(window);
+            var editor = InspectorUi.Visible<TextBox>(window, "InlineCanvasTextBox");
+            Assert.True(editor.IsFocused);
+            window.Width = 960;
+            window.Height = 640;
+            InspectorUi.Layout(window);
+            string draft = string.Join('\n', Enumerable.Repeat("مسودة قبل الحفظ", 6));
+            editor.Text = draft;
+            InspectorUi.Layout(window);
+
+            foreach (string name in new[] { "InlineTextEditOverlay", "InlineTextSaveButton", "InlineTextCancelButton" })
+            {
+                Control element = InspectorUi.Visible<Control>(window, name);
+                Rect bounds = InspectorUi.BoundsIn(element, window);
+                Rect canvas = InspectorUi.BoundsIn(host, window);
+                Assert.True(canvas.Contains(bounds), $"{name}: {bounds} outside {canvas}");
+            }
+
+            Assert.True(editor.IsFocused);
+            InspectorUi.Click(window, InspectorUi.Visible<Button>(window, "InlineTextSaveButton"));
+            Assert.False(vm.IsInlineTextEditOpen);
+            Assert.Equal(draft, vm.ActivePage.Nodes.OfType<TextNode>().Single(n => n.Id == text.Id).Text);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void CropQuickBar_EscapeAfterZoomRestoresOriginalCrop()
+    {
+        using ServiceProvider sp = Bootstrapper.BuildServiceProvider();
+        var vm = sp.GetRequiredService<MainWindowViewModel>();
+        var window = new MainWindow { DataContext = vm, Width = 960, Height = 640 };
+        try
+        {
+            window.Show();
+            ImageNode image = vm.ActivePage.Nodes.OfType<ImageNode>().First();
+            vm.Session.SetSelection([image.Id]);
+            vm.EnterSelectedCropModeCommand.Execute(null);
+            InspectorUi.Layout(window);
+            InspectorUi.Click(window, InspectorUi.Visible<Button>(window, "QuickCropZoomInButton"));
+            Assert.NotEqual(image.Crop, vm.ActivePage.Nodes.OfType<ImageNode>().Single(n => n.Id == image.Id).Crop);
+            window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+            window.KeyReleaseQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+            InspectorUi.Layout(window);
+            Assert.False(vm.IsCropModeActive);
+            Assert.Equal(image.Crop, vm.ActivePage.Nodes.OfType<ImageNode>().Single(n => n.Id == image.Id).Crop);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void CropMode_QuickBarSwitchingZoomResetApplyAndCancel_WorkEndToEnd()
     {
         using ServiceProvider sp = Bootstrapper.BuildServiceProvider();

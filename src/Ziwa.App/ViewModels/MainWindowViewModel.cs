@@ -991,8 +991,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             () => true,
             _ =>
             {
-                _session.ApplyCommand("تكرار الصفحة النشطة", doc => MultiPageOperations.DuplicatePage(doc, doc.ActivePageIndex));
-                StatusMessage = $"تم تكرار الصفحة إلى {ActivePage.Name}";
+                DuplicatePage(ActivePage.Id);
                 return Task.CompletedTask;
             }));
 
@@ -1116,19 +1115,25 @@ public sealed partial class MainWindowViewModel : ObservableObject
         for (int i = 0; i < Document.Pages.Length; i++)
         {
             PageModel page = Document.Pages[i];
-            bool isActive = i == Document.ActivePageIndex;
-            if (i == PageTabs.Count)
+            if (i == PageTabs.Count || PageTabs[i].Id != page.Id)
             {
-                PageTabs.Add(new PageTabItemViewModel(i, page.Name, isActive));
+                // Keep the tab (and its commands) associated with the page through reorders and renames.
+                PageTabItemViewModel? existing = PageTabs.Skip(i).FirstOrDefault(tab => tab.Id == page.Id);
+                if (existing is null)
+                {
+                    PageTabs.Insert(i, new PageTabItemViewModel(this, page.Id));
+                }
+                else
+                {
+                    PageTabs.Move(PageTabs.IndexOf(existing), i);
+                }
             }
-            else if (PageTabs[i].Name != page.Name)
-            {
-                PageTabs[i] = new PageTabItemViewModel(i, page.Name, isActive);
-            }
-            else
-            {
-                PageTabs[i].IsActive = isActive;
-            }
+
+            PageTabItemViewModel tab = PageTabs[i];
+            tab.Index = i;
+            tab.Name = page.Name;
+            tab.IsActive = i == Document.ActivePageIndex;
+            tab.PageCount = Document.Pages.Length;
         }
 
         while (PageTabs.Count > Document.Pages.Length)
@@ -1491,13 +1496,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task ExecutePaletteCommandAsync(CommandDefinition? cmd, CancellationToken ct)
     {
-        if (cmd is null)
+        if (cmd is not null && await _commandRegistry.TryExecuteAsync(cmd.Id, ct))
         {
-            return;
+            IsCommandPaletteOpen = false;
         }
-
-        IsCommandPaletteOpen = false;
-        await _commandRegistry.TryExecuteAsync(cmd.Id, ct);
     }
 
     [RelayCommand]
@@ -1770,29 +1772,32 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void MovePageEarlier()
+    private void MovePageEarlier() => MovePage(ActivePage.Id, -1);
+
+    [RelayCommand]
+    private void MovePageLater() => MovePage(ActivePage.Id, 1);
+
+    [RelayCommand]
+    private void DeleteActivePage() => DeletePage(ActivePage.Id);
+
+    internal void DuplicatePage(PageId id)
     {
-        if (Document.ActivePageIndex > 0)
+        if (ApplyPageCommand(id, "تكرار الصفحة", MultiPageOperations.DuplicatePage) is not null)
         {
-            int idx = Document.ActivePageIndex;
-            _session.ApplyCommand("تقديم الصفحة", doc => MultiPageOperations.MovePage(doc, idx, idx - 1));
-            StatusMessage = $"تم تقديم {ActivePage.Name}";
+            StatusMessage = $"تم تكرار الصفحة إلى {ActivePage.Name}";
         }
     }
 
-    [RelayCommand]
-    private void MovePageLater()
+    internal void MovePage(PageId id, int direction)
     {
-        if (Document.ActivePageIndex < Document.Pages.Length - 1)
+        string description = direction < 0 ? "تقديم الصفحة" : "تأخير الصفحة";
+        if (ApplyPageCommand(id, description, (doc, i) => MultiPageOperations.MovePage(doc, i, i + direction)) is { } moved)
         {
-            int idx = Document.ActivePageIndex;
-            _session.ApplyCommand("تأخير الصفحة", doc => MultiPageOperations.MovePage(doc, idx, idx + 1));
-            StatusMessage = $"تم تأخير {ActivePage.Name}";
+            StatusMessage = direction < 0 ? $"تم تقديم {moved.Name}" : $"تم تأخير {moved.Name}";
         }
     }
 
-    [RelayCommand]
-    private void DeleteActivePage()
+    internal void DeletePage(PageId id)
     {
         if (Document.Pages.Length <= 1)
         {
@@ -1800,9 +1805,29 @@ public sealed partial class MainWindowViewModel : ObservableObject
             return;
         }
 
-        int idx = Document.ActivePageIndex;
-        _session.ApplyCommand("حذف الصفحة النشطة", doc => MultiPageOperations.DeletePage(doc, idx));
-        StatusMessage = $"تم حذف الصفحة — النشطة الآن: {ActivePage.Name}";
+        if (ApplyPageCommand(id, "حذف الصفحة", MultiPageOperations.DeletePage) is not null)
+        {
+            StatusMessage = $"تم حذف الصفحة — النشطة الآن: {ActivePage.Name}";
+        }
+    }
+
+    private PageModel? ApplyPageCommand(PageId id, string description, Func<ZiwaDocument, int, ZiwaDocument> edit)
+    {
+        PageModel? target = null;
+        bool applied = _session.ApplyCommand(description, doc =>
+        {
+            for (int i = 0; i < doc.Pages.Length; i++)
+            {
+                if (doc.Pages[i].Id == id)
+                {
+                    target = doc.Pages[i];
+                    return edit(doc, i);
+                }
+            }
+
+            return doc;
+        });
+        return applied ? target : null;
     }
 
     [RelayCommand]

@@ -77,6 +77,55 @@ public sealed class Phase4DocumentScannerCoordinatorTests
         Assert.Equal(initialCount, session.CommittedDocument.ActivePage.Nodes.Length);
     }
 
+    [Fact]
+    public async Task CancelledDetection_IgnoresLateServiceSuccess()
+    {
+        var session = new DocumentSession(SampleVerticalSliceFactory.CreateShowcaseDocument(new AssetId("initial-asset")));
+        var result = new TaskCompletionSource<ScanDetectionResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var coordinator = new DocumentScannerCoordinator(session, new DeferredScannerService(detection: result.Task));
+        using var cts = new CancellationTokenSource();
+
+        Task<ScannerDetectionOutcome> pending = coordinator.DetectAsync(new AssetId("raw-scan"), externalCt: cts.Token);
+        Assert.True(coordinator.IsProcessing);
+        cts.Cancel();
+        result.SetResult(new ScanDetectionResult(400, 250, [new(Guid.NewGuid(), "مستند", DocumentQuadPx.CreateInsetDefault(400, 250))]));
+
+        ScannerDetectionOutcome outcome = await pending;
+        Assert.True(outcome.WasCancelled);
+        Assert.False(outcome.Succeeded);
+        Assert.Null(outcome.Detection);
+        Assert.False(coordinator.IsProcessing);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancelledExtraction_IgnoresLateServiceSuccess(bool collage)
+    {
+        var session = new DocumentSession(SampleVerticalSliceFactory.CreateShowcaseDocument(new AssetId("initial-asset")));
+        ZiwaDocument original = session.CommittedDocument;
+        var result = new TaskCompletionSource<ImmutableArray<ExtractedScanDocument>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var scanner = new DeferredScannerService(result.Task);
+        using var coordinator = new DocumentScannerCoordinator(session, scanner);
+        var source = new AssetId("raw-scan");
+        ScanExtractionRequestItem item = new(Guid.NewGuid(), "مستند", DocumentQuadPx.CreateInsetDefault(300, 400), DocumentScanFilterKind.MagicColor);
+
+        Task<ScannerInsertionOutcome> pending = collage
+            ? coordinator.ExtractAndInsertToCollageAsync(source, [item])
+            : coordinator.ExtractAndInsertToFreeformAsync(source, [item]);
+        Assert.True(coordinator.IsProcessing);
+        coordinator.CancelActiveOperation();
+        result.SetResult([new(item.RegionId, item.LabelAr, new AssetId("filtered"), new AssetId("original"), 300, 400, item.Filter)]);
+
+        ScannerInsertionOutcome outcome = await pending;
+        Assert.True(outcome.WasCancelled);
+        Assert.False(outcome.Succeeded);
+        Assert.Equal(0, outcome.InsertedCount);
+        Assert.Same(original, session.CommittedDocument);
+        Assert.Equal(0, session.UndoCount);
+        Assert.False(coordinator.IsProcessing);
+    }
+
     private sealed class StubScannerService : IDocumentScannerService
     {
         public Task<ScanDetectionResult> DetectDocumentsAsync(AssetId sourceAssetId, ScanDetectionMode mode = ScanDetectionMode.AutoSingleOrMulti, CancellationToken cancellationToken = default) =>
@@ -96,12 +145,14 @@ public sealed class Phase4DocumentScannerCoordinatorTests
         }
     }
 
-    private sealed class DeferredScannerService(Task<ImmutableArray<ExtractedScanDocument>> task) : IDocumentScannerService
+    private sealed class DeferredScannerService(
+        Task<ImmutableArray<ExtractedScanDocument>>? extraction = null,
+        Task<ScanDetectionResult>? detection = null) : IDocumentScannerService
     {
         public Task<ScanDetectionResult> DetectDocumentsAsync(AssetId sourceAssetId, ScanDetectionMode mode = ScanDetectionMode.AutoSingleOrMulti, CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            detection ?? throw new NotSupportedException();
 
         public Task<ImmutableArray<ExtractedScanDocument>> ExtractDocumentsAsync(AssetId sourceAssetId, IReadOnlyList<ScanExtractionRequestItem> items, CancellationToken cancellationToken = default) =>
-            task;
+            extraction ?? throw new NotSupportedException();
     }
 }
